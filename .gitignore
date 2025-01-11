@@ -1,0 +1,12 @@
+__pycache__
+.idea
+venv
+
+dist
+build
+*.spec
+
+*.zip
+*.rar
+
+*_test_*

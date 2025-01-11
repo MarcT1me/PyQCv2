@@ -1,0 +1,5 @@
+﻿from Engine.graphic.gl_data import GlData
+from Engine.graphic.GL import *
+from Engine.graphic.window import *
+from Engine.graphic.interface import *
+from Engine.graphic.graphics import Graphics

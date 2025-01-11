@@ -1,0 +1,8 @@
+[Win]
+fps = 0
+size = [ 1280, 720,]
+vsync = false
+full = false
+monitor = "null"
+
+[Core]

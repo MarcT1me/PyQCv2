@@ -1,0 +1,12 @@
+# graphic
+pygame
+moderngl
+# working with window
+screeninfo
+pygetwindow
+# other
+toml
+loguru
+pyglm
+numpy
+dill

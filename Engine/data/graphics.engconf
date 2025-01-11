@@ -1,0 +1,27 @@
+""" Engine settings
+Basic Python syntax
+specify the interface by example: 
+
+*:*type*
+or
+*class*Main data*
+
+To ignore it, you can use the decorator
+
+def ENGDATA_IGNORE(f): return f
+
+You are allowed to use yourself.
+It is considered bad manners to create functions or overwrite them, not counting lambda
+"""
+from Engine.data.config import Win, Main
+from Engine import YES, NO
+from pygame import RESIZABLE
+
+""" Set Screen Settings """
+Win.DEFAULT_WIN_TITLE = Main.APPLICATION_name + ' | node window'
+# frame
+Win.title = 'Test gr.engconf'
+Win.size = Win.size
+Win.fps = Win.fps
+Win.vsync = NO
+Win.flags |= RESIZABLE
