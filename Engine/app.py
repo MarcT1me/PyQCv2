@@ -2,7 +2,7 @@
 """
 from loguru import logger
 # default
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from typing import Type, List, Dict, Self
 
 # Engine import
@@ -10,7 +10,7 @@ import Engine
 from Engine.graphic import err_screen
 
 
-class App:
+class App(ABC):
     """
     Main App class.
     The main parent class for creating logic and running it in the main loop
@@ -29,6 +29,7 @@ class App:
     """
     running: bool = True
     WorkAppType: Self = Engine.EMPTY
+    win = Engine.graphic.Graphics
 
     """ Error catching """
     failures: List[Engine.failures.Failure] = []
@@ -58,6 +59,7 @@ class App:
 
     def __gl_date__(self) -> Engine.graphic.GlData:
         """ Pre-initialisation Graphic Libreary. Before main __init__ """
+        return
 
     def __win_date__(self) -> Engine.graphic.WinData:
         """ Pre-initialisation main Window. Before main __init__ """
@@ -70,9 +72,7 @@ class App:
         # timing
         App.clock = Engine.timing.Clock()
         # window
-        Engine.graphic.Graphics.set_core()
-        if Engine.graphic.Graphics.win_data.flags & Engine.pg.OPENGL:
-            Engine.graphic.Graphics.set_modern_gl()
+        Engine.graphic.Graphics()
 
         logger.success('ENGINE - INIT\n')
 
@@ -146,10 +146,11 @@ class App:
         print('\n\n')
         logger.exception(err)
 
-    def on_exit(self) -> None:
+    @staticmethod
+    def on_exit() -> None:
         for err in tuple(App.failures):
             if not err.critical:
-                Engine.app.App.failures.remove(err)
+                App.failures.remove(err)
 
         Engine.graphic.Graphics.__release__()
         Engine.pg.quit()
@@ -168,7 +169,7 @@ def mainloop(app: Type[App]) -> None:
 
     work_app: App = app  # current app object
     while App.running:
-        with Engine.failures.Catch():
+        with Engine.failures.Catch(identifier=f"{mainloop}_Catch__ENGINE__"):
             work_app = app()
             work_app.run()
         if work_app:

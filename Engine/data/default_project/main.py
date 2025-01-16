@@ -21,7 +21,7 @@ class QuantumApp(App):
     def __gl_date__(self) -> Engine.graphic.GlData:
         return Engine.graphic.GlData(
             interface_class=Engine.graphic.HardInterface,
-            view=Engine.math.vec2(0, 0)
+            view_start=Engine.math.vec2(0, 0)
         )
 
     def __init__(self, *args, **kwargs) -> None:
@@ -53,7 +53,7 @@ class QuantumApp(App):
                 }
             )
             Engine.graphic.Graphics.set_viewport(
-                Engine.math.vec4(*Engine.graphic.Graphics.gl_data.view, *Engine.graphic.Graphics.win_data.size)
+                Engine.math.vec4(*Engine.graphic.Graphics.gl_data.view_start, *Engine.graphic.Graphics.win_data.size)
             )
             Engine.graphic.Graphics.resset()
 

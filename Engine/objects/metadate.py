@@ -12,5 +12,6 @@ class MetaDate:
     def extern(self, changes: dict) -> Self:
         """ extern ths win_data and return new """
         for var, value in changes.items():
-            exec(f'self.{var} = value')
+            exec(f"self.{var} = value")
+            exec(f"Engine.data.Win.{var} = value")
         return self

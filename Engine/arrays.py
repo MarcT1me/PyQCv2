@@ -1,4 +1,5 @@
-﻿import Engine
+﻿from typing import Callable, Any
+import Engine
 
 
 class AttributesKeeper:
@@ -23,7 +24,14 @@ class AttributesKeeper:
         setattr(self, item, self._default)
         return self._default
 
-    @classmethod
-    def update(cls, changes: dict) -> None:
-        for key, value in changes.items():
-            exec(f'cls.{key} = value')
+
+class Roster(dict):
+    def use(self, method_name: str, *args, calling_filter: Callable[[Any], bool], **kwargs):
+        for i in self.values():
+            if not calling_filter(i):
+                getattr(i, method_name)(*args, **kwargs)
+
+    def release(self):
+        for i in self.values():
+            i.release()
+        self.clear()

@@ -1,12 +1,26 @@
 from functools import wraps
-from threading import Thread
 from typing import Any
 import Engine
 
 
+def updatable(cls):
+    # Define the update method inside the decorator
+    def update(_, changes: dict) -> None:
+        for key, value in changes.items():
+            setattr(cls, key, value)
+
+    # Set the update method as a class method
+    setattr(cls, 'update', classmethod(update))
+    return cls
+
+
 def multithread(func):
     def wrapper(*args, **kwargs):
-        Thread(target=lambda: func(*args, **kwargs)).start()
+        Engine.threading.Thread(
+            target=lambda: func(*args, **kwargs),
+            identifier=f"{multithread}_{Engine.timing.pg_get_ticks()}_Thread__ENGINE__",
+            daemon=True
+        ).start()
 
     return wrapper
 
@@ -14,14 +28,26 @@ def multithread(func):
 def single_event(func):
     def wrapper(self):
         for event in Engine.app.App.event_list:
-            with Engine.failures.Catch():
+            with Engine.failures.Catch(identifier=f"{single_event}_Catch__ENGINE__"):
                 func(self, event)
+
+    wrapper._is_single_event_decorated = True
+    return wrapper
+
+
+def window_event(func):
+    if not hasattr(func, '_is_single_event_decorated'):
+        raise TypeError(f"Function must be decorated {single_event} before  using {window_event}")
+
+    def wrapper(self, event):
+        func(self, event, getattr(event, 'window', None))
 
     return wrapper
 
 
 def sdl_render(func):
     def wrapper(self):
+        Engine.threading.Thread.join_roster()
         func(self)
         Engine.graphic.Graphics.flip()
 
@@ -30,6 +56,7 @@ def sdl_render(func):
 
 def gl_render(func):
     def wrapper(self):
+        Engine.threading.Thread.join_roster()
         Engine.graphic.Graphics.context.clear(
             color=Engine.graphic.Graphics.gl_data.clear_color
         )
@@ -42,10 +69,6 @@ def gl_render(func):
 def dev_only(func=None, *, _default: Any = None):
     """ Outer decorator taking the _default parameter. """
 
-    def empty_func(*args, **kwargs):
-        """ Placeholder function returning default value. """
-        return _default
-
     def dev_only_decorator(func):
         """ Inner decorator altering wrapped function behavior based on the global flag. """
 
@@ -53,7 +76,7 @@ def dev_only(func=None, *, _default: Any = None):
         def wrapper(*args, **kwargs):
             """ the final function """
             if Engine.data.Main.IS_RELEASE:
-                return empty_func(*args, **kwargs)  # Return a placeholder function
+                return _default  # Return a placeholder function
             return func(*args, **kwargs)  # Normal function execution
 
         return wrapper

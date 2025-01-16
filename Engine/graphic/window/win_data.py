@@ -8,8 +8,10 @@ from Engine.data.config import Win
 class WinData(MetaDate):
     id: str = "Main"
     """ data for every engine window """
-    size: vec2 = field(default_factory=lambda: Win.DEFAULT_WIN_SIZE)
-    monitor: int | None = field(default_factory=lambda: Win.DEFAULT_WIN_MONITOR)
-    title: str = field(default_factory=lambda: Win.DEFAULT_WIN_TITLE)
-    vsync: int = field(default_factory=lambda: Win.DEFAULT_WIN_VSYNC)
-    flags: int = field(default_factory=lambda: Win.DEFAULT_WIN_FLAGS)
+    size: vec2 = field(default_factory=lambda: Win.size)
+    monitor: int | None = field(default_factory=lambda: Win.monitor)
+    title: str = field(default_factory=lambda: Win.title)
+    vsync: int = field(default_factory=lambda: Win.vsync)
+    full: bool = field(default_factory=lambda: Win.full)
+    is_desktop: bool = field(default_factory=lambda: Win.is_desktop)
+    flags: int = field(default_factory=lambda: Win.flags)

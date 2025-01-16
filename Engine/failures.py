@@ -18,25 +18,25 @@ class UnexpectedException(Exception):
 
 
 class Catch:
-    list: Dict[str, Self] = {}
+    roster: Dict[str, Self] = {}
 
-    def __init__(self, _id=uuid4(), critical=True) -> None:
-        self.id = uuid4()
+    def __init__(self, identifier=uuid4(), critical=True) -> None:
+        self.id = identifier
 
-        if _id in Catch.list:
+        if identifier in Catch.roster:
             RuntimeError("Catch<id> arg already in Catch.list")
 
         self.failures: List[Failure] = []
         self.critical = critical
 
-        Catch.list[_id] = self
+        Catch.roster[identifier] = self
 
     def try_func(self, func: Callable, *args, **kwargs) -> Any:
         try:
             func(*args, **kwargs)
         except Exception as exc:
             self.critical = False
-            self.__exit__(type(exc), exc, None)
+            self.__got_error(type(exc), exc)
 
     @property
     def is_clear(self) -> bool:
@@ -45,16 +45,20 @@ class Catch:
     def __enter__(self) -> Self:
         return self
 
-    def __exit__(self, exc_type, exc_val, _) -> True:
+    def __got_error(self, exc_type, exc_val):
+        # Проверяем, является ли исключение экземпляром класса Exception или его подкласса
+        if issubclass(exc_type, Failure):
+            exc_val.catch_id = self.id
+            Engine.app.App.WorkAppType.on_failure(exc_val)
+        elif issubclass(exc_type, Exception):
+            err: Failure = Failure(catch_id=self.id, critical=self.critical, err=exc_val)
+            Engine.app.App.WorkAppType.on_failure(err)
+        else:
+            err: Failure = Failure(catch_id=self.id, critical=self.critical, err=UnexpectedException(exc_val))
+            Engine.app.App.WorkAppType.on_failure(err)
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> True:
         if exc_type is not None:
-            # Проверяем, является ли исключение экземпляром класса Exception или его подкласса
-            if issubclass(exc_type, Failure):
-                exc_val.catch_id = self.id
-                Engine.app.App.WorkAppType.on_failure(exc_val)
-            elif issubclass(exc_type, Exception):
-                err: Failure = Failure(catch_id=self.id, critical=self.critical, err=exc_val)
-                Engine.app.App.WorkAppType.on_failure(err)
-            else:
-                err: Failure = Failure(catch_id=self.id, critical=self.critical, err=UnexpectedException(exc_val))
-                Engine.app.App.WorkAppType.on_failure(err)
+            self.__got_error(exc_type, exc_val)
+        Catch.roster.pop(self.id)
         return True

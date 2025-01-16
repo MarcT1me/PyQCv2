@@ -5,9 +5,11 @@ import Engine.pg
 import Engine.mgl
 
 """ Engine """
-# data
 from Engine.constants import *
+from Engine import decorators
+import Engine.arrays
 import Engine.data
+import Engine.threading
 # timing
 import Engine.timing
 # main `graphic` module and main graphic class
@@ -19,6 +21,5 @@ import Engine.scene
 import Engine.lscript
 import Engine.failures
 from Engine import math
-from Engine import decorators
 # GENERAL APP CLASS
 import Engine.app

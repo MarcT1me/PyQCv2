@@ -1,7 +1,7 @@
 """ Engine Graphic core
 """
 from loguru import logger
-from typing import TYPE_CHECKING
+from typing import Optional
 # window utils
 from pygetwindow import getWindowsWithTitle
 from screeninfo import get_monitors
@@ -14,35 +14,50 @@ from Engine.pg import (
     GL_CONTEXT_PROFILE_MASK,
     display, event, mouse, cursors, Surface
 )
-from Engine.mgl import Context, create_context
+from Engine.mgl import create_context
 from Engine.constants import EMPTY
-from Engine.objects.camera import Camera
 from Engine.data.config import Win
-from Engine.math import vec4
-
-if TYPE_CHECKING:
-    from Engine.graphic import WinData, Window, GlData, HardInterface
+from Engine.math import vec4, vec2
 
 
 class Graphics:
-    win_data: 'WinData' = EMPTY  # Window configs
-    gl_data: 'GlData' = EMPTY
-    window: 'Window' = EMPTY  # Window
-    context: Context = EMPTY  # MGL context
+    win_data: 'Engine.graphic.WinData' = EMPTY  # Window configs
+    window: 'Engine.graphic.Window' = EMPTY  # Window
+    gl_data: 'Optional[Engine.graphic.GlData]' = EMPTY
+    context: 'Optional[Engine.mgl.Context]' = EMPTY  # MGL context
 
-    interface: 'HardInterface' = EMPTY  # Interface renderer
+    interface: 'Optional[Engine.graphic.HardInterface]' = EMPTY  # Interface renderer
 
     """ other private """
     __monitors__ = get_monitors()
+
+    def __new__(cls):
+        cls.set_core()
+        if cls.win_data.flags & OPENGL:
+            cls.set_modern_gl()
 
     @classmethod
     def set_core(cls):
         """ set main variables"""
         cls.window = Engine.graphic.Window(win_data=cls.win_data)
-        display.set_caption(cls.win_data.title)
-        cls.toggle_full(Win.full)
-        cls.camera = Camera()
-        cls.flip()
+        cls.set_caption(cls.win_data.title)
+        cls.toggle_full(cls.win_data.is_desktop)
+
+    @classmethod
+    def resset(cls) -> None:
+        cls.__release__()
+        cls()
+        if cls.win_data.flags & OPENGL:
+            cls.set_modern_gl_configs()
+        logger.debug(f'win.data = {cls.win_data}')
+
+    @classmethod
+    def set_modern_gl_configs(cls):
+        cls.context.enable(flags=cls.gl_data.flags)
+        cls.context.blend_func = cls.gl_data.blend_func
+        cls.set_viewport(vec4(*cls.gl_data.view_start, *cls.win_data.size))
+        # create interface surface
+        cls.interface = cls.gl_data.interface_class()
 
     @classmethod
     def set_modern_gl(cls):
@@ -54,11 +69,7 @@ class Graphics:
         """ set all mgl """
         cls.context = create_context()
 
-        cls.context.enable(flags=cls.gl_data.flags)
-        cls.context.blend_func = cls.gl_data.blend_func
-        cls.set_viewport(vec4(*cls.gl_data.view, *cls.win_data.size))
-        # create interface surface
-        cls.interface = cls.gl_data.interface_class()
+        cls.set_modern_gl_configs()
 
         logger.info(
             f"\n\tEngine graphic - init\n"
@@ -72,11 +83,54 @@ class Graphics:
     def set_viewport(cls, viewport: vec4):
         cls.context.viewport = viewport
 
+    @staticmethod
+    def set_icon(_img):
+        display.set_icon(_img)
+
+    @staticmethod
+    def set_caption(_caption):
+        display.set_caption(_caption)
+
     @classmethod
-    def get_display_index(cls):
-        # find window
-        win = getWindowsWithTitle(cls.win_data.title)[0]
+    def toggle_full(cls, is_desktop: bool = False):
+        """ toggle fullscreen """
+        if cls.win_data.full:
+            if cls.win_data.full:
+                # find window into any monitor
+                index, monitor = cls.get_current_monitor()
+                # calculate flags and sizes
+                size = vec2(monitor.width, monitor.height)
+                flags = Win.flags | FULLSCREEN
+            else:
+                index = EMPTY
+                size = Win.size
+                flags = Win.flags
+            # setting changes
+            cls.win_data = cls.win_data.extern(
+                {
+                    'size': size,
+                    'monitor': index,
+                }
+            )
+
+            if is_desktop:
+                cls.win_data.extern({'flags': flags})
+                cls.resset()
+            else:
+                display.toggle_fullscreen()
+
+    @staticmethod
+    def is_full():
+        return display.is_fullscreen()
+
+    @staticmethod
+    def get_current_size() -> vec2:
+        return vec2(display.get_window_size())
+
+    @classmethod
+    def get_current_monitor(cls):
         # iter on all monitors and find current window display
+        win = getWindowsWithTitle(cls.win_data.title)[0]
         for index, monitor in enumerate(cls.__monitors__):
             if monitor.x <= win.left and monitor.y <= win.top or \
                     monitor.x <= win.left + win.width and monitor.y <= win.top or \
@@ -87,63 +141,13 @@ class Graphics:
             return None, None
 
     @staticmethod
-    def set_icon(_img):
-        display.set_icon(_img)
-
-    @staticmethod
-    def set_caption(_caption):
-        display.set_caption(_caption)
+    def get_monitor_sizes() -> list[vec2]:
+        return list(map(vec2, display.get_desktop_sizes()))
 
     @classmethod
-    def toggle_full(cls, _is_full):
-        """ toggle fullscreen """
-        if _is_full != cls.is_full():
-            # find window into any monitor
-            index, monitor = cls.get_display_index()
-            # calculate flags and sizes
-            if not cls.is_full():
-                width = monitor.width
-                height = monitor.height
-                flags = Win.flags | FULLSCREEN
-            else:
-                width = Win.size[0]
-                height = Win.size[1]
-                index = EMPTY  # if not full change monitor on NONE
-                flags = Win.flags
-
-            # setting changes
-            cls.win_data = cls.win_data.extern(
-                {
-                    'width': width,
-                    'height': height,
-                    'monitor': index,
-                    'flags': flags
-                }
-            )
-
-            cls.resset()
-
-    @classmethod
-    def set_desktop_full(cls, _is_full):
-        """ Set full screen YES/NO  """
-        if _is_full != cls.is_full():
-            # calculate flags and sizes
-            if not cls.is_full():
-                flags = Win.flags | FULLSCREEN
-            else:
-                flags = Win.flags
-            # setting changes
-            cls.win_data = cls.win_data.extern(
-                {
-                    'flags': flags
-                }
-            )
-            cls.resset()
-            display.toggle_fullscreen()
-
-    @staticmethod
-    def is_full():
-        return display.is_fullscreen()
+    def get_current_monitor_size(cls) -> vec2:
+        index, monitor = cls.get_current_monitor()
+        return vec2(monitor.width, monitor.height)
 
     @staticmethod
     def set_cursor_mode(visible: bool = None, grab: bool = None) -> None:
@@ -164,37 +168,12 @@ class Graphics:
         display.flip()
 
     @classmethod
-    def resset(cls):
-        cls.window = Engine.graphic.Window(win_data=cls.win_data)
-        if cls.win_data.flags & OPENGL:
-            cls.set_viewport(vec4(*cls.gl_data.view, *cls.win_data.size))
-            cls.interface = cls.gl_data.interface_class()
-        logger.debug(f'win.data = {cls.win_data}')
-
-    @classmethod
-    def __release__(cls):
-        if cls.win_data and cls.win_data.flags & OPENGL:
+    def __release__(cls) -> None:
+        if cls.win_data is not EMPTY and cls.win_data.flags & OPENGL:
             try:
                 cls.interface.__destroy__()
                 cls.context.release()
             except Exception as exc:
                 logger.error(f'can`t release context, {exc.args[0]}')
-        if cls.window:
-            cls.window.__quit__()
-
-
-def event_window(_event: event.Event):
-    return getattr(_event, 'window', None)
-
-
-def get_desktop_sizes() -> list[tuple[int, int]]:
-    return display.get_desktop_sizes()
-
-
-def get_current_desktop_size() -> tuple[int, int]:
-    index, _ = Graphics.get_display_index()
-    return get_desktop_sizes()[index]
-
-
-def get_window_size() -> tuple[int, int]:
-    return display.get_window_size()
+        if cls.window is not EMPTY:
+            del cls.window

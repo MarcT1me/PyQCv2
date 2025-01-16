@@ -1,3 +1,5 @@
+import time
+
 import Engine
 from Engine.app import App
 from loguru import logger
@@ -13,20 +15,15 @@ class TestApp(App):
     def __win_date__(self) -> Engine.graphic.WinData:
         # set Window Data
         return Engine.graphic.WinData(
-            title="Test App",
-            size=Engine.math.vec2(1600, 900),
             flags=Engine.data.Win.flags | Engine.pg.OPENGL
         )
 
     def __gl_date__(self) -> Engine.graphic.GlData:
-        return Engine.graphic.GlData(
-            interface_class=Engine.graphic.HardInterface,
-            view=Engine.math.vec2(0, 0)
-        )
+        return Engine.graphic.GlData()
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        Engine.graphic.Graphics.set_icon(
+        App.win.set_icon(
             Engine.pg.image.load(
                 f"{Engine.data.File.APPLICATION_path}\\{Engine.data.File.APPLICATION_ICO_dir}"
                 f"\\{Engine.data.File.APPLICATION_ICO_name}"
@@ -36,7 +33,7 @@ class TestApp(App):
         self.fps_font = Engine.pg.font.SysFont("Arial", 30)
         self.rnd_fps_font: Engine.pg.Surface = None
 
-    @Engine.decorators.multithread
+    # @Engine.decorators.multithread
     @Engine.decorators.single_event
     def events(self, event) -> None:
         if event.type == Engine.pg.QUIT:
@@ -46,16 +43,9 @@ class TestApp(App):
                 App.running = False
             elif event.key == Engine.pg.K_g:
                 raise Exception("Test exception")
-        elif event.type == Engine.pg.WINDOWRESIZED:
-            Engine.graphic.Graphics.win_data.extern(
-                {
-                    "size": Engine.math.vec2(event.x, event.y)
-                }
-            )
-            Engine.graphic.Graphics.set_viewport(
-                Engine.math.vec4(*Engine.graphic.Graphics.gl_data.view, *Engine.graphic.Graphics.win_data.size)
-            )
-            Engine.graphic.Graphics.resset()
+        elif event.type == Engine.pg.VIDEORESIZE:
+            App.win.win_data.extern({"size": Engine.math.vec2(event.size)})
+            App.win.resset()
 
     def pre_update(self) -> None:
         ...
@@ -80,13 +70,15 @@ class TestApp(App):
     def on_failure(err: Engine.failures.Failure) -> None:
         App.on_failure(err)
 
+    @staticmethod
     @Engine.decorators.dev_only
-    def on_exit_print(self) -> None:
+    def on_exit_print() -> None:
         logger.debug("exiting from App")
 
-    def on_exit(self) -> None:
-        super().on_exit()
-        self.on_exit_print()
+    @staticmethod
+    def on_exit() -> None:
+        App.on_exit()
+        TestApp.on_exit_print()
 
 
 if __name__ == "__main__":

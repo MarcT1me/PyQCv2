@@ -21,10 +21,10 @@ Core.default = EMPTY
 
 """ Set Main Settings """
 # const
-Main.IS_RELEASE = NO
+Main.IS_RELEASE = YES
 # names
-Main.APPLICATION_name = 'Test'
-Main.APPLICATION_version = '0.1.1'
+Main.APPLICATION_name = 'Test App'
+Main.APPLICATION_version = '0.0.1'
 Main.ENGINE_name = Main.ENGINE_name
 
 """ Set File Settings """

@@ -13,14 +13,12 @@ def ENGDATA_IGNORE(f): return f
 You are allowed to use yourself.
 It is considered bad manners to create functions or overwrite them, not counting lambda
 """
-from Engine.data.config import Win, Main
+from Engine.data.config import Win
 from Engine import YES, NO
 from pygame import RESIZABLE
 
 """ Set Screen Settings """
-Win.DEFAULT_WIN_TITLE = Main.APPLICATION_name + ' | node window'
-# frame
-Win.title = 'Test gr.engconf'
+Win.title = Win.title
 Win.size = Win.size
 Win.fps = Win.fps
 Win.vsync = NO

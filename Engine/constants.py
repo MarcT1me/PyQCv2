@@ -21,7 +21,7 @@ class __EngineEmptyClass:
 
 """ types """
 # nullable date
-NULL = __EngineEmptyClass(0, 'NULL')
+NULL = 0
 EMPTY = __EngineEmptyClass(None, 'EMPTY')
 # file types
 BINARY = __EngineEmptyClass(BinaryIO, 'BINARY')
@@ -29,8 +29,8 @@ TEXT = __EngineEmptyClass(str, 'TEXT')
 # result
 SUCCESS = __EngineEmptyClass(200, 'SUCCESS')
 # boolean
-NO = __EngineEmptyClass(False, "NO")
-YES = __EngineEmptyClass(True, "YES")
+NO = False
+YES = True
 # flags
 VERTEX_SHADER = 2
 FRAGMENT_SHADER = 4

@@ -8,11 +8,11 @@ from inspect import stack
 from collections.abc import Mapping
 # engine
 import Engine
-from Engine.scripts import AttributesKeeper
+from Engine.arrays import AttributesKeeper
 from Engine.math import vec2
 
 
-class Main(AttributesKeeper):
+class Main:
     """ Main engine constants """
     IS_RELEASE: bool = False
     # string
@@ -21,25 +21,22 @@ class Main(AttributesKeeper):
     ENGINE_name = "Engine"
 
 
+@Engine.decorators.updatable
 class Core(AttributesKeeper): pass
 
 
-class Win(AttributesKeeper):
+@Engine.decorators.updatable
+class Win:
     """ Screen settings """
-    # default
-    DEFAULT_WIN_SIZE: 'Engine.math.vec2' = vec2(720, 480)
-    DEFAULT_WIN_TITLE: str = Main.APPLICATION_name + ' | node window'
-    DEFAULT_WIN_MONITOR: int = Engine.EMPTY
-    DEFAULT_WIN_VSYNC: bool = Engine.NULL.r
-    DEFAULT_WIN_FLAGS: bool = DOUBLEBUF
     # main window
-    size: 'Engine.math.vec2' = DEFAULT_WIN_SIZE
-    monitor: int = DEFAULT_WIN_MONITOR
-    title: str = 'My Engine Game'
-    vsync: bool = DEFAULT_WIN_VSYNC
-    flags: int = DEFAULT_WIN_FLAGS
+    size: 'Engine.math.vec2' = vec2(720, 480)
+    monitor: int = Engine.EMPTY
+    title: str = Main.APPLICATION_name + ' | node window'
+    vsync: bool = Engine.NULL
     full: bool = Engine.NO
-    fps: int = Engine.NULL.r
+    is_desktop: bool = Engine.NO
+    flags: int = DOUBLEBUF
+    fps: int = Engine.NULL
 
 
 class File:
@@ -183,5 +180,5 @@ class File:
                                 break
         data = ''.join(lines_data)
         logger.success(f'apply Engine configs from {name} eng-config')
-        with Engine.failures.Catch():
+        with Engine.failures.Catch(identifier=""):
             exec(data)

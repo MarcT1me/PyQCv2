@@ -16,7 +16,7 @@ from numpy import uint8
 # standard
 from time import time as uix_time
 # Engine
-from Engine.scripts.app_data import AttributesKeeper
+from Engine.arrays import AttributesKeeper
 from Engine.constants import EMPTY
 
 
