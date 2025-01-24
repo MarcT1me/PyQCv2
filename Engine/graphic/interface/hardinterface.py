@@ -10,7 +10,7 @@ class HardInterface:
     _a = 32.0
 
     def __init__(self) -> None:
-        self.surface = Engine.pg.Surface(Engine.graphic.Graphics.win_data.size, flags=Engine.pg.SRCALPHA)
+        self.surface = Engine.pg.Surface(Engine.graphic.Graphics.data.size, flags=Engine.pg.SRCALPHA)
 
         self.shader = Engine.graphic.GL.Shader(
             f"{Engine.data.File.__ENGINE_DATA__}\\{Engine.data.File.SHADER_dir}\\"

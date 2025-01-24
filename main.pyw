@@ -1,5 +1,3 @@
-import time
-
 import Engine
 from Engine.app import App
 from loguru import logger
@@ -11,6 +9,8 @@ class TestApp(App):
         # load config file
         Engine.data.File.reed_data()
         Engine.data.File.fill_default_data()
+
+        Engine.data.Win.fps = 30
 
     def __win_date__(self) -> Engine.graphic.WinData:
         # set Window Data
@@ -32,8 +32,9 @@ class TestApp(App):
 
         self.fps_font = Engine.pg.font.SysFont("Arial", 30)
         self.rnd_fps_font: Engine.pg.Surface = None
+        self.video_changed: bool = False
 
-    # @Engine.decorators.multithread
+    @Engine.decorators.multithread
     @Engine.decorators.single_event
     def events(self, event) -> None:
         if event.type == Engine.pg.QUIT:
@@ -44,17 +45,21 @@ class TestApp(App):
             elif event.key == Engine.pg.K_g:
                 raise Exception("Test exception")
         elif event.type == Engine.pg.VIDEORESIZE:
-            App.win.win_data.extern({"size": Engine.math.vec2(event.size)})
-            App.win.resset()
+            Engine.threading.Thread.set_important()
+            App.win.data.extern({"size": Engine.math.vec2(event.size)})
+            self.video_changed = True
+            Engine.threading.Thread.mute_important()
 
     def pre_update(self) -> None:
-        ...
+        if self.video_changed:
+            App.win.resset()
+            self.video_changed = False
 
     def update(self) -> None:
         ...
 
     def pre_render(self) -> None:
-        if self.clock.timer("fps_timer", 1 / 1500):
+        if self.clock.timer("fps_timer", 1 / 3):
             self.rnd_fps_font = self.fps_font.render(
                 f"fps: {int(round(self.clock.get_fps(), 0))}, "
                 f"interface_type: {Engine.graphic.Graphics.gl_data.interface_class.__name__}",

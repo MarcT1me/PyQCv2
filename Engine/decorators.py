@@ -17,8 +17,7 @@ def updatable(cls):
 def multithread(func):
     def wrapper(*args, **kwargs):
         Engine.threading.Thread(
-            target=lambda: func(*args, **kwargs),
-            identifier=f"{multithread}_{Engine.timing.pg_get_ticks()}_Thread__ENGINE__",
+            action=lambda: func(*args, **kwargs),
             daemon=True
         ).start()
 
@@ -47,7 +46,6 @@ def window_event(func):
 
 def sdl_render(func):
     def wrapper(self):
-        Engine.threading.Thread.join_roster()
         func(self)
         Engine.graphic.Graphics.flip()
 
@@ -56,7 +54,6 @@ def sdl_render(func):
 
 def gl_render(func):
     def wrapper(self):
-        Engine.threading.Thread.join_roster()
         Engine.graphic.Graphics.context.clear(
             color=Engine.graphic.Graphics.gl_data.clear_color
         )

@@ -113,7 +113,7 @@ class Builder:
             'progress': bld.scene.progress_list,
             'time':     QuantumCore.time.list_,
             'data':     {
-                'camera': QuantumCore.graphic.camera.camera.win_data,
+                'camera': QuantumCore.graphic.camera.camera.data,
                 'scene':  {
                     'objects': objects_data,
                     'lights':  bld.scene.lights_list[0],
@@ -181,7 +181,7 @@ class Builder:
             exec(object_code)
         
         if space['camera'] is not None:
-            QuantumCore.graphic.camera.camera.win_data = space['camera']
+            QuantumCore.graphic.camera.camera.data = space['camera']
         else:
             QuantumCore.graphic.camera.camera = QuantumCore.graphic.camera.Camera()
         exec(camera_code)

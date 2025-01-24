@@ -26,8 +26,12 @@ class AttributesKeeper:
 
 
 class Roster(dict):
+    def new_branch(self, name: str):
+        setattr(self, name, Roster())
+        return self
+
     def use(self, method_name: str, *args, calling_filter: Callable[[Any], bool], **kwargs):
-        for i in self.values():
+        for i in tuple(self.values()):
             if not calling_filter(i):
                 getattr(i, method_name)(*args, **kwargs)
 

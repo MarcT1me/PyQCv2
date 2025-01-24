@@ -47,13 +47,13 @@ class QuantumApp(App):
             elif event.key == Engine.pg.K_g:
                 raise Exception("Test exception")
         elif event.type == Engine.pg.WINDOWRESIZED:
-            Engine.graphic.Graphics.win_data.extern(
+            Engine.graphic.Graphics.data.extern(
                 {
                     "size": Engine.math.vec2(event.x, event.y)
                 }
             )
             Engine.graphic.Graphics.set_viewport(
-                Engine.math.vec4(*Engine.graphic.Graphics.gl_data.view_start, *Engine.graphic.Graphics.win_data.size)
+                Engine.math.vec4(*Engine.graphic.Graphics.gl_data.view_start, *Engine.graphic.Graphics.data.size)
             )
             Engine.graphic.Graphics.resset()
 

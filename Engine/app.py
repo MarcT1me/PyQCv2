@@ -48,7 +48,7 @@ class App(ABC):
         obj: App = super().__new__(cls)
         obj.__pre_init__(*args, **kwargs)
         Engine.graphic.Graphics.gl_data = obj.__gl_date__()
-        Engine.graphic.Graphics.win_data = obj.__win_date__()
+        Engine.graphic.Graphics.data = obj.__win_date__()
         return obj
 
     def __pre_init__(self, *args, **kwargs) -> None:
@@ -128,11 +128,19 @@ class App(ABC):
             App.event_list = Engine.pg.event.get()
             App.key_list = Engine.pg.key.get_pressed()
             self.events()
+            Engine.threading.Thread.waiting_pending()
+            Engine.threading.Thread.wait_worked()
             # update
             self.pre_update()
+            Engine.threading.Thread.waiting_pending()
+            Engine.threading.Thread.wait_worked()
             self.update()
+            Engine.threading.Thread.waiting_pending()
+            Engine.threading.Thread.wait_worked()
             # render
             self.pre_render()
+            Engine.threading.Thread.waiting_pending()
+            Engine.threading.Thread.wait_worked()
             self.render()
             # clok tick
             App.clock.tick(Engine.data.Win.fps)
