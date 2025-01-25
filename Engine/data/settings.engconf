@@ -21,7 +21,7 @@ Core.default = EMPTY
 
 """ Set Main Settings """
 # const
-Main.IS_RELEASE = YES
+Main.IS_RELEASE = NO
 # names
 Main.APPLICATION_name = 'Test App'
 Main.APPLICATION_version = '0.0.1'

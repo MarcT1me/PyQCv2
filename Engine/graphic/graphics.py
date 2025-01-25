@@ -4,7 +4,7 @@ from loguru import logger
 from typing import Optional
 # window utils
 from pygetwindow import getWindowsWithTitle
-from screeninfo import get_monitors
+from screeninfo import get_monitors, Monitor
 
 import Engine.graphic
 # for Graphics
@@ -31,13 +31,13 @@ class Graphics:
     """ other private """
     __monitors__ = get_monitors()
 
-    def __new__(cls):
+    def __new__(cls) -> None:
         cls.set_core()
         if cls.data.flags & OPENGL:
             cls.set_modern_gl()
 
     @classmethod
-    def set_core(cls):
+    def set_core(cls) -> None:
         """ set main variables"""
         cls.window = Engine.graphic.Window(win_data=cls.data)
         cls.set_caption(cls.data.title)
@@ -50,7 +50,7 @@ class Graphics:
         logger.debug(f'win.data = {cls.data}')
 
     @classmethod
-    def set_modern_gl_configs(cls):
+    def set_modern_gl_configs(cls) -> None:
         cls.context.enable(flags=cls.gl_data.flags)
         cls.context.blend_func = cls.gl_data.blend_func
         cls.set_viewport(vec4(*cls.gl_data.view_start, *cls.data.size))
@@ -58,7 +58,7 @@ class Graphics:
         cls.interface = cls.gl_data.interface_class()
 
     @classmethod
-    def set_modern_gl(cls):
+    def set_modern_gl(cls) -> None:
         """ set opengl attribute """
         display.gl_set_attribute(GL_CONTEXT_MAJOR_VERSION, cls.gl_data.minor_version)
         display.gl_set_attribute(GL_CONTEXT_MINOR_VERSION, cls.gl_data.minor_version)
@@ -78,19 +78,19 @@ class Graphics:
         )
 
     @classmethod
-    def set_viewport(cls, viewport: vec4):
+    def set_viewport(cls, viewport: vec4) -> None:
         cls.context.viewport = viewport
 
     @staticmethod
-    def set_icon(_img):
+    def set_icon(_img) -> None:
         display.set_icon(_img)
 
     @staticmethod
-    def set_caption(_caption):
+    def set_caption(_caption) -> None:
         display.set_caption(_caption)
 
     @classmethod
-    def toggle_full(cls, is_desktop: bool = False):
+    def toggle_full(cls, is_desktop: bool = False) -> None:
         """ toggle fullscreen """
         if cls.data.full:
             if cls.data.full:
@@ -118,7 +118,7 @@ class Graphics:
                 display.toggle_fullscreen()
 
     @staticmethod
-    def is_full():
+    def is_full() -> bool:
         return display.is_fullscreen()
 
     @staticmethod
@@ -126,7 +126,7 @@ class Graphics:
         return vec2(display.get_window_size())
 
     @classmethod
-    def get_current_monitor(cls):
+    def get_current_monitor(cls) -> tuple[int, Monitor]:
         # iter on all monitors and find current window display
         win = getWindowsWithTitle(cls.data.title)[0]
         for index, monitor in enumerate(cls.__monitors__):
@@ -139,7 +139,7 @@ class Graphics:
             return None, None
 
     @staticmethod
-    def get_monitor_sizes() -> list[vec2]:
+    def get_monitor_sizes() -> tuple[vec2]:
         return list(map(vec2, display.get_desktop_sizes()))
 
     @classmethod
@@ -162,7 +162,7 @@ class Graphics:
         mouse.set_cursor(system)
 
     @staticmethod
-    def flip():
+    def flip() -> None:
         display.flip()
 
     @classmethod

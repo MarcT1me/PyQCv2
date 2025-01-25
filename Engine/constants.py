@@ -12,7 +12,7 @@ class __EngineEmptyClass:
 
     def __repr__(self): return self.__str__()
 
-    def __bool__(self): return self.r
+    def __bool__(self): return bool(self.r)
 
     def __eq__(self, other): return self.r is other
 
@@ -27,7 +27,8 @@ EMPTY = __EngineEmptyClass(None, 'EMPTY')
 BINARY = __EngineEmptyClass(BinaryIO, 'BINARY')
 TEXT = __EngineEmptyClass(str, 'TEXT')
 # result
-SUCCESS = __EngineEmptyClass(200, 'SUCCESS')
+Success = __EngineEmptyClass(200, 'SUCCESS')
+NotFinished = __EngineEmptyClass(None, "NotFinished")
 # boolean
 NO = False
 YES = True

@@ -1,41 +1,45 @@
-﻿from typing import Callable, Any
+﻿from typing import Callable, Self, Any
 import Engine
 
 
-class AttributesKeeper:
-    """ A class that should store attributes and replace the dictionary """
+class AttributesKeeper(dict):
+    """Hybrid attribute-dictionary container with default values"""
 
-    def __new__(cls, default=Engine.EMPTY):
-        instance = super().__new__(cls)
-        instance._default = default
-        return instance
+    def __init__(self, default: Any = Engine.EMPTY, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._default = default
 
-    def __getitem__(self, item):
-        if hasattr(self, item):
-            exec(f'self.last = self.{item}')
-        else:
-            self.last = self._default
-        return self.last
+    def __getattr__(self, name):
+        if name in self:
+            return self[name]
+        return self.__dict__.get(name, self._default)
 
-    def __setitem__(self, key, value):
-        setattr(self, key, value)
+    def __setattr__(self, key, value):
+        if key in self.__dict__:  # Служебные атрибуты
+            self.__dict__[key] = value
+        elif key in self:  # Существующие ключи словаря
+            self[key] = value
+        else:  # Новые атрибуты
+            self.__dict__[key] = value
 
-    def __getattr__(self, item):
-        setattr(self, item, self._default)
-        return self._default
+    def __getitem__(self, key):
+        return super().get(key, self._default)
+
+    def __contains__(self, key):
+        return super().__contains__(key) or key in self.__dict__
 
 
-class Roster(dict):
-    def new_branch(self, name: str):
-        setattr(self, name, Roster())
+class Roster(AttributesKeeper):
+    def new_branch(self, name: str) -> Self:
+        self[name] = Roster(self._default)
         return self
 
-    def use(self, method_name: str, *args, calling_filter: Callable[[Any], bool], **kwargs):
+    def use(self, method_name: str, *args, calling_filter: Callable[[Any], bool], **kwargs) -> None:
         for i in tuple(self.values()):
             if not calling_filter(i):
                 getattr(i, method_name)(*args, **kwargs)
 
-    def release(self):
+    def release(self) -> None:
         for i in self.values():
             i.release()
         self.clear()

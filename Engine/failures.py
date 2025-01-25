@@ -49,13 +49,13 @@ class Catch:
         # Проверяем, является ли исключение экземпляром класса Exception или его подкласса
         if issubclass(exc_type, Failure):
             exc_val.catch_id = self.id
-            Engine.app.App.WorkAppType.on_failure(exc_val)
+            Engine.app.App.InheritedСlass.on_failure(exc_val)
         elif issubclass(exc_type, Exception):
             err: Failure = Failure(catch_id=self.id, critical=self.critical, err=exc_val)
-            Engine.app.App.WorkAppType.on_failure(err)
+            Engine.app.App.InheritedСlass.on_failure(err)
         else:
             err: Failure = Failure(catch_id=self.id, critical=self.critical, err=UnexpectedException(exc_val))
-            Engine.app.App.WorkAppType.on_failure(err)
+            Engine.app.App.InheritedСlass.on_failure(err)
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> True:
         if exc_type is not None:

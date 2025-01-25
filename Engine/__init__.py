@@ -6,10 +6,10 @@ import Engine.mgl
 
 """ Engine """
 from Engine.constants import *
-from Engine import decorators
 import Engine.arrays
-import Engine.data
 import Engine.threading
+from Engine import decorators
+import Engine.data
 # timing
 import Engine.timing
 # main `graphic` module and main graphic class

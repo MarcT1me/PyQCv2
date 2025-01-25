@@ -8,87 +8,100 @@ start - Временная отметка с запуска программы (
 
 global_time - Список счётчиков
  """
-from pygame.time import Clock as pg_Clock
-from pygame.time import get_ticks as pg_get_ticks
-from pygame.time import wait as pg_wait
-from pygame.event import Event, post
+from pygame.time import Clock as _pg_Clock
+from pygame.time import get_ticks
+from pygame.time import wait
 from numpy import uint8
 # standard
 from time import time as uix_time
 # Engine
-from Engine.arrays import AttributesKeeper
-from Engine.constants import EMPTY
+import Engine
 
 
 class Clock:
+    """Engine time manager with deferred events and timers
+
+    Attributes:
+        delta (float): Time between last two ticks in seconds
+        start (float): Timestamp of Clock initialization
+    """
+
     def __init__(self):
-        self.__pg_cl = pg_Clock()
-        
+        self.__pg_clock = _pg_Clock()
         self.start: float = uix_time()
-        self.delta: float = 0
-        
-        self.roster = AttributesKeeper(default=0)
-    
+        self.delta: float = 0.0
+
+        # Initialize roster with dedicated branches
+        self.roster = Engine.arrays.Roster(default=0)
+        self.roster.new_branch("timers")
+        self.roster.new_branch("deferred_events")
+        self.__event_counter = uint8(0)
+
     def get_fps(self) -> float:
-        return self.__pg_cl.get_fps()
-    
+        """Get current FPS count"""
+        return self.__pg_clock.get_fps()
+
     def get_time(self) -> int:
-        return self.__pg_cl.get_time()
+        """Get milliseconds since last tick"""
+        return self.__pg_clock.get_time()
 
     @staticmethod
-    def wait(*args, **kwargs):
-        pg_wait(*args, **kwargs)
-    
+    def wait(ms: int) -> None:
+        """Wait specified milliseconds"""
+        wait(ms)
+
     @staticmethod
     def get_ticks() -> int:
-        return pg_get_ticks()
-    
-    def tick(self, fps: float):
-        self._expectation()
-        self.delta = self.__pg_cl.tick(fps)
-    
+        """Get milliseconds since program start"""
+        return get_ticks()
+
+    def tick(self, fps: float = 0) -> float:
+        """Update clock and process deferred events"""
+        self._process_deferred()
+        return self.__pg_clock.tick(fps)
+
     def timer(self, name: str, cooldown: float) -> bool:
-        """ A timer is a function that decides whether a time cycle is suitable for performing some kind of action
-        tied to waiting for time """
+        """Check if timer is ready to trigger"""
         current_time = uix_time()
-        if current_time - self.roster[name] >= cooldown:
-            self.roster[name] = current_time
+        last_time = self.roster.timers[name]
+
+        if current_time - last_time >= cooldown:
+            self.roster.timers[name] = current_time
             return True
         return False
-    
-    __increment = uint8(0)
-    
-    def _expectation(self):
+
+    def defer_event(self, event: Engine.pg.event.Event, delay: float) -> None:
+        """Schedule event for deferred execution"""
+        event_key = f"def_{self.__event_counter}"
+        self.__event_counter += 1
+
+        event.configure(
+            name=event_key,
+            used=False,
+            start=uix_time(),
+            delay=delay,
+            end=uix_time() + delay
+        )
+
+        self.roster.deferred_events[event_key] = event
+
+    def cancel_deferred(self, event: Engine.pg.event.Event) -> None:
+        """Cancel scheduled deferred event"""
+        if event.name in self.roster.deferred_events:
+            del self.roster.deferred_events[event.name]
+        event.used = True
+
+    def _process_deferred(self) -> None:
+        """Process and trigger ready deferred events"""
         current_time = uix_time()
-        for name, double in vars(self.roster).items():
-            if not name.startswith('__') and name.startswith('wait_'):
-                if double[1] <= current_time:
-                    # redefining basic values
-                    double[1] = EMPTY
-                    double[0].used = True
-                    # setting the actual end time
-                    double[0].end = current_time
-                    post(double[0])  # push event in event list
-                
-    def stop_expect(self, event: Event):
-        try:
-            self.roster.__delattr__(event.name)
-        except AttributeError:
-            event.used = True
-    
-    def expect(self, event: Event, _seconds: float):
-        # find name
-        key = f'wait_{self.__increment}'
-        # create Event
-        event.name = key
-        event.used = False
-        # calculate time params
-        current_time = uix_time()
-        end = current_time+_seconds
-        # set time params
-        event.start = current_time
-        event.end = end
-        event.delay = _seconds
-        # push event data in roster
-        self.roster[key] = (event, end)
-        self.__increment  = uint8(self.__increment + 1)
+        to_remove = []
+
+        for event_key, event in self.roster.deferred_events.items():
+            if event.end <= current_time:
+                event.used = True
+                event.end = current_time
+                Engine.pg.event.post(event)
+                to_remove.append(event_key)
+
+        for key in to_remove:
+            del self.roster.deferred_events[key]
