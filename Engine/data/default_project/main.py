@@ -20,7 +20,7 @@ class QuantumApp(App):
 
     def __gl_date__(self) -> Engine.graphic.GlData:
         return Engine.graphic.GlData(
-            interface_class=Engine.graphic.HardInterface,
+            interface_type=Engine.graphic.HardInterface,
             view_start=Engine.math.vec2(0, 0)
         )
 
@@ -47,13 +47,13 @@ class QuantumApp(App):
             elif event.key == Engine.pg.K_g:
                 raise Exception("Test exception")
         elif event.type == Engine.pg.WINDOWRESIZED:
-            Engine.graphic.Graphics.data.extern(
+            Engine.graphic.Graphics.win_data.extern(
                 {
                     "size": Engine.math.vec2(event.x, event.y)
                 }
             )
             Engine.graphic.Graphics.set_viewport(
-                Engine.math.vec4(*Engine.graphic.Graphics.gl_data.view_start, *Engine.graphic.Graphics.data.size)
+                Engine.math.vec4(*Engine.graphic.Graphics.gl_data.view_start, *Engine.graphic.Graphics.win_data.size)
             )
             Engine.graphic.Graphics.resset()
 
@@ -67,7 +67,7 @@ class QuantumApp(App):
         if self.clock.timer("fps_timer", 1 / 1500):
             self.rnd_fps_font = self.fps_font.render(
                 f"fps: {int(round(self.clock.get_fps(), 0))}, "
-                f"interface_type: {Engine.graphic.Graphics.gl_data.interface_class.__name__}",
+                f"interface_type: {Engine.graphic.Graphics.gl_data.interface_type.__name__}",
                 True, "white"
             )
 

@@ -9,7 +9,6 @@ from collections.abc import Mapping
 # engine
 import Engine
 from Engine.arrays import AttributesKeeper
-from Engine.math import vec2
 
 
 class Main:
@@ -29,14 +28,16 @@ class Core(AttributesKeeper): pass
 class Win:
     """ Screen settings """
     # main window
-    size: 'Engine.math.vec2' = vec2(720, 480)
+    size: tuple = (720, 480)
     monitor: int = Engine.EMPTY
-    title: str = Main.APPLICATION_name + ' | node window'
+    name: str = Main.APPLICATION_name + ' | node window'
     vsync: bool = Engine.NULL
     full: bool = Engine.NO
     is_desktop: bool = Engine.NO
     flags: int = DOUBLEBUF
     fps: int = Engine.NULL
+
+    update: 'ClassVar[classmethod[None, dict[str, Any]]]'  # type: ignore
 
 
 class File:
@@ -121,7 +122,7 @@ class File:
             exec(f"""from {File.config_ext} import load; File.data = File._load(load)""")
 
         for key, value in File.data.items():
-            exec(f"""{key}.update(value)""")
+            getattr(getattr(Engine.data.config, key), "update")(value)
 
     @staticmethod
     def save_data() -> None:

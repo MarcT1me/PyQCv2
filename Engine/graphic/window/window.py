@@ -21,7 +21,7 @@ class Window:
         self.__pg_win__ = set_mode(**kwargs)
 
     def __repr__(self):
-        return f'<IWindow: t=\'{config.Win.title}\' s={get_window_size()}>'
+        return f'<IWindow: t=\'{config.Win.name}\' s={get_window_size()}>'
 
     def blit(self, *args, **kwargs):
         self.__pg_win__.blit(*args, **kwargs)

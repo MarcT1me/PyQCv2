@@ -16,4 +16,3 @@ class MeshData(AssetData):
     skeleton_id: Optional[str] = None
 
     collision_mesh_id: Optional[str] = None
-

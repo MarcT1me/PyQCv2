@@ -1,6 +1,7 @@
 ﻿""" Engine CONSTANTS
 """
 from typing import BinaryIO
+from enum import Flag, auto
 
 
 class __EngineEmptyClass:
@@ -33,7 +34,8 @@ NotFinished = __EngineEmptyClass(None, "NotFinished")
 NO = False
 YES = True
 # flags
-VERTEX_SHADER = 2
-FRAGMENT_SHADER = 4
-GEOMETRY_SHADER = 8
-COMPUTE_SHADER = 16
+class ShaderType(Flag):
+    VERTEX_SHADER = auto()
+    FRAGMENT_SHADER = auto()
+    GEOMETRY_SHADER = auto()
+    COMPUTE_SHADER = auto()

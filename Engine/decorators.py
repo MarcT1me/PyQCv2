@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Any, Callable, Self, Optional, Type, TypeVar, cast
+from typing import Any, Callable, Self, Optional, Type, TypeVar, cast, ClassVar
 import inspect
 import Engine
 

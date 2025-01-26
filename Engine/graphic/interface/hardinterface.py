@@ -5,24 +5,24 @@ import Engine
 
 
 class HardInterface:
-    _s = "RGBA"
-    _f = (Engine.mgl.NEAREST, Engine.mgl.NEAREST)
-    _a = 32.0
+    swizzle = "RGBA"
+    filter = (Engine.mgl.NEAREST, Engine.mgl.NEAREST)
+    anisotropy = 32.0
 
     def __init__(self) -> None:
-        self.surface = Engine.pg.Surface(Engine.graphic.Graphics.data.size, flags=Engine.pg.SRCALPHA)
+        self.surface = Engine.pg.Surface(Engine.graphic.Graphics.gl_data.interface_resolution, flags=Engine.pg.SRCALPHA)
 
         self.shader = Engine.graphic.GL.Shader(
             f"{Engine.data.File.__ENGINE_DATA__}\\{Engine.data.File.SHADER_dir}\\"
-            f"interface",
-            Engine.VERTEX_SHADER | Engine.FRAGMENT_SHADER,
+            "interface",
+            Engine.ShaderType.VERTEX_SHADER | Engine.ShaderType.FRAGMENT_SHADER,
             Engine.TEXT
         )
 
         self.texture: Engine.mgl.Texture = Engine.graphic.Graphics.context.texture(self.surface.get_size(), 4)
-        self.texture.filter, self.texture.swizzle = self._f, self._s
+        self.texture.filter, self.texture.swizzle = (Engine.mgl.NEAREST, Engine.mgl.NEAREST), self.swizzle
         self.texture.build_mipmaps()
-        self.texture.anisotropy = self._a
+        self.texture.anisotropy = self.anisotropy
 
         self.__vbo = Engine.graphic.Graphics.context.buffer(data=array('f', [
             # position (x, y), uv cords (x, y)

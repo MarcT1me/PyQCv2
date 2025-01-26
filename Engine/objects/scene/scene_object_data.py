@@ -3,6 +3,7 @@ from typing import Optional
 
 from Engine.objects.object.object_data import ObjectData
 
+
 @dataclass(init=True)
 class SceneObjectData(ObjectData):
     parent: Optional[str] = None

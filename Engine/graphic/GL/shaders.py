@@ -6,8 +6,7 @@ from loguru import logger
 # Engine
 from Engine.constants import (
     EMPTY, BINARY, TEXT, NULL,
-    VERTEX_SHADER, FRAGMENT_SHADER,
-    COMPUTE_SHADER, GEOMETRY_SHADER,
+    ShaderType,
 )
 from Engine.data.config import File
 import Engine.graphic
@@ -18,16 +17,16 @@ class Shader:
         """ Shader """
         self.id = EMPTY  # him id
         """ selecting a type and creating a program """
-        if shader_type & COMPUTE_SHADER:
+        if shader_type & ShaderType.COMPUTE_SHADER:
             self.program: moderngl.Program = Engine.graphic.Graphics.context.compute_shader(
                 self.__read_file__(_path + '.glsl', file_type)
             )
         else:
             program_kwargs = {}
-            if shader_type & VERTEX_SHADER and shader_type & FRAGMENT_SHADER:
+            if shader_type & ShaderType.VERTEX_SHADER and shader_type & ShaderType.FRAGMENT_SHADER:
                 program_kwargs['vertex_shader'] = self.__read_file__(_path + '.vert', file_type)
                 program_kwargs['fragment_shader'] = self.__read_file__(_path + '.frag', file_type)
-            if shader_type & GEOMETRY_SHADER:
+            if shader_type & ShaderType.GEOMETRY_SHADER:
                 program_kwargs['geometry_shader'] = self.__read_file__(_path + '.glsl', file_type)
             # simple program creating
             self.program: moderngl.Program = Engine.graphic.Graphics.context.program(**program_kwargs)
@@ -79,7 +78,7 @@ class ShadersProgram:
         if len(cls.roster) is NULL:
             cls.roster['default-main'] = Shader(
                 rf'{File.__ENGINE_DATA__}\shaders\default\main',
-                VERTEX_SHADER | FRAGMENT_SHADER
+                ShaderType.VERTEX_SHADER | ShaderType.FRAGMENT_SHADER
             )
 
     @classmethod

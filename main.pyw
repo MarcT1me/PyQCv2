@@ -10,13 +10,16 @@ class TestApp(App):
         Engine.data.File.reed_data()
         Engine.data.File.fill_default_data()
 
-    def __win_date__(self) -> Engine.graphic.WinData:
+    @staticmethod
+    def __win_date__() -> Engine.graphic.WinData:
         # set Window Data
         return Engine.graphic.WinData(
+            name="Main Window",
             flags=Engine.data.Win.flags | Engine.pg.OPENGL
         )
 
-    def __gl_date__(self) -> Engine.graphic.GlData:
+    @staticmethod
+    def __gl_date__() -> Engine.graphic.GlData:
         return Engine.graphic.GlData()
 
     def __init__(self) -> None:
@@ -33,6 +36,7 @@ class TestApp(App):
 
     def __post_init__(self) -> None:
         super().__post_init__()
+        print(Engine.graphic.HardInterface.filter[0] == Engine.mgl.LINEAR)
 
     @Engine.decorators.deferrable_threadsafe
     @Engine.decorators.single_event
@@ -48,7 +52,7 @@ class TestApp(App):
             elif event.key == Engine.pg.K_t:
                 Engine.threading.Thread(action=lambda: print("Hello from thread")).start()
         elif event.type == Engine.pg.VIDEORESIZE:
-            App.win.data.extern({"size": Engine.math.vec2(event.size)})
+            App.win.win_data.extern({"size": Engine.math.vec2(event.size)})
             self.events.defer(App.win.resset)
 
     def pre_update(self) -> None:
@@ -61,7 +65,7 @@ class TestApp(App):
         if self.clock.timer("fps_timer", 1 / 3):
             self.rnd_fps_font = self.fps_font.render(
                 f"fps: {int(round(self.clock.get_fps(), 0))}, "
-                f"interface_type: {Engine.graphic.Graphics.gl_data.interface_class.__name__}",
+                f"interface_type: {Engine.graphic.Graphics.gl_data.interface_type.__name__}",
                 True, "white"
             )
 

@@ -3,7 +3,7 @@
 from loguru import logger
 # default
 from abc import abstractmethod, ABC
-from typing import Type, List, Dict, Self, ClassVar, TYPE_CHECKING
+from typing import Type, List, Dict, Self, TYPE_CHECKING
 
 # Engine import
 import Engine
@@ -14,13 +14,16 @@ class EventThread(Engine.threading.Thread):
     """ Thread class for Handling GUI Events """
     _roster: Engine.arrays.Roster[str, Engine.threading.Thread] = Engine.threading.Thread.create_roster()
 
+
 class PreUpdateThread(Engine.threading.Thread):
     """ Thread class for pre updating app """
     _roster: Engine.arrays.Roster[str, Engine.threading.Thread] = Engine.threading.Thread.create_roster()
 
+
 class UpdateThread(Engine.threading.Thread):
     """ Thread class for updating app """
     _roster: Engine.arrays.Roster[str, Engine.threading.Thread] = Engine.threading.Thread.create_roster()
+
 
 class PreRenderThread(Engine.threading.Thread):
     """ Thread class for pre rendering app """
@@ -65,7 +68,7 @@ class App(ABC):
         """ creating App class """
         obj: App = super().__new__(cls)
         obj.__pre_init__()
-        Engine.graphic.Graphics.data = obj.__win_date__()
+        Engine.graphic.Graphics.win_data = obj.__win_date__()
         Engine.graphic.Graphics.gl_data = obj.__gl_date__()
         return obj
 
@@ -76,13 +79,15 @@ class App(ABC):
         Engine.data.File.load_engine_config('settings')  # general
         Engine.data.File.load_engine_config('graphics')  # graphics
 
-    def __gl_date__(self) -> Engine.graphic.GlData:
+    @staticmethod
+    @abstractmethod
+    def __win_date__() -> Engine.graphic.WinData:
+        """ Pre-initialisation main Window. Before main __init__ """
+
+    @staticmethod
+    def __gl_date__() -> Engine.graphic.GlData:
         """ Pre-initialisation Graphic Libreary. Before main __init__ """
         return
-
-    @abstractmethod
-    def __win_date__(self) -> Engine.graphic.WinData:
-        """ Pre-initialisation main Window. Before main __init__ """
 
     def __init__(self) -> None:
         """ Main app initialisation.

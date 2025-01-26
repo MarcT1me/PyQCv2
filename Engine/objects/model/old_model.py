@@ -77,9 +77,9 @@ class BaseModel:
         render_area = self.render_area if render_area is None else render_area
         
         if all(
-                (abs(self.metadata.pos[0] - self.camera.data.pos[0]) <= render_area * 1.2,
-                 abs(self.metadata.pos[1] - self.camera.data.pos[1]) <= render_area * 1.2,
-                 abs(self.metadata.pos[2] - self.camera.data.pos[2]) <= render_area * 1.2)
+                (abs(self.metadata.pos[0] - self.camera.win_data.pos[0]) <= render_area * 1.2,
+                 abs(self.metadata.pos[1] - self.camera.win_data.pos[1]) <= render_area * 1.2,
+                 abs(self.metadata.pos[2] - self.camera.win_data.pos[2]) <= render_area * 1.2)
         ):
             return True
         return False
@@ -188,7 +188,7 @@ ATTENTION!!! ModelName to be match in all place ATTENTION!!!"""
         self.texture.use(0)
         
         # rewrite GLSL variable
-        self.shader_program['camPos'].write(self.camera.data.pos)
+        self.shader_program['camPos'].write(self.camera.win_data.pos)
         self.shader_program['m_view'].write(self.camera.m_view)
         self.shader_program['m_model'].write(self.m_model)
     

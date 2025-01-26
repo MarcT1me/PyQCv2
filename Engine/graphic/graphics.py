@@ -21,8 +21,9 @@ from Engine.math import vec4, vec2
 
 
 class Graphics:
-    data: 'Engine.graphic.WinData' = EMPTY  # Window configs
-    window: 'Engine.graphic.Window' = EMPTY  # Window
+    win_data: 'Engine.graphic.WinData'  # Window configs
+    window: 'Engine.graphic.Window'  # Window
+
     gl_data: 'Optional[Engine.graphic.GlData]' = EMPTY
     context: 'Optional[Engine.mgl.Context]' = EMPTY  # MGL context
 
@@ -33,29 +34,31 @@ class Graphics:
 
     def __new__(cls) -> None:
         cls.set_core()
-        if cls.data.flags & OPENGL:
+        if cls.win_data.flags & OPENGL:
             cls.set_modern_gl()
 
     @classmethod
     def set_core(cls) -> None:
         """ set main variables"""
-        cls.window = Engine.graphic.Window(win_data=cls.data)
-        cls.set_caption(cls.data.title)
-        cls.toggle_full(cls.data.is_desktop)
+        from Engine.app import App
+        cls.win_data = App.InheritedСlass.__win_date__()
+        cls.gl_data = App.InheritedСlass.__gl_date__()
+        cls.window = Engine.graphic.Window(win_data=cls.win_data)
+        cls.set_caption(cls.win_data.name)
+        cls.toggle_full(cls.win_data.is_desktop)
 
     @classmethod
     def resset(cls) -> None:
         cls.__release__()
         cls()
-        logger.debug(f'win.data = {cls.data}')
 
     @classmethod
     def set_modern_gl_configs(cls) -> None:
         cls.context.enable(flags=cls.gl_data.flags)
         cls.context.blend_func = cls.gl_data.blend_func
-        cls.set_viewport(vec4(*cls.gl_data.view_start, *cls.data.size))
+        cls.set_viewport(cls.gl_data.view)
         # create interface surface
-        cls.interface = cls.gl_data.interface_class()
+        cls.interface = cls.gl_data.interface_type()
 
     @classmethod
     def set_modern_gl(cls) -> None:
@@ -72,7 +75,7 @@ class Graphics:
         logger.info(
             f"\n\tEngine graphic - init\n"
             f"screen:\n"
-            f"\tWinData = {cls.data};\n"
+            f"\tWinData = {cls.win_data};\n"
             f"context:\n"
             f"\tsize = {cls.context.screen.size} \tGPU = {cls.context.info['GL_RENDERER']};\n"
         )
@@ -92,8 +95,8 @@ class Graphics:
     @classmethod
     def toggle_full(cls, is_desktop: bool = False) -> None:
         """ toggle fullscreen """
-        if cls.data.full:
-            if cls.data.full:
+        if cls.win_data.full:
+            if cls.win_data.full:
                 # find window into any monitor
                 index, monitor = cls.get_current_monitor()
                 # calculate flags and sizes
@@ -104,7 +107,7 @@ class Graphics:
                 size = Win.size
                 flags = Win.flags
             # setting changes
-            cls.data = cls.data.extern(
+            cls.win_data = cls.win_data.extern(
                 {
                     'size': size,
                     'monitor': index,
@@ -112,7 +115,7 @@ class Graphics:
             )
 
             if is_desktop:
-                cls.data.extern({'flags': flags})
+                cls.win_data.extern({'flags': flags})
                 cls.resset()
             else:
                 display.toggle_fullscreen()
@@ -128,7 +131,7 @@ class Graphics:
     @classmethod
     def get_current_monitor(cls) -> tuple[int, Monitor]:
         # iter on all monitors and find current window display
-        win = getWindowsWithTitle(cls.data.title)[0]
+        win = getWindowsWithTitle(cls.win_data.name)[0]
         for index, monitor in enumerate(cls.__monitors__):
             if monitor.x <= win.left and monitor.y <= win.top or \
                     monitor.x <= win.left + win.width and monitor.y <= win.top or \
@@ -167,7 +170,7 @@ class Graphics:
 
     @classmethod
     def __release__(cls) -> None:
-        if cls.data is not EMPTY and cls.data.flags & OPENGL:
+        if cls.win_data is not EMPTY and cls.win_data.flags & OPENGL:
             try:
                 cls.interface.__destroy__()
                 cls.context.release()
