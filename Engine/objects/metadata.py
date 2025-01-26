@@ -5,13 +5,14 @@ import Engine
 
 
 @dataclass
-class MetaDate:
+class MetaData:
+    name: str = ""
     id: str = field(default_factory=uuid4)
-    time_stamp: int = field(default_factory=Engine.timing.Clock.get_ticks)
+    time_stamp: int = field(default_factory=Engine.timing.uix_time)
 
     def extern(self, changes: dict) -> Self:
         """ extern ths win_data and return new """
         for var, value in changes.items():
-            exec(f"self.{var} = value")
-            exec(f"Engine.data.Win.{var} = value")
+            setattr(self, var, value)
+            setattr(Engine.data.Win, var, value)
         return self

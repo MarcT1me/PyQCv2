@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
-from Engine.objects import MetaDate
+from Engine.objects import MetaData
 from Engine.math import vec2
 from Engine.data.config import Win
 
 
 @dataclass
-class WinData(MetaDate):
+class WinData(MetaData):
     id: str = "Main"
     """ data for every engine window """
     size: vec2 = field(default_factory=lambda: Win.size)

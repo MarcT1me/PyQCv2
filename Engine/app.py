@@ -59,7 +59,7 @@ class App(ABC):
     joysticks: Dict[int, Engine.pg.joystick.JoystickType] = {}
 
     """ Scene and space context """
-    root_scene: Engine.scene.Scene = Engine.EMPTY
+    root_scene: Engine.objects.Scene = Engine.EMPTY
 
     def __new__(cls, *args, **kwargs):
         """ creating App class """

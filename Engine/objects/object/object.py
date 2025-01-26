@@ -1,6 +1,6 @@
-from Engine.objects.metadate import MetaDate
+from Engine.objects.metadata import MetaData
 
 
 class Object:
-    def __init__(self, *, metadate: MetaDate):
+    def __init__(self, *, metadate: MetaData):
         ...

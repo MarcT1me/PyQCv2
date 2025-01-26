@@ -5,7 +5,7 @@ import Engine
 
 
 @dataclass
-class Failure(Exception, Engine.objects.MetaDate):
+class Failure(Exception, Engine.objects.MetaData):
     catch_id: str | None = field(default=None)
     critical: bool = field(default=True)
     err: Warning = field(default_factory=lambda: RuntimeError("Failure.err is Empty"))

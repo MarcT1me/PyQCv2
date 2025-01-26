@@ -16,7 +16,6 @@ import Engine.timing
 import Engine.graphic
 # space context
 import Engine.objects
-import Engine.scene
 # other
 import Engine.lscript
 import Engine.failures
