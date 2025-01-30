@@ -1,4 +1,3 @@
-from Engine.objects.metadata import MetaData
 from Engine.objects.object import ObjectData, Object
 from Engine.objects.render_object import RenderMetaData, RenderObject
 

@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Self, Optional
 
-from Engine.objects import MetaData
+from Engine.data import MetaData
 from Engine.math import vec4, vec2
 from Engine.mgl import (DEPTH_TEST, CULL_FACE, BLEND,
                         SRC_ALPHA, ONE_MINUS_SRC_ALPHA)

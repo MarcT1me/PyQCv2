@@ -3,7 +3,7 @@
 from loguru import logger
 # default
 from abc import abstractmethod, ABC
-from typing import Type, List, Dict, Self, TYPE_CHECKING
+from typing import Type, List, Dict, Self, Any, TYPE_CHECKING
 
 # Engine import
 import Engine
@@ -60,6 +60,7 @@ class App(ABC):
     event_list: List[Engine.pg.event.EventType] = []
     key_list: Engine.pg.key.ScancodeWrapper = []
     joysticks: Dict[int, Engine.pg.joystick.JoystickType] = {}
+    audio_devices: Dict[int, Any] = {}
 
     """ Scene and space context """
     root_scene: Engine.objects.Scene = Engine.EMPTY
@@ -114,10 +115,44 @@ class App(ABC):
                 setattr(App.InheritedСlass, method_name, deferred_method)
 
     def __repr__(self) -> str:
-        return f'<class: App; running={self.running}>'
+        return f'<App: {Engine.data.Main.APPLICATION_name} (running={self.running}, failures={self.failures})>'
 
     def __str__(self) -> str:
-        return f'<{"running" if self.running else "stoped"} App>'
+        return f'<{"running" if self.running else "stopped"} {Engine.data.Main.APPLICATION_name} App>'
+
+    @Engine.decorators.with_store(already_handled=False)
+    @Engine.decorators.window_event(already_single=True)
+    def default_event_handling(self, *, event: Engine.pg.event.Event, window: int | None):
+        """ Engine default event handling """
+        if self.default_event_handling.already_handled:
+            self.default_event_handling.already_handled = False
+            return
+
+        if event.type == Engine.pg.QUIT:
+            App.running = False
+        elif event.type == Engine.pg.WINDOWRESIZED:
+            if window:
+                ...
+            else:
+                App.win.win_data.extern({"size": Engine.math.vec2(event.x, event.y)})
+                self.events.defer(App.win.resset)
+        elif event.type == Engine.pg.WINDOWMOVED:
+            if window:
+                ...
+        elif event.type == Engine.pg.WINDOWDISPLAYCHANGED:
+            if window:
+                ...
+            else:
+                App.win.win_data.extern({"monitor": event.display_index})
+        elif event.type == Engine.pg.JOYDEVICEADDED:
+            joy = Engine.pg.joystick.Joystick(event.device_index)
+            App.joysticks[joy.get_instance_id()] = joy
+        elif event.type == Engine.pg.JOYDEVICEREMOVED:
+            del App.joysticks[event.instance_id]
+        elif event.type == Engine.pg.AUDIODEVICEADDED:
+            ...
+        elif event.type == Engine.pg.AUDIODEVICEREMOVED:
+            ...
 
     # events
     if TYPE_CHECKING:

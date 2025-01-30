@@ -36,24 +36,20 @@ class TestApp(App):
 
     def __post_init__(self) -> None:
         super().__post_init__()
-        print(Engine.graphic.HardInterface.filter[0] == Engine.mgl.LINEAR)
 
     @Engine.decorators.deferrable_threadsafe
     @Engine.decorators.single_event
     @Engine.decorators.multithread(thread_class=EventThread)
-    def events(self, event, thread) -> None:
-        if event.type == Engine.pg.QUIT:
-            App.running = False
-        elif event.type == Engine.pg.KEYDOWN:
+    def events(self, *, event, thread) -> None:
+        if event.type == Engine.pg.KEYDOWN:
             if event.key == Engine.pg.K_ESCAPE:
                 App.running = False
             elif event.key == Engine.pg.K_g:
                 raise Exception("Test exception")
             elif event.key == Engine.pg.K_t:
                 Engine.threading.Thread(action=lambda: print("Hello from thread")).start()
-        elif event.type == Engine.pg.VIDEORESIZE:
-            App.win.win_data.extern({"size": Engine.math.vec2(event.size)})
-            self.events.defer(App.win.resset)
+
+        self.default_event_handling(self, event=event)
 
     def pre_update(self) -> None:
         ...

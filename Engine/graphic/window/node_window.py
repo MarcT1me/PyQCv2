@@ -2,7 +2,7 @@
 from pygame.rect import Rect
 from pygame.constants import FULLSCREEN, RESIZABLE, NOFRAME
 import pygame._sdl2.video as sdl2_video
-# engine
+
 from Engine.graphic.graphics import Graphics
 from Engine.graphic.window.node_win_data import NodeWinData
 from Engine.data.config import Win

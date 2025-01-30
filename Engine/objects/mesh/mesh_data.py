@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
-from Engine.objects.assets.asset_data import AssetData
+from Engine.data import AssetData
 from Engine.math import vec3
 
 

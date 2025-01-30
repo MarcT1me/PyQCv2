@@ -3,7 +3,6 @@
 import moderngl
 from loguru import logger
 
-# Engine
 from Engine.constants import (
     EMPTY, BINARY, TEXT, NULL,
     ShaderType,

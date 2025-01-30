@@ -3,7 +3,7 @@ from typing import Self
 
 from Engine.math import vec2
 from Engine.data.config import Win
-from Engine.objects.metadata import MetaData
+from Engine.data import MetaData
 
 
 @dataclass

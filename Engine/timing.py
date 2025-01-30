@@ -1,13 +1,5 @@
-""" Engine time counter
-Total time management file for all engine functions
-uses the time module
-
-DESCRIPTION OF VARIABLES
-delta - Время между 2-мя итерациями цикла App
-start - Временная отметка с запуска программы (import)
-
-global_time - Список счётчиков
- """
+""" Engine time manager
+"""
 from pygame.time import Clock as _pg_Clock
 from pygame.time import get_ticks
 from pygame.time import wait
@@ -75,13 +67,13 @@ class Clock:
         event_key = f"def_{self.__event_counter}"
         self.__event_counter += 1
 
-        event.configure(
-            name=event_key,
-            used=False,
-            start=uix_time(),
-            delay=delay,
-            end=uix_time() + delay
-        )
+        event.__dict__.update({
+            "name": event_key,
+            "used": False,
+            "start": uix_time(),
+            "delay": delay,
+            "end": uix_time() + delay
+        })
 
         self.roster.deferred_events[event_key] = event
 

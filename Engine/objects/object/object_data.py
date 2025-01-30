@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from Engine.objects.metadata import MetaData
+
+from Engine.data import MetaData
 from Engine.math import vec3
 
 

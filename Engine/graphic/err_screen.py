@@ -1,9 +1,8 @@
-import pygame
-
 import traceback
 import time
 import sys
 
+from Engine import pg as pygame
 from Engine.data import File
 from Engine.scripts.button import Button
 

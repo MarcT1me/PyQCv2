@@ -1,25 +1,25 @@
 from functools import wraps
-from typing import Any, Callable, Self, Optional, Type, TypeVar, cast, ClassVar
+from typing import Any, Callable, Self, Optional, Type, cast
 import inspect
+
 import Engine
 
-T = TypeVar('T', bound=Callable[..., Any])
-CLS = TypeVar('CLS', bound=type)
+
+class StorageFunction:
+    def __init__(self, func, **attrs):
+        self.func = func
+        self.__dict__.update(attrs)
+        wraps(func)(self)
+
+    def __call__(self, *args, **kwargs):
+        return self.func(*args, **kwargs)
 
 
-def _update_wrapper_signature(
-        wrapper: Callable,
-        original: Callable,
-        excluded_params: set[str]
-) -> None:
-    """Update wrapper signature by excluding specified parameters"""
-    sig = inspect.signature(original)
-    new_params = [
-        p for p in sig.parameters.values()
-        if p.name not in excluded_params
-           and p.kind != inspect.Parameter.VAR_KEYWORD
-    ]
-    wrapper.__signature__ = sig.replace(parameters=new_params)
+def with_store(**attrs: Any) -> Callable[[Engine.FUNC], StorageFunction]:
+    def decorator(func):
+        return StorageFunction(func, **attrs)
+
+    return decorator
 
 
 class _DeferrableFunction:
@@ -32,8 +32,7 @@ class _DeferrableFunction:
     def __call__(self, *args, **kwargs) -> Any:
         # Сбрасываем очередь перед каждым вызовом функции
         self.deferred_calls = []
-        result = self.func(*args, **kwargs)
-        return result
+        return self.func(*args, **kwargs)
 
     def defer(self, func: Callable, *args, **kwargs) -> None:
         self.deferred_calls.append((func, args, kwargs))
@@ -44,7 +43,7 @@ class _DeferrableFunction:
             func(*args, **kwargs)
 
 
-def deferrable(func: Callable) -> _DeferrableFunction:
+def deferrable(func: Engine.FUNC) -> _DeferrableFunction:
     return _DeferrableFunction(func)
 
 
@@ -62,19 +61,18 @@ class _ThreadSafeDeferrableFunction(_DeferrableFunction):
             super().do_defer()
 
 
-def deferrable_threadsafe(func: Callable) -> _ThreadSafeDeferrableFunction:
+def deferrable_threadsafe(func: Engine.FUNC) -> _ThreadSafeDeferrableFunction:
     return _ThreadSafeDeferrableFunction(func)
 
 
 def multithread(
-        f: Optional[T] = None,
+        f: Optional[Engine.FUNC] = None,
         *,
         thread_class: Type[Engine.threading.Thread] = Engine.threading.Thread
-) -> Callable[[T], T]:
+) -> Callable[[Engine.FUNC], Engine.FUNC]:
     """ Multithread calling. New call = new thread"""
 
-    def decorator(func: T) -> T:
-
+    def decorator(func: Engine.FUNC) -> Engine.FUNC:
         # Checking the mandatory presence of the event parameter
         sig = inspect.signature(func)
         has_thread = 'thread' in sig.parameters
@@ -92,17 +90,13 @@ def multithread(
             thread.start()
             return thread
 
-        # Adjusting the signature
-        if has_thread:
-            _update_wrapper_signature(wrapper, func, {'thread'})
-
-        return cast(T, wrapper)
+        return cast(Engine.FUNC, wrapper)
 
     # Processing for both @multithread and @multithread(...)
     return decorator(f) if f else decorator
 
 
-def single_event(func: T) -> T:
+def single_event(func: Engine.FUNC) -> Engine.FUNC:
     """A decorator for automatic event handling. Requires the event parameter in the function."""
 
     # Checking the mandatory presence of the event parameter
@@ -117,51 +111,53 @@ def single_event(func: T) -> T:
 
         return [func(*args, event=event, **kwargs) for event in Engine.app.App.event_list]
 
-    # Removing the event from the signature for external consumers
-    _update_wrapper_signature(wrapper, func, {'event'})
-
     # Adding a marker for checking in other decorators
     wrapper._is_single_event_decorated = True  # type: ignore
 
-    return cast(T, wrapper)
+    return cast(Engine.FUNC, wrapper)
 
 
-def window_event(func: T) -> T:
+def window_event(
+        f: Optional[Engine.FUNC] = None,
+        *,
+        already_single=False
+) -> Callable[[Engine.FUNC], Engine.FUNC]:
     """
     A decorator for handling window events. Requires prior application of @single_event.
 
     Adds automatic transmission of the window parameter from the event.
     """
-    # checking for @single_event
-    if not hasattr(func, '_is_single_event_decorated'):
-        raise TypeError(
-            f"Function must be decorated {single_event} before using {window_event}"
-        )
 
-    # Checking the mandatory presence of the window parameter
-    sig = inspect.signature(func)
-    if 'window' not in sig.parameters:
-        raise TypeError(f"Function {func.__name__} must have 'window' parameter to use {single_event}")
+    def decorator(func):
+        # checking for @single_event
+        if not hasattr(func, '_is_single_event_decorated') and not already_single:
+            raise TypeError(
+                f"Function must be decorated {single_event} before using {window_event}"
+            )
 
-    @wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
-        # Checking that the event is present in the arguments and getting her
-        event = kwargs.get('event')
+        # Checking the mandatory presence of the window parameter
+        sig = inspect.signature(func)
+        if 'window' not in sig.parameters:
+            raise TypeError(f"Function {func} must have 'window' parameter to use {single_event}")
 
-        if not event:
-            raise ValueError("Event parameter not found in decorated function arguments")
+        @wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            # Checking that the event is present in the arguments and getting her
+            event = kwargs.get('event')
 
-        # Adding window to the arguments
-        return func(*args, **{**kwargs, 'window': getattr(event, 'window', None)})
+            if not event:
+                raise ValueError("Event parameter not found in decorated function arguments")
 
-    # changing signature for typing
-    _update_wrapper_signature(wrapper, func, {'window'})
+            # Adding window to the arguments
+            return func(*args, **{**kwargs, 'window': getattr(event, 'window', None)})
 
-    wrapper._is_window_event_decorated = True  # type: ignore
-    return cast(T, wrapper)
+        wrapper._is_window_event_decorated = True  # type: ignore
+        return cast(Engine.FUNC, wrapper)
+
+    return decorator(f) if f else decorator
 
 
-def updatable(cls: CLS) -> CLS:
+def updatable(cls: Engine.CLS) -> Engine.CLS:
     """Class decorator that adds static fields update capability
 
     Adds clas smethod 'update' to modify class attributes in bulk
@@ -181,7 +177,7 @@ def updatable(cls: CLS) -> CLS:
     return cls
 
 
-def sdl_render(func: T) -> T:
+def sdl_render(func: Engine.FUNC) -> Engine.FUNC:
     """Decorator for SDL rendering. Automatically calls Graphics.flip()"""
 
     @wraps(func)
@@ -189,11 +185,10 @@ def sdl_render(func: T) -> T:
         func(self)
         Engine.graphic.Graphics.flip()
 
-    _update_wrapper_signature(wrapper, func, set())
-    return cast(T, wrapper)
+    return cast(Engine.FUNC, wrapper)
 
 
-def gl_render(func: T) -> T:
+def gl_render(func: Engine.FUNC) -> Engine.FUNC:
     """Decorator for OpenGL rendering. Handles context clearing and buffer swap"""
 
     @wraps(func)
@@ -202,25 +197,23 @@ def gl_render(func: T) -> T:
         func(self)
         Engine.graphic.Graphics.flip()
 
-    _update_wrapper_signature(wrapper, func, set())
-    return cast(T, wrapper)
+    return cast(Engine.FUNC, wrapper)
 
 
 def dev_only(
-        f: Optional[T] = None,
+        f: Optional[Engine.FUNC] = None,
         *,
         _default: Any = None
-) -> Callable[[T], T]:
+) -> Callable[[Engine.FUNC], Engine.FUNC]:
     """Decorator to execute function only in development mode"""
 
-    def decorator(func: T) -> T:
+    def decorator(func: Engine.FUNC) -> Engine.FUNC:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             if Engine.data.Main.IS_RELEASE:
                 return _default
             return func(*args, **kwargs)
 
-        _update_wrapper_signature(wrapper, func, excluded_params=set())
-        return cast(T, wrapper)
+        return cast(Engine.FUNC, wrapper)
 
     return decorator(f) if f else decorator

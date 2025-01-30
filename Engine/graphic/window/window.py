@@ -1,7 +1,7 @@
 ﻿""" Main engine Window
 """
 from pygame.display import set_mode, get_window_size, quit
-# Engine
+
 import Engine
 from Engine.graphic.window.win_data import WinData
 from Engine.data import config

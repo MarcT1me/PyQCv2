@@ -1,23 +1,33 @@
+""" Error handling during engine operation
+"""
 from dataclasses import dataclass, field
 from typing import Any, Self, Callable, Dict, List
 from uuid import uuid4
+
 import Engine
 
 
 @dataclass
-class Failure(Exception, Engine.objects.MetaData):
+class Failure(Exception, Engine.data.MetaData):
+    """ A common error class """
     catch_id: str | None = field(default=None)
     critical: bool = field(default=True)
     err: Warning = field(default_factory=lambda: RuntimeError("Failure.err is Empty"))
+    time_stamp: float = field(default_factory=Engine.timing.uix_time)
 
 
 class UnexpectedException(Exception):
+    """ a class for handling errors unknown to the engine """
+
     def __init__(self, exc_val):
         self.exc = exc_val
         super().__init__(f"Unexpected exception {exc_val}")
 
 
 class Catch:
+    """ A context manager for eliminating errors in their storage and processing,
+    contains a method for unhindered launching of dangerous functions.
+    """
     roster: Dict[str, Self] = {}
 
     def __init__(self, identifier=uuid4(), critical=True) -> None:

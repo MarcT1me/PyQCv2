@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
-from Engine.objects.metadata import MetaData
+from Engine.data import MetaData
 
 
 @dataclass(init=True)

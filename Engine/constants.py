@@ -2,6 +2,7 @@
 """
 from typing import BinaryIO
 from enum import Flag, auto
+from typing import TypeVar, Callable, Any
 
 
 class __EngineEmptyClass:
@@ -21,20 +22,27 @@ class __EngineEmptyClass:
 
 
 """ types """
-# nullable date
-NULL = 0
-EMPTY = __EngineEmptyClass(None, 'EMPTY')
-# file types
+T = TypeVar('T', bound=object)
+FUNC = TypeVar('FUNC', bound=Callable[..., Any])
+CLS = TypeVar('CLS', bound=type)
+
+# Engine default values
+EMPTY = __EngineEmptyClass(None, 'EMPTY')  # Engine Empty field ~ None
 BINARY = __EngineEmptyClass(BinaryIO, 'BINARY')
 TEXT = __EngineEmptyClass(str, 'TEXT')
-# result
+
+# results
 Success = __EngineEmptyClass(200, 'SUCCESS')
 NotFinished = __EngineEmptyClass(None, "NotFinished")
-# boolean
+
+# re-naming
+NULL = 0
 NO = False
 YES = True
+
 # flags
 class ShaderType(Flag):
+    """ GLSL shader file types """
     VERTEX_SHADER = auto()
     FRAGMENT_SHADER = auto()
     GEOMETRY_SHADER = auto()

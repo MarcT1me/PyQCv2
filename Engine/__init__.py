@@ -1,24 +1,32 @@
 ﻿""" Hello world!
 """
-""" Interpolations """
+""" Encapsulations """
 import Engine.pg
 import Engine.mgl
+import Engine.math
 
 """ Engine """
 from Engine.constants import *
+# data
 import Engine.arrays
 import Engine.threading
-from Engine import decorators
+import Engine.decorators  # need threading and used in data
 import Engine.data
-# timing
+
+# wrapper classes
 import Engine.timing
-# main `graphic` module and main graphic class
-import Engine.graphic
+import Engine.event  # user events class
+import Engine.audio
+
+# utils
+import Engine.failures
+import Engine.lscript
+
 # space context
 import Engine.objects
-# other
-import Engine.lscript
-import Engine.failures
-from Engine import math
+# Engine network API
+import Engine.network
+# main `graphic` module and main graphic class
+import Engine.graphic
 # GENERAL APP CLASS
 import Engine.app

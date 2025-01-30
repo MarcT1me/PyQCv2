@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from Engine.objects.assets.asset_data import AssetData
+from Engine.data import AssetData
 
 
 @dataclass(init=True)

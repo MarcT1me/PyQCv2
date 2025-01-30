@@ -7,7 +7,6 @@ from pygetwindow import getWindowsWithTitle
 from screeninfo import get_monitors, Monitor
 
 import Engine.graphic
-# for Graphics
 from Engine.pg import (
     FULLSCREEN, OPENGL,
     GL_CONTEXT_MAJOR_VERSION, GL_CONTEXT_MINOR_VERSION,
