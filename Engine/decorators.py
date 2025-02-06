@@ -183,7 +183,7 @@ def sdl_render(func: Engine.FUNC) -> Engine.FUNC:
     @wraps(func)
     def wrapper(self: Any) -> None:
         func(self)
-        Engine.graphic.Graphics.flip()
+        Engine.graphic.System.flip()
 
     return cast(Engine.FUNC, wrapper)
 
@@ -193,9 +193,9 @@ def gl_render(func: Engine.FUNC) -> Engine.FUNC:
 
     @wraps(func)
     def wrapper(self: Any) -> None:
-        Engine.graphic.Graphics.context.clear(color=Engine.graphic.Graphics.gl_data.clear_color)
+        Engine.graphic.System.context.clear(color=Engine.graphic.System.gl_data.clear_color)
         func(self)
-        Engine.graphic.Graphics.flip()
+        Engine.graphic.System.flip()
 
     return cast(Engine.FUNC, wrapper)
 

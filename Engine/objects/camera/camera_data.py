@@ -11,5 +11,5 @@ class CameraData(SceneObjectData):
     fov: int = 75
     post_process: list[str] = field(default_factory=list)
     clip_planes: vec2 = field(default_factory=lambda: vec2(
-        Engine.graphic.Graphics.gl_data.near, Engine.graphic.Graphics.gl_data.far
+        Engine.graphic.System.gl_data.near, Engine.graphic.System.gl_data.far
     ))

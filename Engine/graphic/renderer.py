@@ -1,7 +1,7 @@
-from Engine.graphic import Graphics
+from Engine.graphic import System
 from Engine.math import vec2
 
 
 class Renderer:
     def __init__(self, size: vec2) -> None:
-        self.texture = Graphics.context.texture(size, 4)
+        self.texture = System.context.texture(size, 4)

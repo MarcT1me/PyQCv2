@@ -24,7 +24,7 @@ class TestApp(App):
 
     def __init__(self) -> None:
         super().__init__()
-        App.win.set_icon(
+        App.graphics.set_icon(
             Engine.pg.image.load(
                 f"{Engine.data.File.APPLICATION_path}\\{Engine.data.File.APPLICATION_ICO_dir}"
                 f"\\{Engine.data.File.APPLICATION_ICO_name}"
@@ -61,13 +61,13 @@ class TestApp(App):
         if self.clock.timer("fps_timer", 1 / 3):
             self.rnd_fps_font = self.fps_font.render(
                 f"fps: {int(round(self.clock.get_fps(), 0))}, "
-                f"interface_type: {Engine.graphic.Graphics.gl_data.interface_type.__name__}",
+                f"interface_type: {Engine.graphic.System.gl_data.interface_type.__name__}",
                 True, "white"
             )
 
     @Engine.decorators.gl_render
     def render(self) -> None:
-        with Engine.graphic.Graphics.interface as interface:
+        with Engine.graphic.System.interface as interface:
             interface.surface.blit(self.rnd_fps_font, (0, 0))
 
     @staticmethod

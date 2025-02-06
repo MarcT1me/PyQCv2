@@ -3,7 +3,7 @@
 from loguru import logger
 # default
 from abc import abstractmethod, ABC
-from typing import Type, List, Dict, Self, Any, TYPE_CHECKING
+from typing import Type, List, Dict, Self, TYPE_CHECKING, final
 
 # Engine import
 import Engine
@@ -50,35 +50,46 @@ class App(ABC):
     running: bool = True
     InheritedСlass: Self = Engine.EMPTY
     WorkingInstance: Self = Engine.EMPTY
-    win = Engine.graphic.Graphics
+
+    """ Systems """
+    graphics: Engine.graphic.System = Engine.EMPTY
+    audio: Engine.audio.System = Engine.EMPTY
+    clock: Engine.timing.Clock = Engine.EMPTY
 
     """ Error catching """
     failures: List[Engine.failures.Failure] = []
-    """ Timing """
-    clock: Engine.timing.Clock = Engine.EMPTY
+
     """ Events """
     event_list: List[Engine.pg.event.EventType] = []
     key_list: Engine.pg.key.ScancodeWrapper = []
     joysticks: Dict[int, Engine.pg.joystick.JoystickType] = {}
-    audio_devices: Dict[int, Any] = {}
 
     """ Scene and space context """
     root_scene: Engine.objects.Scene = Engine.EMPTY
 
+    @final
+    def __init_subclass__(cls, **kwargs):
+        Engine.data.File.load_engine_config('settings')  # general
+        Engine.data.File.load_engine_config('graphics')  # graphics
+        super().__init_subclass__()
+
+    @final
     def __new__(cls, *args, **kwargs):
         """ creating App class """
         obj: App = super().__new__(cls)
-        obj.__pre_init__()
-        Engine.graphic.Graphics.win_data = obj.__win_date__()
-        Engine.graphic.Graphics.gl_data = obj.__gl_date__()
+        obj.__pre_init__()  # pre-init
+        Engine.pg.init()
+        # init systems
+        App.graphics = Engine.graphic.System
+        App.graphics()
+        App.audio = Engine.audio.System()
+        App.clock = Engine.timing.Clock()
+        logger.success('ENGINE - INIT\n')
         return obj
 
     @abstractmethod
     def __pre_init__(self) -> None:
-        """ Pre-initialisation Application. Before main __init__ """
-        Engine.pg.init()
-        Engine.data.File.load_engine_config('settings')  # general
-        Engine.data.File.load_engine_config('graphics')  # graphics
+        """ Just app Pre-initialisation. Before main __init__ """
 
     @staticmethod
     @abstractmethod
@@ -88,23 +99,15 @@ class App(ABC):
     @staticmethod
     def __gl_date__() -> Engine.graphic.GlData:
         """ Pre-initialisation Graphic Libreary. Before main __init__ """
-        return
+        return Engine.graphic.GlData() if App.graphics.win_data.flags & Engine.pg.OPENGL else None
 
     def __init__(self) -> None:
-        """ Main app initialisation.
-        in method realised init pygame, load config files and clock
-         use supper()
-         """
-        # timing
-        App.clock = Engine.timing.Clock()
-        # window
-        Engine.graphic.Graphics()
-
-        logger.success('ENGINE - INIT\n')
+        """ Just app initialisation. """
 
     @abstractmethod
     def __post_init__(self) -> None:
-        """ Post initialisation, after main __init__ """
+        """ Post initialisation, after main __init__
+        Note: use supper first! """
         methods_to_defer = ["events", "pre_update", "update", "pre_render", "render"]
 
         for method_name in methods_to_defer:
@@ -117,11 +120,9 @@ class App(ABC):
     def __repr__(self) -> str:
         return f'<App: {Engine.data.Main.APPLICATION_name} (running={self.running}, failures={self.failures})>'
 
-    def __str__(self) -> str:
-        return f'<{"running" if self.running else "stopped"} {Engine.data.Main.APPLICATION_name} App>'
-
     @Engine.decorators.with_store(already_handled=False)
     @Engine.decorators.window_event(already_single=True)
+    @final
     def default_event_handling(self, *, event: Engine.pg.event.Event, window: int | None):
         """ Engine default event handling """
         if self.default_event_handling.already_handled:
@@ -134,8 +135,8 @@ class App(ABC):
             if window:
                 ...
             else:
-                App.win.win_data.extern({"size": Engine.math.vec2(event.x, event.y)})
-                self.events.defer(App.win.resset)
+                App.graphics.win_data.extern({"size": Engine.math.vec2(event.x, event.y)})
+                self.events.defer(App.graphics.resset)
         elif event.type == Engine.pg.WINDOWMOVED:
             if window:
                 ...
@@ -143,7 +144,7 @@ class App(ABC):
             if window:
                 ...
             else:
-                App.win.win_data.extern({"monitor": event.display_index})
+                App.graphics.win_data.extern({"monitor": event.display_index})
         elif event.type == Engine.pg.JOYDEVICEADDED:
             joy = Engine.pg.joystick.Joystick(event.device_index)
             App.joysticks[joy.get_instance_id()] = joy
@@ -284,7 +285,7 @@ class App(ABC):
             if not err.critical:
                 App.failures.remove(err)
 
-        Engine.graphic.Graphics.__release__()
+        Engine.graphic.System.__release__()
         Engine.pg.quit()
 
         logger.success('ENGINE - QUIT\n\n')

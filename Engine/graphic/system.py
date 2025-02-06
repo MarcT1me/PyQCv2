@@ -19,7 +19,7 @@ from Engine.data.config import Win
 from Engine.math import vec4, vec2
 
 
-class Graphics:
+class System:
     win_data: 'Engine.graphic.WinData'  # Window configs
     window: 'Engine.graphic.Window'  # Window
 

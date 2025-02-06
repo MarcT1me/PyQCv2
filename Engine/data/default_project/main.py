@@ -26,7 +26,7 @@ class QuantumApp(App):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        Engine.graphic.Graphics.set_icon(
+        Engine.graphic.System.set_icon(
             Engine.pg.image.load(
                 f"{Engine.data.File.APPLICATION_path}\\{Engine.data.File.APPLICATION_ICO_dir}"
                 f"\\{Engine.data.File.APPLICATION_ICO_name}"
@@ -47,15 +47,15 @@ class QuantumApp(App):
             elif event.key == Engine.pg.K_g:
                 raise Exception("Test exception")
         elif event.type == Engine.pg.WINDOWRESIZED:
-            Engine.graphic.Graphics.win_data.extern(
+            Engine.graphic.System.win_data.extern(
                 {
                     "size": Engine.math.vec2(event.x, event.y)
                 }
             )
-            Engine.graphic.Graphics.set_viewport(
-                Engine.math.vec4(*Engine.graphic.Graphics.gl_data.view_start, *Engine.graphic.Graphics.win_data.size)
+            Engine.graphic.System.set_viewport(
+                Engine.math.vec4(*Engine.graphic.System.gl_data.view_start, *Engine.graphic.System.win_data.size)
             )
-            Engine.graphic.Graphics.resset()
+            Engine.graphic.System.resset()
 
     def pre_update(self) -> None:
         ...
@@ -67,13 +67,13 @@ class QuantumApp(App):
         if self.clock.timer("fps_timer", 1 / 1500):
             self.rnd_fps_font = self.fps_font.render(
                 f"fps: {int(round(self.clock.get_fps(), 0))}, "
-                f"interface_type: {Engine.graphic.Graphics.gl_data.interface_type.__name__}",
+                f"interface_type: {Engine.graphic.System.gl_data.interface_type.__name__}",
                 True, "white"
             )
 
     @Engine.decorators.gl_render
     def render(self) -> None:
-        with Engine.graphic.Graphics.interface as interface:
+        with Engine.graphic.System.interface as interface:
             interface.surface.blit(self.rnd_fps_font, (0, 0))
 
     @staticmethod

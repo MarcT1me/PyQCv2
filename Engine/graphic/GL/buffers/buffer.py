@@ -9,7 +9,7 @@ class Buffer(GlObject):
     def __init__(self, data: Iterable[Engine.T], metadata: BufferData):
         super().__init__(metadata)
         self.data = data
-        self._buffer: Engine.mgl.Buffer = Engine.graphic.Graphics.context.buffer(
+        self._buffer: Engine.mgl.Buffer = Engine.graphic.System.context.buffer(
             data,
             dynamic=metadata.dynamic)
 
