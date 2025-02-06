@@ -15,6 +15,8 @@ class Thread(_PyThread):
     important = Condition()
     important_id: Optional[str] = None
 
+    critical: bool = False
+
     def __init__(
             self,
             identifier: Optional[str] = None,
@@ -46,7 +48,7 @@ class Thread(_PyThread):
             with Thread.global_lock:
                 self._roster.worked[self.id] = self._roster.pending.pop(self.id)
 
-            with Engine.failures.Catch(critical=False):
+            with Engine.failures.Catch(critical=self.critical):
                 self._action_result = self.action()
 
         self.release()

@@ -10,7 +10,7 @@ from time import time as uix_time
 import Engine
 
 
-class Clock:
+class System:
     """Engine time manager with deferred events and timers
 
     Attributes:

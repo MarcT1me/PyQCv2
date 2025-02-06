@@ -4,20 +4,9 @@ import Engine
 
 
 class System:
-    _instance = None
-    _initialized = False
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
-
     def __init__(self):
-        if not self._initialized:
-            self._devices: dict[str, Engine.audio.Device] = {}
-            self._active_device: Optional[Engine.audio.Device] = None
-
-            self._initialized = True
+        self._devices: dict[str, Engine.audio.Device] = {}
+        self._active_device: Optional[Engine.audio.Device] = None
 
     def add_device(self, which: int, is_capture: bool):
         device_name = self.get_device_name(which, is_capture)

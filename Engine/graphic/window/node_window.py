@@ -3,7 +3,8 @@ from pygame.rect import Rect
 from pygame.constants import FULLSCREEN, RESIZABLE, NOFRAME
 import pygame._sdl2.video as sdl2_video
 
-from Engine.graphic.system import System
+
+import Engine
 from Engine.graphic.window.node_win_data import NodeWinData
 from Engine.data.config import Win
 from Engine.math import vec2
@@ -22,9 +23,9 @@ class NodeWindow:
         self.rect = Rect(0, 0, *win_data.size)
         """ setting window """
         self.win: sdl2_video.Window = sdl2_video.Window(
-            title=win_data.title
+            title=win_data.name
         )
-        self.win.set_modal_for(System.window.__pg_win__ if not modal_window else modal_window)
+        self.win.set_modal_for(Engine.app.App.graphic.window._pg_win if not modal_window else modal_window)
         self.update()
 
         """ other window and render variables """
@@ -35,7 +36,7 @@ class NodeWindow:
 
     def update(self):
         if self.win_data.monitor is not None:
-            monitor = System.__monitors__[self.win_data.monitor]
+            monitor = Engine.app.App.graphic.__monitors[self.win_data.monitor]
             self.pos = vec2(monitor.x, -monitor.y)
         if self.win_data.pos is not None:
             self.pos += self.win_data.pos
@@ -112,7 +113,7 @@ class NodeWindow:
     def __render__(self) -> None:
         self._renderer.clear()
         self._renderer.blit(
-            self._rend_tex, self.rect, self.rect, Win.blit_flags
+            self._rend_tex, self.rect, self.rect
         )
         self._renderer.present()
 

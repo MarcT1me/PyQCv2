@@ -193,7 +193,7 @@ def gl_render(func: Engine.FUNC) -> Engine.FUNC:
 
     @wraps(func)
     def wrapper(self: Any) -> None:
-        Engine.graphic.System.context.clear(color=Engine.graphic.System.gl_data.clear_color)
+        Engine.app.App.graphic.context.clear(color=Engine.app.App.graphic.gl_data.clear_color)
         func(self)
         Engine.graphic.System.flip()
 

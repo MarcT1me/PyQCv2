@@ -12,22 +12,22 @@ from Engine.graphic import err_screen
 
 class EventThread(Engine.threading.Thread):
     """ Thread class for Handling GUI Events """
-    _roster: Engine.arrays.Roster[str, Engine.threading.Thread] = Engine.threading.Thread.create_roster()
+    _roster = Engine.threading.Thread.create_roster()
 
 
 class PreUpdateThread(Engine.threading.Thread):
     """ Thread class for pre updating app """
-    _roster: Engine.arrays.Roster[str, Engine.threading.Thread] = Engine.threading.Thread.create_roster()
+    _roster = Engine.threading.Thread.create_roster()
 
 
 class UpdateThread(Engine.threading.Thread):
     """ Thread class for updating app """
-    _roster: Engine.arrays.Roster[str, Engine.threading.Thread] = Engine.threading.Thread.create_roster()
+    _roster = Engine.threading.Thread.create_roster()
 
 
 class PreRenderThread(Engine.threading.Thread):
     """ Thread class for pre rendering app """
-    _roster: Engine.arrays.Roster[str, Engine.threading.Thread] = Engine.threading.Thread.create_roster()
+    _roster = Engine.threading.Thread.create_roster()
 
 
 class App(ABC):
@@ -52,9 +52,9 @@ class App(ABC):
     WorkingInstance: Self = Engine.EMPTY
 
     """ Systems """
-    graphics: Engine.graphic.System = Engine.EMPTY
+    graphic: Engine.graphic.System = Engine.EMPTY
     audio: Engine.audio.System = Engine.EMPTY
-    clock: Engine.timing.Clock = Engine.EMPTY
+    clock: Engine.timing.System = Engine.EMPTY
 
     """ Error catching """
     failures: List[Engine.failures.Failure] = []
@@ -69,9 +69,17 @@ class App(ABC):
 
     @final
     def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__()
+        # Engine configs
         Engine.data.File.load_engine_config('settings')  # general
         Engine.data.File.load_engine_config('graphics')  # graphics
-        super().__init_subclass__()
+
+        # deferrable functions
+        for method_name in {"events", "pre_update", "update", "pre_render", "render"}:
+            method = getattr(cls, method_name)
+            if not hasattr(method, "__is_deferred__"):
+                deferred_method = Engine.decorators.deferrable(method)
+                setattr(cls, method_name, deferred_method)
 
     @final
     def __new__(cls, *args, **kwargs):
@@ -80,42 +88,32 @@ class App(ABC):
         obj.__pre_init__()  # pre-init
         Engine.pg.init()
         # init systems
-        App.graphics = Engine.graphic.System
-        App.graphics()
+        App.graphic = Engine.graphic.System()
         App.audio = Engine.audio.System()
-        App.clock = Engine.timing.Clock()
+        App.clock = Engine.timing.System()
+
         logger.success('ENGINE - INIT\n')
         return obj
 
-    @abstractmethod
     def __pre_init__(self) -> None:
         """ Just app Pre-initialisation. Before main __init__ """
 
     @staticmethod
     @abstractmethod
-    def __win_date__() -> Engine.graphic.WinData:
+    def __win_data__() -> Engine.graphic.WinData:
         """ Pre-initialisation main Window. Before main __init__ """
 
     @staticmethod
-    def __gl_date__() -> Engine.graphic.GlData:
+    def __gl_data__(win_data: Engine.graphic.WinData) -> Engine.graphic.GlData:
         """ Pre-initialisation Graphic Libreary. Before main __init__ """
-        return Engine.graphic.GlData() if App.graphics.win_data.flags & Engine.pg.OPENGL else None
+        return Engine.graphic.GlData() if win_data.flags & Engine.pg.OPENGL else None
 
     def __init__(self) -> None:
         """ Just app initialisation. """
+        self.graphic.__post__init__()
 
-    @abstractmethod
     def __post_init__(self) -> None:
-        """ Post initialisation, after main __init__
-        Note: use supper first! """
-        methods_to_defer = ["events", "pre_update", "update", "pre_render", "render"]
-
-        for method_name in methods_to_defer:
-            method = getattr(App.InheritedСlass, method_name)
-
-            if not hasattr(method, "__is_deferred__"):
-                deferred_method = Engine.decorators.deferrable(method)
-                setattr(App.InheritedСlass, method_name, deferred_method)
+        """ Post initialisation, after main __init__ """
 
     def __repr__(self) -> str:
         return f'<App: {Engine.data.Main.APPLICATION_name} (running={self.running}, failures={self.failures})>'
@@ -135,8 +133,8 @@ class App(ABC):
             if window:
                 ...
             else:
-                App.graphics.win_data.extern({"size": Engine.math.vec2(event.x, event.y)})
-                self.events.defer(App.graphics.resset)
+                App.graphic.win_data.extern({"size": Engine.math.vec2(event.x, event.y)})
+                self.events.defer(App.graphic.resset)
         elif event.type == Engine.pg.WINDOWMOVED:
             if window:
                 ...
@@ -144,7 +142,7 @@ class App(ABC):
             if window:
                 ...
             else:
-                App.graphics.win_data.extern({"monitor": event.display_index})
+                App.graphic.win_data.extern({"monitor": event.display_index})
         elif event.type == Engine.pg.JOYDEVICEADDED:
             joy = Engine.pg.joystick.Joystick(event.device_index)
             App.joysticks[joy.get_instance_id()] = joy
@@ -285,29 +283,33 @@ class App(ABC):
             if not err.critical:
                 App.failures.remove(err)
 
-        Engine.graphic.System.__release__()
+        try:
+            App.graphic.__release__()
+        except AttributeError as exc:
+            logger.error(f"can`t release graphic System, {exc.args[0]}")
         Engine.pg.quit()
 
         logger.success('ENGINE - QUIT\n\n')
 
+    @staticmethod
+    def mainloop(app: 'Type[Engine.app.App]') -> None:
+        """
+        :param app: application class with initializer
+        :return: Last worked app
+        :raise AttributeError: if there are problems with the app argument
+        """
+        if not issubclass(app, App):
+            raise AttributeError('Arg `app` must be inherited by `Engine.app.App`')
+        App.InheritedСlass = app
 
-def mainloop(app: Type[App]) -> None:
-    """
-    :param app: application class with initializer
-    :return: Last worked app
-    :raise AssertionError: if there are problems with the argument
-    """
-    assert issubclass(app, App), 'Arg `app` must be inherited by `Engine.app.App`'
-    App.InheritedСlass = app
-
-    while App.running:
-        with Engine.failures.Catch(identifier=f"{mainloop}_Catch__ENGINE__"):
-            App.WorkingInstance = app()
-            App.WorkingInstance.run()
-        if App.WorkingInstance:
-            App.WorkingInstance.on_exit()
-        if App.failures:
-            # show err window
-            App.running = err_screen.show_window() if Engine.data.Main.IS_RELEASE \
-                else err_screen.show_traceback()
-            App.failures.clear()
+        while App.running:
+            with Engine.failures.Catch(identifier=f"{App.mainloop}_Catch__ENGINE__"):
+                App.WorkingInstance = app()
+                App.WorkingInstance.run()
+            if App.WorkingInstance:
+                App.WorkingInstance.on_exit()
+            if App.failures:
+                # show err window
+                App.running = err_screen.show_window() if Engine.data.Main.IS_RELEASE \
+                    else err_screen.show_window()
+                App.failures.clear()

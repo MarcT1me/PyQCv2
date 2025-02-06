@@ -1,9 +1,10 @@
 from dataclasses import dataclass, field
 from typing import Self
 
+import Engine
+from Engine.data import MetaData
 from Engine.math import vec2
 from Engine.data.config import Win
-from Engine.data import MetaData
 
 
 @dataclass
@@ -22,3 +23,13 @@ class WinData(MetaData):
         [setattr(self, var, value) for var, value in changes.items()]
         Win.update(changes)
         return self
+
+    def to_kwargs(self):
+        kwargs = {
+            'size': self.size,
+            'flags': self.flags,
+            'vsync': self.vsync,
+        }
+        if self.monitor not in (None, Engine.EMPTY) and str(self.monitor) not in 'nullEmptyType':
+            kwargs['display'] = self.monitor
+        return kwargs

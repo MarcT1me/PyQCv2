@@ -1,6 +1,6 @@
 """ Engine settings and configs
 """
-from pygame import DOUBLEBUF
+from pygame import DOUBLEBUF, HIDDEN
 from loguru import logger
 # default
 import os

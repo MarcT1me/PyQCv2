@@ -1,137 +1,123 @@
 """ Engine Graphic core
 """
 from loguru import logger
-from typing import Optional
+from typing import Optional, final
 # window utils
-from pygetwindow import getWindowsWithTitle
 from screeninfo import get_monitors, Monitor
 
-import Engine.graphic
-from Engine.pg import (
-    FULLSCREEN, OPENGL,
-    GL_CONTEXT_MAJOR_VERSION, GL_CONTEXT_MINOR_VERSION,
-    GL_CONTEXT_PROFILE_MASK,
-    display, event, mouse, cursors, Surface
-)
-from Engine.mgl import create_context
-from Engine.constants import EMPTY
-from Engine.data.config import Win
-from Engine.math import vec4, vec2
+import Engine
 
 
+@final
 class System:
-    win_data: 'Engine.graphic.WinData'  # Window configs
-    window: 'Engine.graphic.Window'  # Window
+    def __init__(self):
+        self.__monitors = get_monitors()
 
-    gl_data: 'Optional[Engine.graphic.GlData]' = EMPTY
-    context: 'Optional[Engine.mgl.Context]' = EMPTY  # MGL context
+        # window
+        self.win_data: Engine.graphic.WinData = None  # Window configs
+        self.window: Engine.graphic.Window = None  # Window
 
-    interface: 'Optional[Engine.graphic.HardInterface]' = EMPTY  # Interface renderer
+        # gl
+        self.gl_data: Optional[Engine.graphic.GlData] = None
+        self.context: Optional[Engine.mgl.Context] = None  # MGL context
+        # game ui surface
+        self.interface: Optional[Engine.graphic.HardInterface] = None  # Interface renderer
 
-    """ other private """
-    __monitors__ = get_monitors()
+        self._set_data()  # set data from App methods
 
-    def __new__(cls) -> None:
-        cls.set_core()
-        if cls.win_data.flags & OPENGL:
-            cls.set_modern_gl()
+        # set start attributes
+        if self.gl_data:
+            Engine.pg.display.gl_set_attribute(Engine.pg.GL_CONTEXT_MAJOR_VERSION, self.gl_data.minor_version)
+            Engine.pg.display.gl_set_attribute(Engine.pg.GL_CONTEXT_MINOR_VERSION, self.gl_data.minor_version)
+            Engine.pg.display.gl_set_attribute(Engine.pg.GL_CONTEXT_PROFILE_MASK, self.gl_data.profile_mask)
+            logger.debug(f'set gl attributes, {self.gl_data.minor_version, self.gl_data.minor_version}')
 
-    @classmethod
-    def set_core(cls) -> None:
+        # init sub-systems
+        self._init_window()
+        self._init_gl()
+
+    def _set_data(self):
+        self.win_data: Engine.graphic.WinData = Engine.app.App.InheritedСlass.__win_data__()  # Window configs
+        self.gl_data: Optional[Engine.graphic.GlData] = Engine.app.App.InheritedСlass.__gl_data__(self.win_data)
+
+    def _init_window(self) -> None:
         """ set main variables"""
-        from Engine.app import App
-        cls.win_data = App.InheritedСlass.__win_date__()
-        cls.gl_data = App.InheritedСlass.__gl_date__()
-        cls.window = Engine.graphic.Window(win_data=cls.win_data)
-        cls.set_caption(cls.win_data.name)
-        cls.toggle_full(cls.win_data.is_desktop)
+        self.win_data.flags = self.win_data.flags | Engine.pg.HIDDEN
+        self.window = Engine.graphic.Window(win_data=self.win_data)
 
-    @classmethod
-    def resset(cls) -> None:
-        cls.__release__()
-        cls()
+        self.set_caption(self.win_data.name)
+        self.set_icon(
+            Engine.pg.image.load(
+                f"{Engine.data.File.APPLICATION_path}\\{Engine.data.File.APPLICATION_ICO_dir}"
+                f"\\{Engine.data.File.APPLICATION_ICO_name}"
+            )
+        )
+        self.toggle_full()
 
-    @classmethod
-    def set_modern_gl_configs(cls) -> None:
-        cls.context.enable(flags=cls.gl_data.flags)
-        cls.context.blend_func = cls.gl_data.blend_func
-        cls.set_viewport(cls.gl_data.view)
-        # create interface surface
-        cls.interface = cls.gl_data.interface_type()
-
-    @classmethod
-    def set_modern_gl(cls) -> None:
+    def _init_gl(self) -> None:
         """ set opengl attribute """
-        display.gl_set_attribute(GL_CONTEXT_MAJOR_VERSION, cls.gl_data.minor_version)
-        display.gl_set_attribute(GL_CONTEXT_MINOR_VERSION, cls.gl_data.minor_version)
-        display.gl_set_attribute(GL_CONTEXT_PROFILE_MASK, cls.gl_data.profile_mask)
-        logger.debug(f'set gl attributes, {cls.gl_data.minor_version, cls.gl_data.minor_version}')
-        """ set all mgl """
-        cls.context = create_context()
+        self.context = Engine.mgl.create_context()
 
-        cls.set_modern_gl_configs()
+        self._set_gl_configs()
 
         logger.info(
             f"\n\tEngine graphic - init\n"
             f"screen:\n"
-            f"\tWinData = {cls.win_data};\n"
+            f"\tWinData = {self.win_data};\n"
             f"context:\n"
-            f"\tsize = {cls.context.screen.size} \tGPU = {cls.context.info['GL_RENDERER']};\n"
+            f"\tsize = {self.context.screen.size} \tGPU = {self.context.info['GL_RENDERER']};\n"
         )
 
-    @classmethod
-    def set_viewport(cls, viewport: vec4) -> None:
-        cls.context.viewport = viewport
+    def _set_gl_configs(self) -> None:
+        self.context.enable(flags=self.gl_data.flags)
+        self.context.blend_func = self.gl_data.blend_func
+        self.set_viewport(self.gl_data.view)
 
-    @staticmethod
-    def set_icon(_img) -> None:
-        display.set_icon(_img)
+    def __post__init__(self):
+        self.win_data.flags = self.win_data.flags | Engine.pg.SHOWN
+        self.window.set_mode(self.win_data)
+        self.window.set_utils()
+        self.interface = self.gl_data.interface_type()
 
-    @staticmethod
-    def set_caption(_caption) -> None:
-        display.set_caption(_caption)
+    def resset(self) -> None:
+        self.interface.__destroy__()
+        self._set_data()  # set data from App methods
+        self.__post__init__()
+        self._set_gl_configs()
 
-    @classmethod
-    def toggle_full(cls, is_desktop: bool = False) -> None:
+    def set_viewport(self, viewport: Engine.math.vec4) -> None:
+        self.context.viewport = viewport
+
+    def toggle_full(self) -> None:
         """ toggle fullscreen """
-        if cls.win_data.full:
-            if cls.win_data.full:
-                # find window into any monitor
-                index, monitor = cls.get_current_monitor()
-                # calculate flags and sizes
-                size = vec2(monitor.width, monitor.height)
-                flags = Win.flags | FULLSCREEN
-            else:
-                index = EMPTY
-                size = Win.size
-                flags = Win.flags
-            # setting changes
-            cls.win_data = cls.win_data.extern(
-                {
-                    'size': size,
-                    'monitor': index,
-                }
-            )
+        if self.win_data.full:
+            # find window into any monitor
+            index, monitor = self.get_current_monitor()
+            # calculate flags and sizes
+            size = Engine.math.vec2(monitor.width, monitor.height)
+            flags = Engine.data.Win.flags | Engine.pg.FULLSCREEN
+        else:
+            index = None
+            size = Engine.data.Win.size
+            flags = Engine.data.Win.flags
+        # setting changes
+        self.win_data = self.win_data.extern(
+            {
+                'size': size,
+                'monitor': index,
+            }
+        )
 
-            if is_desktop:
-                cls.win_data.extern({'flags': flags})
-                cls.resset()
-            else:
-                display.toggle_fullscreen()
+        if self.win_data.is_desktop:
+            self.win_data.extern({'flags': flags})
+            self.resset()
+        else:
+            Engine.pg.display.toggle_fullscreen()
 
-    @staticmethod
-    def is_full() -> bool:
-        return display.is_fullscreen()
-
-    @staticmethod
-    def get_current_size() -> vec2:
-        return vec2(display.get_window_size())
-
-    @classmethod
-    def get_current_monitor(cls) -> tuple[int, Monitor]:
+    def get_current_monitor(self) -> tuple[int, Monitor]:
         # iter on all monitors and find current window display
-        win = getWindowsWithTitle(cls.win_data.name)[0]
-        for index, monitor in enumerate(cls.__monitors__):
+        win = self.window.utils
+        for index, monitor in enumerate(self.__monitors):
             if monitor.x <= win.left and monitor.y <= win.top or \
                     monitor.x <= win.left + win.width and monitor.y <= win.top or \
                     monitor.x <= win.left and monitor.y <= win.top + win.height or \
@@ -141,39 +127,49 @@ class System:
             return None, None
 
     @staticmethod
-    def get_monitor_sizes() -> tuple[vec2]:
-        return list(map(vec2, display.get_desktop_sizes()))
+    def set_icon(_img: Engine.pg.Surface) -> None:
+        Engine.pg.display.set_icon(_img)
 
-    @classmethod
-    def get_current_monitor_size(cls) -> vec2:
-        index, monitor = cls.get_current_monitor()
-        return vec2(monitor.width, monitor.height)
+    @staticmethod
+    def set_caption(_caption: str) -> None:
+        Engine.pg.display.set_caption(_caption)
+
+    @staticmethod
+    def is_full() -> bool:
+        return Engine.pg.display.is_fullscreen()
+
+    @staticmethod
+    def get_current_size() -> Engine.math.vec2:
+        return Engine.math.vec2(Engine.pg.display.get_window_size())
+
+    @staticmethod
+    def get_monitor_sizes() -> tuple[Engine.math.vec2]:
+        return list(map(Engine.math.vec2, Engine.pg.display.get_desktop_sizes()))
 
     @staticmethod
     def set_cursor_mode(visible: bool = None, grab: bool = None) -> None:
-        mouse.set_visible(visible if visible is not None else mouse.get_visible())
-        event.set_grab(grab if grab is not None else event.get_grab())
+        Engine.pg.mouse.set_visible(visible if visible is not None else Engine.pg.mouse.get_visible())
+        Engine.pg.event.set_grab(grab if grab is not None else Engine.pg.event.get_grab())
 
     @staticmethod
-    def set_cursor_image(image: Surface, hotspot: tuple = (0, 0)) -> None:
-        cursor = cursors.Cursor(hotspot, image)
-        mouse.set_cursor(cursor)
+    def set_cursor_image(image: Engine.pg.Surface, hotspot: tuple = (0, 0)) -> None:
+        cursor = Engine.pg.cursors.Cursor(hotspot, image)
+        Engine.pg.mouse.set_cursor(cursor)
 
     @staticmethod
     def set_cursor_style(system: int) -> None:
-        mouse.set_cursor(system)
+        Engine.pg.mouse.set_cursor(system)
 
     @staticmethod
     def flip() -> None:
-        display.flip()
+        Engine.pg.display.flip()
 
-    @classmethod
-    def __release__(cls) -> None:
-        if cls.win_data is not EMPTY and cls.win_data.flags & OPENGL:
+    def __release__(self) -> None:
+        if self.gl_data:
             try:
-                cls.interface.__destroy__()
-                cls.context.release()
+                self.interface.__destroy__()
+                self.context.release()
             except Exception as exc:
-                logger.error(f'can`t release context, {exc.args[0]}')
-        if cls.window is not EMPTY:
-            del cls.window
+                logger.error(f'can`t release GL, {exc.args[0]}')
+        if self.window is not None:
+            del self.window

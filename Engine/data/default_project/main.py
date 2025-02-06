@@ -10,7 +10,7 @@ class QuantumApp(App):
         Engine.data.File.reed_data()
         Engine.data.File.fill_default_data()
 
-    def __win_date__(self) -> Engine.graphic.WinData:
+    def __win_data__(self) -> Engine.graphic.WinData:
         # set Window Data
         return Engine.graphic.WinData(
             title="Gravity Simulation 3",
@@ -18,7 +18,7 @@ class QuantumApp(App):
             flags=Engine.data.Win.flags | Engine.pg.OPENGL
         )
 
-    def __gl_date__(self) -> Engine.graphic.GlData:
+    def __gl_data__(self) -> Engine.graphic.GlData:
         return Engine.graphic.GlData(
             interface_type=Engine.graphic.HardInterface,
             view_start=Engine.math.vec2(0, 0)
