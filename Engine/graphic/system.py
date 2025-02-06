@@ -54,18 +54,22 @@ class System:
         )
         self.toggle_full()
 
+        from pprint import pformat
+        logger.info(
+            "Engine graphic init - Window:\n"
+            f"{pformat(self.win_data)}\n"
+        )
+
     def _init_gl(self) -> None:
         """ set opengl attribute """
         self.context = Engine.mgl.create_context()
 
         self._set_gl_configs()
 
+        from pprint import pformat
         logger.info(
-            f"\n\tEngine graphic - init\n"
-            f"screen:\n"
-            f"\tWinData = {self.win_data};\n"
-            f"context:\n"
-            f"\tsize = {self.context.screen.size} \tGPU = {self.context.info['GL_RENDERER']};\n"
+            "Engine graphic init - GL:\n"
+            f"{pformat(self.context.info)}\n"
         )
 
     def _set_gl_configs(self) -> None:

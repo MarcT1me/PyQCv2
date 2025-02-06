@@ -1,6 +1,5 @@
 """ Engine settings and configs
 """
-from pygame import DOUBLEBUF, HIDDEN
 from loguru import logger
 # default
 import os
@@ -34,7 +33,7 @@ class Win:
     vsync: bool = Engine.NULL
     full: bool = Engine.NO
     is_desktop: bool = Engine.NO
-    flags: int = DOUBLEBUF
+    flags: int = Engine.pg.DOUBLEBUF
     fps: int = Engine.NULL
 
     update: 'ClassVar[classmethod[None, dict[str, Any]]]'  # type: ignore
@@ -81,7 +80,7 @@ class File:
     ):
         _ = File.data.setdefault('Win', {})
         _ = File.data['Win'].setdefault('fps', Win.fps)
-        _ = File.data['Win'].setdefault('size', Win.size)
+        _ = File.data['Win'].setdefault('size', Engine.math.vec2(Win.size))
         _ = File.data['Win'].setdefault('vsync', Win.vsync)
         _ = File.data['Win'].setdefault('full', Win.full)
         _ = File.data['Win'].setdefault('monitor', Win.monitor)
@@ -120,6 +119,9 @@ class File:
 
         if len(File.data) is Engine.NULL:
             exec(f"""from {File.config_ext} import load; File.data = File._load(load)""")
+
+        if "size" in File.data.get("Win", {}):
+            File.data["Win"]["size"] = Engine.math.vec2(File.data["Win"]["size"])
 
         for key, value in File.data.items():
             getattr(getattr(Engine.data.config, key), "update")(value)
