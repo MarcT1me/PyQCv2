@@ -55,15 +55,18 @@ class File:
     )
     APPDATA_LOCAL_path: str = rf'{os.path.expanduser("~")}\AppData\Local'
     # names
-    DATA_dir: str = 'gamedate'
-    PRESETS_dir: str = 'presets'
-    SHADER_dir: str = 'shaders'
-    TEXTURE_dir: str = 'textures'
+    ENGINE_DATA_DIR: str = f'{Main.ENGINE_name}\\data'
+    PRESETS_dir: str = "presets"
+    ENGINE_SHADER_dir: str = f'{PRESETS_dir}\\shaders'
+    DATA_dir: str = "gamedata"
+    SHADER_dir: str = "presets\\shaders"
+    TEXTURE_dir: str = "textures"
+    AUDIO_dir: str = "audio"
     data_path: str = \
         lambda: (File.APPLICATION_path if File.config_local_dir else File.APPDATA_LOCAL_path) + "\\" + File.DATA_dir
     # ico settings
     APPLICATION_ICO_dir: str = f'{Main.ENGINE_name}/data'
-    APPLICATION_ICO_name: str = 'Logo.png'
+    APPLICATION_ICO_name: str = 'Service.png'
 
     @staticmethod
     def change_data(changes: dict | Mapping, *, _data: dict = None) -> data:
@@ -91,7 +94,7 @@ class File:
         file_path = rf"{File.data_path()}\{File.config_name}.{File.config_ext}"
         try:
             with open(file_path, mode='r') as file:
-                logger.debug(f'load configs from {file_path}')
+                logger.info(f'load configs from {file_path}')
                 return _load_function(file)
         except FileNotFoundError:
             File.fill_default_data()
@@ -154,6 +157,8 @@ class File:
 
     @staticmethod
     def load_engine_config(name: str) -> None:
+        logger.info(f'load Engine configs from {File.__ENGINE_DATA__}\\{name}.engconf')
+
         from fnmatch import fnmatch
         # reading
         with open(rf'{File.__ENGINE_DATA__}\{name}.engconf', 'r') as config_file:
@@ -183,6 +188,6 @@ class File:
                                 break
 
         data = ''.join(lines_data)
-        logger.success(f'apply Engine configs from {name} eng-config')
-        with Engine.failures.Catch(identifier=""):
+        with Engine.failures.Catch(identifier=f"{File.load_engine_config}_Catch__ENGINE__"):
             exec(data)
+        logger.success(f'apply Engine configs from {name} eng-config')

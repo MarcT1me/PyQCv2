@@ -7,8 +7,7 @@ __copy_arr = {
     # engine
     "": ("Engine\\data", {
         'graphics.engconf',
-        'settings.engconf',
-        'Logo.png'
+        'settings.engconf'
     }),
     "default_project": ("", {
         '.gitignore',
@@ -17,7 +16,7 @@ __copy_arr = {
         'requirements.txt'
     }),
     "default_project\\presets": ("presets", {
-        'Logo.png'
+        'Service.png'
     })
 }
 

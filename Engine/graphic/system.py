@@ -29,13 +29,13 @@ class System:
             Engine.pg.display.gl_set_attribute(Engine.pg.GL_CONTEXT_MAJOR_VERSION, self.gl_data.minor_version)
             Engine.pg.display.gl_set_attribute(Engine.pg.GL_CONTEXT_MINOR_VERSION, self.gl_data.minor_version)
             Engine.pg.display.gl_set_attribute(Engine.pg.GL_CONTEXT_PROFILE_MASK, self.gl_data.profile_mask)
-            logger.info(f'set gl attributes, {self.gl_data.minor_version, self.gl_data.minor_version}')
+            logger.info(f'set gl attributes, {self.gl_data.minor_version, self.gl_data.minor_version}\n')
 
         # init sub-systems
         self._init_window(win_data)
         self._init_gl() if self.gl_data else Ellipsis
 
-        logger.success("Engine graphic System - init")
+        logger.success("Engine graphic System - init\n")
 
     def _init_window(self, win_data: 'Engine.graphic.WinData') -> None:
         """ set main variables"""

@@ -5,6 +5,7 @@ from loguru import logger
 
 class TestApp(App):
     def __pre_init__(self) -> None:
+        super().__pre_init__()
         # load config file
         Engine.data.File.reed_data()
         Engine.data.File.fill_default_data()
@@ -22,6 +23,14 @@ class TestApp(App):
         self.fps_font = Engine.pg.font.SysFont("Arial", 30)
         self.rnd_fps_font: Engine.pg.Surface = None
 
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        clip = Engine.audio.Clip(
+            f"{Engine.data.File.APPLICATION_path}\\{Engine.data.File.AUDIO_dir}\\10. Crest.mp3"
+        )
+
+        App.audio.active_devices.output.just.play(clip)
+
     @Engine.decorators.deferrable_threadsafe
     @Engine.decorators.single_event
     @Engine.decorators.multithread(thread_class=EventThread)
@@ -34,7 +43,7 @@ class TestApp(App):
             elif event.key == Engine.pg.K_t:
                 Engine.threading.Thread(action=lambda: print("Hello from thread")).start()
 
-        self.default_event_handling(self, event=event)
+        self.event.handle_default(self.event, event=event)
 
     def pre_update(self) -> None:
         ...
@@ -71,4 +80,4 @@ class TestApp(App):
 
 
 if __name__ == "__main__":
-    App.mainloop(TestApp)
+    TestApp.mainloop()

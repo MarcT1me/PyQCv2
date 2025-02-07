@@ -29,13 +29,13 @@ class System:
         self.roster.new_branch("deferred_events")
         self.__event_counter = 0
 
-        logger.success(
-            f"Engine timing System - init"
-        )
         logger.info(
-            f"\n"
+            f"Engine timing System - init data:\n"
             f"start: {self.start},\n"
             f"fps: {self.fps}"
+        )
+        logger.success(
+            f"Engine timing System - init\n"
         )
 
     def get_fps(self) -> float:

@@ -21,7 +21,7 @@ class Window:
         logger.info(
             "Engine graphic Window - init\n"
             f"data:\n"
-            f"{pformat(self.data)}"
+            f"{pformat(self.data)}\n"
         )
 
     def set_mode(self, win_data: WinData):

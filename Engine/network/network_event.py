@@ -1,7 +1,7 @@
 from typing import Self
 from abc import ABC
 
-from Engine.event import Event
+from Engine.events.event import Event
 
 
 class NetworkEvent(Event, ABC):

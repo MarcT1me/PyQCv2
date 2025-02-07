@@ -3,7 +3,7 @@
 from loguru import logger
 # default
 from abc import abstractmethod, ABC
-from typing import Type, List, Dict, Self, TYPE_CHECKING, final
+from typing import Self, TYPE_CHECKING, final
 
 # Engine import
 import Engine
@@ -55,14 +55,13 @@ class App(ABC):
     graphic: Engine.graphic.System = Engine.EMPTY
     audio: Engine.audio.System = Engine.EMPTY
     clock: Engine.timing.System = Engine.EMPTY
+    event: Engine.events.System = Engine.EMPTY
 
     """ Error catching """
-    failures: List[Engine.failures.Failure] = []
+    failures: list[Engine.failures.Failure] = []
 
     """ Events """
-    event_list: List[Engine.pg.event.EventType] = []
-    key_list: Engine.pg.key.ScancodeWrapper = []
-    joysticks: Dict[int, Engine.pg.joystick.JoystickType] = {}
+    joysticks: dict[int, Engine.pg.joystick.JoystickType] = {}
 
     """ Scene and space context """
     root_scene: Engine.objects.Scene = Engine.EMPTY
@@ -91,6 +90,7 @@ class App(ABC):
         App.graphic = Engine.graphic.System()
         App.audio = Engine.audio.System()
         App.clock = Engine.timing.System(Engine.data.Win.fps)
+        App.event = Engine.events.System()
 
         logger.success('ENGINE - INIT\n')
         return obj
@@ -111,47 +111,13 @@ class App(ABC):
     def __init__(self) -> None:
         """ Just app initialisation. """
         self.graphic.__post_init__()
+        print()
 
     def __post_init__(self) -> None:
         """ Post initialisation, after main __init__ """
 
     def __repr__(self) -> str:
         return f'<App: {Engine.data.Main.APPLICATION_name} (running={self.running}, failures={self.failures})>'
-
-    @Engine.decorators.with_store(already_handled=False)
-    @Engine.decorators.window_event(already_single=True)
-    @final
-    def default_event_handling(self, *, event: Engine.pg.event.Event, window: int | None):
-        """ Engine default event handling """
-        if self.default_event_handling.already_handled:
-            self.default_event_handling.already_handled = False
-            return
-
-        if event.type == Engine.pg.QUIT:
-            App.running = False
-        elif event.type == Engine.pg.WINDOWRESIZED:
-            if window:
-                ...
-            else:
-                App.graphic.window.data.extern({"size": Engine.math.vec2(event.x, event.y)})
-                self.events.defer(App.graphic.resset)
-        elif event.type == Engine.pg.WINDOWMOVED:
-            if window:
-                ...
-        elif event.type == Engine.pg.WINDOWDISPLAYCHANGED:
-            if window:
-                ...
-            else:
-                App.graphic.window.data.extern({"monitor": event.display_index})
-        elif event.type == Engine.pg.JOYDEVICEADDED:
-            joy = Engine.pg.joystick.Joystick(event.device_index)
-            App.joysticks[joy.get_instance_id()] = joy
-        elif event.type == Engine.pg.JOYDEVICEREMOVED:
-            del App.joysticks[event.instance_id]
-        elif event.type == Engine.pg.AUDIODEVICEADDED:
-            ...
-        elif event.type == Engine.pg.AUDIODEVICEREMOVED:
-            ...
 
     # events
     if TYPE_CHECKING:
@@ -238,9 +204,7 @@ class App(ABC):
         """ Main-loop """
         while self.running:
             # events
-            App.event_list = Engine.pg.event.get()
-            App.key_list = Engine.pg.key.get_pressed()
-
+            App.event.prepare()
             self.events(self)
             EventThread.wait()
             self.events.do_defer()
@@ -289,22 +253,24 @@ class App(ABC):
             logger.error(f"can`t release graphic System, {exc.args[0]}")
         Engine.pg.quit()
 
-        logger.success('ENGINE - QUIT\n\n')
+        logger.success('ENGINE - QUIT\n')
 
-    @staticmethod
-    def mainloop(app: 'Type[Engine.app.App]') -> None:
-        """
-        :param app: application class with initializer
-        :return: Last worked app
-        :raise AttributeError: if there are problems with the app argument
-        """
-        if not issubclass(app, App):
+    @classmethod
+    def mainloop(cls) -> None:
+        if not issubclass(cls, App):
             raise AttributeError('Arg `app` must be inherited by `Engine.app.App`')
-        App.InheritedСlass = app
+        App.InheritedСlass = cls
+
+        logger.info(
+            f"Start App"
+            f"name: {Engine.data.Main.APPLICATION_name}"
+            f"version: {Engine.data.Main.APPLICATION_version}"
+            f"at {'release' if Engine.data.Main.IS_RELEASE else 'debug'} mode"
+        )
 
         while App.running:
             with Engine.failures.Catch(identifier=f"{App.mainloop}_Catch__ENGINE__") as c:
-                App.WorkingInstance = app()
+                App.WorkingInstance = cls()
                 App.WorkingInstance.run()
 
             if KeyboardInterrupt in c.failures:

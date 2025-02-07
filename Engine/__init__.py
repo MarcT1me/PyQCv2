@@ -15,7 +15,7 @@ import Engine.data
 
 # wrapper classes
 import Engine.timing
-import Engine.event  # user events class
+import Engine.events.event  # user events class
 import Engine.audio
 
 # utils

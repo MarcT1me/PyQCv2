@@ -43,7 +43,7 @@ def show_window(*,
     white_surf.fill('white')
     pygame.display.set_icon(
         pygame.image.load(
-            rf'{File.__ENGINE_DATA__}\Logo.png'
+            rf'{File.__ENGINE_DATA__}\presets\Service.png'
         )
     )
     # caption

@@ -15,6 +15,7 @@ It is considered bad manners to create functions or overwrite them, not counting
 """
 from Engine.data.config import Core, Main, File
 from Engine.constants import EMPTY, YES, NO
+from os.path import join
 
 """ Set Core Settings """
 Core.default = EMPTY
@@ -29,13 +30,18 @@ Main.ENGINE_name = Main.ENGINE_name
 
 """ Set File Settings """
 File.config_name = File.config_name
-File.config_ext = 'toml'
+File.config_ext = File.config_ext
 File.config_local_dir = File.config_local_dir
 # names
+File.ENGINE_DATA_DIR = File.ENGINE_DATA_DIR
 File.PRESETS_dir = File.PRESETS_dir
-File.DATA_dir = "gamedata"
-File.SHADER_path = File.PRESETS_dir + "\\shaders"
-File.TEXTURE_path = File.PRESETS_dir + "\\textures"
+File.ENGINE_SHADER_dir = File.ENGINE_SHADER_dir
+
+File.DATA_dir = File.DATA_dir
+
+File.SHADER_dir = join(File.ENGINE_DATA_DIR, File.PRESETS_dir, File.ENGINE_SHADER_dir)
+File.TEXTURE_dir = join(File.PRESETS_dir, File.TEXTURE_dir)
+File.AUDIO_dir = join(File.PRESETS_dir, File.AUDIO_dir)
 # ico names
-File.APPLICATION_ICO_dir = File.PRESETS_dir
-File.APPLICATION_ICO_name = "Logo.png"
+File.APPLICATION_ICO_dir = join(File.ENGINE_DATA_DIR, File.PRESETS_dir)
+File.APPLICATION_ICO_name = "Service.png"

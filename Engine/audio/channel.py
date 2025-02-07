@@ -1,13 +1,16 @@
-from typing import Optional
+from typing import Optional, Iterable, Self
 
 import Engine
 
 
 class Channel:
+    i = 0
+
     def __init__(self, device: 'Engine.audio.Device'):
         self.device = device
 
-        self.channel = Engine.pg.mixer.Channel(Engine.pg.mixer.get_num_channels())
+        self.channel = Engine.pg.mixer.Channel(Channel.i)
+        Channel.i += 1
         self.current_clip: Optional[Engine.audio.Clip] = None
 
         self.paused = False
@@ -17,15 +20,11 @@ class Channel:
         self.fadeout = 0
 
     @property
-    def volume(self):
-        return self.channel.get_volume()
-
-    @property
     def endevent(self):
         return self.channel.get_endevent()
 
     @endevent.setter
-    def endevent(self, value: 'Engine.event.Event'):
+    def endevent(self, value: Engine.events.Event):
         self.channel.set_volume(value.event)
 
     def _check_active(self) -> None:
@@ -39,7 +38,7 @@ class Channel:
             maxtime: int = 0,
             fade_ms: int = 0,
             start_time: float = 0.0
-    ) -> None:
+    ) -> Self:
         self._check_active()
 
         self.stop()
@@ -50,14 +49,18 @@ class Channel:
         if start_time > 0:
             self.set_position(start_time)
 
-    def stop(self) -> None:
+        return self
+
+    def stop(self) -> Self:
 
         self.channel.stop()
         self.current_clip = None
         self.paused = False
         self.pause_position = 0
 
-    def pause(self) -> None:
+        return self
+
+    def pause(self) -> Self:
         """Приостановка воспроизведения"""
         self._check_active()
 
@@ -66,7 +69,9 @@ class Channel:
             self.channel.pause()
             self.paused = True
 
-    def resume(self) -> None:
+        return self
+
+    def resume(self) -> Self:
         """Продолжение воспроизведения с места паузы"""
         self._check_active()
 
@@ -74,13 +79,35 @@ class Channel:
             self.play(self.current_clip, self.pause_position)
             self.paused = False
 
-    def set_volume(self, left: float, right: Optional[float] = None) -> None:
+        return self
+
+    @property
+    def volume(self) -> float | tuple[float, float]:
+        return self.channel.get_volume()
+
+    @volume.setter
+    def volume(self, volume=float | tuple[float, float]) -> None:
+        """Установка стерео громкости"""
+        self._check_active()
+        self.set_volume(*volume if isinstance(volume, Iterable) else volume)
+
+    def set_volume(self, left: float, right: Optional[float] = None) -> Self:
         """Установка стерео громкости"""
         self._check_active()
 
         if right is None:
             right = left
         self.channel.set_volume(left, right)
+
+        return self
+
+    @property
+    def position(self) -> float:
+        return self.get_position()
+
+    @position.setter
+    def position(self, item: float) -> None:
+        self.set_position(item)
 
     def get_position(self) -> float:
         """Текущая позиция воспроизведения в секундах"""
@@ -91,7 +118,7 @@ class Channel:
             return Engine.timing.uix_time() - self.start_time
         return 0.0
 
-    def set_position(self, seconds: float) -> None:
+    def set_position(self, seconds: float) -> Self:
         self._check_active()
 
         if self.current_clip:
@@ -100,6 +127,8 @@ class Channel:
                 self.stop()
             self.play(self.current_clip, seconds)
 
+        return self
+
     def is_playing(self) -> bool:
         return self.channel.get_busy() and not self.paused
 
@@ -107,7 +136,9 @@ class Channel:
         while self.is_playing():
             Engine.timing.System.wait(100)
 
-    def set_fadeout(self, milliseconds: int) -> None:
+    def set_fadeout(self, milliseconds: int) -> Self:
         self.fadeout = milliseconds
         self._check_active()
         self.channel.fadeout(milliseconds)
+
+        return self
