@@ -1,3 +1,5 @@
+from loguru import logger
+
 import Engine
 
 
@@ -8,6 +10,14 @@ class Device:
         self.is_active = False
         self._channels = []
         self._system = Engine.audio.System()
+
+        logger.success(
+            f"Engine audio Device - init\n"
+            f"name: {name},\n"
+            f"frequency: {frequency},\n"
+            f"channels: {channels},\n"
+            f"buffer: {buffer}"
+        )
 
     def activate(self):
         if self.is_active: return
@@ -25,6 +35,8 @@ class Device:
         self._system.set_active_device(self.name)
         self.is_active = True
 
+        logger.success(f"Engine audio Device - activate {self.name}")
+
     def deactivate(self):
         """Деактивирует аудиоустройство"""
         if not self.is_active:
@@ -36,6 +48,8 @@ class Device:
 
         if self._system.active_device == self:
             self._system._active_device = None
+
+        logger.success(f"Engine audio Device - deactivate {self.name}")
 
     def new_channel(self) -> 'Engine.audio.Channel':
         """Создает новый аудиоканал"""

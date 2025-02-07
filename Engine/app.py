@@ -90,7 +90,7 @@ class App(ABC):
         # init systems
         App.graphic = Engine.graphic.System()
         App.audio = Engine.audio.System()
-        App.clock = Engine.timing.System()
+        App.clock = Engine.timing.System(Engine.data.Win.fps)
 
         logger.success('ENGINE - INIT\n')
         return obj
@@ -106,11 +106,11 @@ class App(ABC):
     @staticmethod
     def __gl_data__(win_data: Engine.graphic.WinData) -> Engine.graphic.GlData:
         """ Pre-initialisation Graphic Libreary. Before main __init__ """
-        return Engine.graphic.GlData() if win_data.flags & Engine.pg.OPENGL else None
+        return Engine.graphic.GlData(win_data=win_data) if win_data.flags & Engine.pg.OPENGL else None
 
     def __init__(self) -> None:
         """ Just app initialisation. """
-        self.graphic.__post__init__()
+        self.graphic.__post_init__()
 
     def __post_init__(self) -> None:
         """ Post initialisation, after main __init__ """
@@ -133,7 +133,7 @@ class App(ABC):
             if window:
                 ...
             else:
-                App.graphic.win_data.extern({"size": Engine.math.vec2(event.x, event.y)})
+                App.graphic.window.data.extern({"size": Engine.math.vec2(event.x, event.y)})
                 self.events.defer(App.graphic.resset)
         elif event.type == Engine.pg.WINDOWMOVED:
             if window:
@@ -142,7 +142,7 @@ class App(ABC):
             if window:
                 ...
             else:
-                App.graphic.win_data.extern({"monitor": event.display_index})
+                App.graphic.window.data.extern({"monitor": event.display_index})
         elif event.type == Engine.pg.JOYDEVICEADDED:
             joy = Engine.pg.joystick.Joystick(event.device_index)
             App.joysticks[joy.get_instance_id()] = joy
@@ -262,7 +262,7 @@ class App(ABC):
             self.render(self)
             self.render.do_defer()
             # clok tick
-            App.clock.tick(Engine.data.Win.fps)
+            App.clock.tick()
 
     @staticmethod
     def critical_failure(err):
@@ -303,9 +303,14 @@ class App(ABC):
         App.InheritedСlass = app
 
         while App.running:
-            with Engine.failures.Catch(identifier=f"{App.mainloop}_Catch__ENGINE__"):
+            with Engine.failures.Catch(identifier=f"{App.mainloop}_Catch__ENGINE__") as c:
                 App.WorkingInstance = app()
                 App.WorkingInstance.run()
+
+            if KeyboardInterrupt in c.failures:
+                logger.info("KeyboardInterrupt")
+                return
+
             if App.WorkingInstance:
                 App.WorkingInstance.on_exit()
             if App.failures:

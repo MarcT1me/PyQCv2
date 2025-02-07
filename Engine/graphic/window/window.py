@@ -1,6 +1,8 @@
 ﻿""" Main engine Window
 """
 from pygetwindow import Window as _Win
+from loguru import logger
+from pprint import pformat
 
 import Engine
 from Engine.graphic.window.win_data import WinData
@@ -14,13 +16,24 @@ class Window:
         self.set_mode(win_data)
         """ init main window """
         self.utils: _Win = None
-        self._pg_win = None
+        self.__pg_win__ = None
+
+        logger.info(
+            "Engine graphic Window - init\n"
+            f"data:\n"
+            f"{pformat(self.data)}"
+        )
 
     def set_mode(self, win_data: WinData):
         self.data = win_data
-        self._pg_win = Engine.pg.display.set_mode(**self.data.to_kwargs())
+        kwargs = self.data.to_kwargs()
+        logger.info(
+            f"Engine Window - set_mode\n"
+            f"kwargs: {kwargs}"
+        )
+        self.__pg_win__ = Engine.pg.display.set_mode(**kwargs)
 
-    def set_utils(self):
+    def __post_init__(self):
         from pygetwindow import getWindowsWithTitle
         self.utils = getWindowsWithTitle(self.data.name)[0]
 
@@ -28,10 +41,10 @@ class Window:
         return f'<Window: {config.Win.name} ({Engine.pg.display.get_window_size()})>'
 
     def blit(self, *args, **kwargs):
-        self._pg_win.blit(*args, **kwargs)
+        self.__pg_win__.blit(*args, **kwargs)
 
     def get_size(self):
-        return vec2(self._pg_win.get_size())
+        return vec2(self.__pg_win__.get_size())
 
     @staticmethod
     def __quit__():

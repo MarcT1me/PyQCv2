@@ -2,6 +2,7 @@
 """
 from loguru import logger
 from typing import Optional, final
+from pprint import pformat
 # window utils
 from screeninfo import get_monitors, Monitor
 
@@ -11,41 +12,37 @@ import Engine
 @final
 class System:
     def __init__(self):
-        self.__monitors = get_monitors()
+        self.__monitors__ = get_monitors()
 
         # window
-        self.win_data: Engine.graphic.WinData = None  # Window configs
+        win_data: Engine.graphic.WinData = Engine.app.App.InheritedСlass.__win_data__()
         self.window: Engine.graphic.Window = None  # Window
 
         # gl
-        self.gl_data: Optional[Engine.graphic.GlData] = None
+        self.gl_data: Optional[Engine.graphic.GlData] = Engine.app.App.InheritedСlass.__gl_data__(win_data)
         self.context: Optional[Engine.mgl.Context] = None  # MGL context
         # game ui surface
         self.interface: Optional[Engine.graphic.HardInterface] = None  # Interface renderer
-
-        self._set_data()  # set data from App methods
 
         # set start attributes
         if self.gl_data:
             Engine.pg.display.gl_set_attribute(Engine.pg.GL_CONTEXT_MAJOR_VERSION, self.gl_data.minor_version)
             Engine.pg.display.gl_set_attribute(Engine.pg.GL_CONTEXT_MINOR_VERSION, self.gl_data.minor_version)
             Engine.pg.display.gl_set_attribute(Engine.pg.GL_CONTEXT_PROFILE_MASK, self.gl_data.profile_mask)
-            logger.debug(f'set gl attributes, {self.gl_data.minor_version, self.gl_data.minor_version}')
+            logger.info(f'set gl attributes, {self.gl_data.minor_version, self.gl_data.minor_version}')
 
         # init sub-systems
-        self._init_window()
-        self._init_gl()
+        self._init_window(win_data)
+        self._init_gl() if self.gl_data else Ellipsis
 
-    def _set_data(self):
-        self.win_data: Engine.graphic.WinData = Engine.app.App.InheritedСlass.__win_data__()  # Window configs
-        self.gl_data: Optional[Engine.graphic.GlData] = Engine.app.App.InheritedСlass.__gl_data__(self.win_data)
+        logger.success("Engine graphic System - init")
 
-    def _init_window(self) -> None:
+    def _init_window(self, win_data: 'Engine.graphic.WinData') -> None:
         """ set main variables"""
-        self.win_data.flags = self.win_data.flags | Engine.pg.HIDDEN
-        self.window = Engine.graphic.Window(win_data=self.win_data)
+        win_data.flags = win_data.flags | Engine.pg.HIDDEN
+        self.window = Engine.graphic.Window(win_data)
 
-        self.set_caption(self.win_data.name)
+        self.set_caption(self.window.data.name)
         self.set_icon(
             Engine.pg.image.load(
                 f"{Engine.data.File.APPLICATION_path}\\{Engine.data.File.APPLICATION_ICO_dir}"
@@ -54,21 +51,17 @@ class System:
         )
         self.toggle_full()
 
-        from pprint import pformat
-        logger.info(
-            "Engine graphic init - Window:\n"
-            f"{pformat(self.win_data)}\n"
-        )
-
     def _init_gl(self) -> None:
         """ set opengl attribute """
         self.context = Engine.mgl.create_context()
 
         self._set_gl_configs()
 
-        from pprint import pformat
         logger.info(
-            "Engine graphic init - GL:\n"
+            "Engine graphic System - init (GL)\n"
+            f"data:\n"
+            f"{pformat(self.gl_data)}\n"
+            f"context info:\n"
             f"{pformat(self.context.info)}\n"
         )
 
@@ -77,51 +70,66 @@ class System:
         self.context.blend_func = self.gl_data.blend_func
         self.set_viewport(self.gl_data.view)
 
-    def __post__init__(self):
-        self.win_data.flags = self.win_data.flags | Engine.pg.SHOWN
-        self.window.set_mode(self.win_data)
-        self.window.set_utils()
+    def __post_init__(self):
+        self.window.data.flags = self.window.data.flags | Engine.pg.SHOWN
+        self.window.set_mode(self.window.data)
+        self.window.__post_init__()
         self.interface = self.gl_data.interface_type()
 
     def resset(self) -> None:
-        self.interface.__destroy__()
-        self._set_data()  # set data from App methods
-        self.__post__init__()
-        self._set_gl_configs()
+        self.window.set_mode(self.window.data)
+
+        if self.gl_data:
+            self.gl_data = Engine.app.App.InheritedСlass.__gl_data__(self.window.data)  # set data from App methods
+
+            self.interface.__destroy__()
+            self.interface = self.gl_data.interface_type()
+
+            self._set_gl_configs()
+
+        logger.success("Engine graphic System - resset")
 
     def set_viewport(self, viewport: Engine.math.vec4) -> None:
         self.context.viewport = viewport
 
     def toggle_full(self) -> None:
         """ toggle fullscreen """
-        if self.win_data.full:
+        if self.window.data.full:
             # find window into any monitor
             index, monitor = self.get_current_monitor()
             # calculate flags and sizes
             size = Engine.math.vec2(monitor.width, monitor.height)
-            flags = Engine.data.Win.flags | Engine.pg.FULLSCREEN
+            flags = self.window.data | Engine.pg.FULLSCREEN
         else:
             index = None
             size = Engine.data.Win.size
             flags = Engine.data.Win.flags
         # setting changes
-        self.win_data = self.win_data.extern(
+        self.window.data = self.window.data.extern(
             {
                 'size': size,
                 'monitor': index,
             }
         )
 
-        if self.win_data.is_desktop:
-            self.win_data.extern({'flags': flags})
+        if self.window.data.is_desktop:
+            self.window.data.extern({'flags': flags})
             self.resset()
         else:
             Engine.pg.display.toggle_fullscreen()
 
+        logger.info(
+            f"Engine graphic System - toggle_full{' (desktop)' if self.window.data.is_desktop else ''}"
+            f"full: {self.window.data.full}\n"
+            f"size:\t{size}\n"
+            f"monitor:\t{index}\n"
+            f"flags:\t{flags}\n"
+        )
+
     def get_current_monitor(self) -> tuple[int, Monitor]:
         # iter on all monitors and find current window display
         win = self.window.utils
-        for index, monitor in enumerate(self.__monitors):
+        for index, monitor in enumerate(self.__monitors__):
             if monitor.x <= win.left and monitor.y <= win.top or \
                     monitor.x <= win.left + win.width and monitor.y <= win.top or \
                     monitor.x <= win.left and monitor.y <= win.top + win.height or \

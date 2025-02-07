@@ -1,33 +1,42 @@
 """ Engine time manager
 """
-from pygame.time import Clock as _pg_Clock
-from pygame.time import get_ticks
-from pygame.time import wait
-from numpy import uint8
-# standard
+from typing import final
+from loguru import logger
 from time import time as uix_time
-# Engine
+
 import Engine
 
 
+@final
 class System:
     """Engine time manager with deferred events and timers
 
     Attributes:
         delta (float): Time between last two ticks in seconds
         start (float): Timestamp of Clock initialization
+        fps (float): Value of Frames Per Second
     """
 
-    def __init__(self):
-        self.__pg_clock = _pg_Clock()
+    def __init__(self, fps: float = 0):
+        self.__pg_clock = Engine.pg.time.Clock()
         self.start: float = uix_time()
         self.delta: float = 0.0
+        self.fps = fps
 
         # Initialize roster with dedicated branches
         self.roster = Engine.arrays.Roster(default=0)
         self.roster.new_branch("timers")
         self.roster.new_branch("deferred_events")
-        self.__event_counter = uint8(0)
+        self.__event_counter = 0
+
+        logger.success(
+            f"Engine timing System - init"
+        )
+        logger.info(
+            f"\n"
+            f"start: {self.start},\n"
+            f"fps: {self.fps}"
+        )
 
     def get_fps(self) -> float:
         """Get current FPS count"""
@@ -40,17 +49,17 @@ class System:
     @staticmethod
     def wait(ms: int) -> None:
         """Wait specified milliseconds"""
-        wait(ms)
+        Engine.pg.time.wait(ms)
 
     @staticmethod
     def get_ticks() -> int:
         """Get milliseconds since program start"""
-        return get_ticks()
+        return Engine.pg.time.get_ticks()
 
-    def tick(self, fps: float = 0) -> float:
+    def tick(self) -> float:
         """Update clock and process deferred events"""
         self._process_deferred()
-        return self.__pg_clock.tick(fps)
+        return self.__pg_clock.tick(self.fps)
 
     def timer(self, name: str, cooldown: float) -> bool:
         """Check if timer is ready to trigger"""

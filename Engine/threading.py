@@ -74,12 +74,12 @@ class Thread(_PyThread):
     @classmethod
     def wait_pending(cls):
         while cls._roster.pending:
-            Engine.timing.wait(10)
+            Engine.timing.System.wait(10)
 
     @classmethod
     def wait_worked(cls):
         while len(cls._roster.worked) > 1:
-            Engine.timing.wait(10)
+            Engine.timing.System.wait(10)
 
     @classmethod
     def wait(cls):
@@ -100,10 +100,10 @@ class Thread(_PyThread):
 
     @classmethod
     def join_roster(
-        cls,
-        timeout: Optional[float] = None,
-        *,
-        from_thread_id: Optional[str] = None
+            cls,
+            timeout: Optional[float] = None,
+            *,
+            from_thread_id: Optional[str] = None
     ) -> None:
         filter_func = lambda x: x.id == from_thread_id if from_thread_id else lambda x: True
         cls._roster.worked.use("join", timeout, calling_filter=filter_func)

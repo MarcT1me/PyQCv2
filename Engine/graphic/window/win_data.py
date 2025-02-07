@@ -21,7 +21,6 @@ class WinData(MetaData):
     def extern(self, changes: dict) -> Self:
         """ extern ths win_data and return new """
         [setattr(self, var, value) for var, value in changes.items()]
-        Win.update(changes)
         return self
 
     def to_kwargs(self):

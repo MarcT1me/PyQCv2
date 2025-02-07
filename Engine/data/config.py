@@ -181,6 +181,7 @@ class File:
                             if fnmatch(lines_data[line_index], line_reference):
                                 lines_data[line_index] = File.__set_repl['<ignore message>']
                                 break
+
         data = ''.join(lines_data)
         logger.success(f'apply Engine configs from {name} eng-config')
         with Engine.failures.Catch(identifier=""):
