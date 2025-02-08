@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from Engine.data import AssetData
-from Engine.math import vec3
+import Engine
+from Engine.assets.asset_data import AssetData
+from Engine.math import vec3, vec4
 
 
 @dataclass
@@ -16,14 +17,14 @@ class PBRProperties:
 
 @dataclass
 class SubsurfaceProperties:
-    color: Optional[vec3] = vec3(1)
+    color: vec3 = vec3(1)
     radius: float = 0
     thickness: float = 1
 
 
 @dataclass
 class EmissionProperties:
-    color: Optional[vec3] = vec3(1)
+    color: Optional[vec3] = None
     texture_id: Optional[str] = None
     intensity: float = 1
 
@@ -36,11 +37,11 @@ class NormalMapProperties:
 
 @dataclass(init=True)
 class MaterialData(AssetData):
+    asset_type = Engine.DataType.Material
     shader_id: str = "default"
 
-    albedo_color: vec3 = vec3(1)
+    albedo_color: vec4 = vec4(1)
     albedo_texture_id: Optional[str] = None
-    alpha: float = 1
 
     pbr: Optional[PBRProperties] = None
     emission: Optional[EmissionProperties] = None

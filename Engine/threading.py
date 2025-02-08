@@ -30,7 +30,7 @@ class Thread(_PyThread):
 
         super().__init__(name=identifier, daemon=daemon)
         self.id = identifier
-        self._action_result = Engine.ResultType.NOT_FINISHED
+        self._action_result = Engine.ResultType.NotFinished
         self.action = action or self.action
 
         with Thread.global_lock:
@@ -92,7 +92,8 @@ class Thread(_PyThread):
         Thread.important_id = self.id
         Thread.wait_worked()
 
-    def mute_important(self):
+    @staticmethod
+    def mute_important():
         Thread.important_id = None
         Thread.important.notify_all()
 
@@ -107,6 +108,6 @@ class Thread(_PyThread):
             *,
             from_thread_id: Optional[str] = None
     ) -> None:
-        filter_func = lambda x: x.id == from_thread_id if from_thread_id else lambda x: True
+        filter_func = lambda x: x.id == from_thread_id if from_thread_id else True
         cls._roster.worked.use("join", timeout, calling_filter=filter_func)
         cls._roster.pending.use("join", timeout, calling_filter=filter_func)

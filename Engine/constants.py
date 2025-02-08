@@ -9,24 +9,67 @@ FUNC = TypeVar('FUNC', bound=Callable[..., Any])
 CLS = TypeVar('CLS', bound=type)
 
 
-# Engine default values
+class FileType(Flag):
+    Binary = auto()
+    Dill = auto()
+    Sav = auto()
+
+    Text = auto()
+    Config = auto()
+
+
 class DataType(Flag):
-    BINARY = auto()
-    TEXT = auto()
-    CONFIG = auto()
-    ASSET = auto()
-    NETWORK = auto()
+    # space or var variable
+    D1 = auto()
+    D2 = auto()
+    D3 = auto()
+    # general
+    Asset = auto()
+    Failure = auto()
+    Catch = auto()
+    Thread = auto()
+    Joystick = auto()
+    Animation = auto()
+    # audio
+    AudioDevice = auto()
+    AudioClip = auto()
+    AudioChannel = auto()
+    # video (future)
+    VideoClip = auto()
+    # graphics
+    Window = auto()
+    Renderer = auto()
+    Shader = auto()
+    Surface = auto()
+    Texture = auto()
+    # model
+    Model = auto()
+    Mesh = auto()
+    Material = auto()
+    # objects
+    Object = auto()
+    SceneObject = auto()
+    RendererObject = auto()
+    UiObject = auto()
+    Camera = auto()
+    Light = auto()
 
 
 class ResultType(Flag):
-    SUCCESS = auto()
-    NOT_FINISHED = auto()
+    NotFinished = auto()
+    Success = auto()
+    Error = auto()
 
 
 # flags
 class ShaderType(Flag):
     """ GLSL shader file types """
-    VERTEX_SHADER = auto()
-    FRAGMENT_SHADER = auto()
-    GEOMETRY_SHADER = auto()
-    COMPUTE_SHADER = auto()
+    Vertex = auto()
+    Fragment = auto()
+    Geometry = auto()
+    Compute = auto()
+
+    # future (MirageAPI)
+    Misl = auto()  # Mirage Shader Language. Example: interface.vert + interface.frag
+    Mislib = auto()  # Mirage Shader Libreary. Example: pbr.mislib
+    Micomp = auto()  # Mirage Compute (shader). Example: particle.micomp

@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
-from Engine.data import AssetData
+from Engine.data import MetaData
 
 
 @dataclass(init=True)
-class ModelData(AssetData):
+class ModelData(MetaData):
     mesh_id: str = "default"
     model_type: str = "static"

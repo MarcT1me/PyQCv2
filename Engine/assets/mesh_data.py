@@ -1,12 +1,14 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
-from Engine.data import AssetData
+import Engine
+from Engine.assets.asset_data import AssetData
 from Engine.math import vec3
 
 
 @dataclass(init=True)
 class MeshData(AssetData):
+    asset_type = Engine.DataType.Mesh
     vertices: list[vec3] = field(default_factory=list)
     indices: list[int] = field(default_factory=list)
     normals: list[vec3] = field(default_factory=list)

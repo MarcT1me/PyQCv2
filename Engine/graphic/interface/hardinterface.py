@@ -14,7 +14,7 @@ class HardInterface:
         self.shader = Engine.graphic.GL.Shader(
             f"{Engine.data.File.__ENGINE_DATA__}\\{Engine.data.File.ENGINE_SHADER_dir}\\"
             "interface",
-            Engine.ShaderType.VERTEX_SHADER | Engine.ShaderType.FRAGMENT_SHADER
+            Engine.ShaderType.Vertex | Engine.ShaderType.Fragment
         )
 
         self.texture: Engine.mgl.Texture = Engine.app.App.graphic.context.texture(self.surface.get_size(), 4)

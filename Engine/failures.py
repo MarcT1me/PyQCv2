@@ -9,12 +9,11 @@ import Engine
 
 
 @dataclass
-class Failure(Exception, Engine.data.MetaData):
+class Failure(Exception, Engine.data.TimedMetaData):
     """ A common error class """
     catch_id: str | None = field(default=None)
     critical: bool = field(default=True)
     err: Exception | None = None
-    time_stamp: float = field(default_factory=Engine.timing.uix_time)
 
 
 class FailuresRoster(Engine.arrays.Roster):

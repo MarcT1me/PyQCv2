@@ -1,17 +1,5 @@
 """ Engine settings
 Basic Python syntax
-specify the interface by example: 
-
-*:*type*
-or
-*class*Main data*
-
-To ignore it, you can use the decorator
-
-def ENGDATA_IGNORE(f): return f
-
-You are allowed to use yourself.
-It is considered bad manners to create functions or overwrite them, not counting lambda
 """
 from Engine.data.config import Main, File
 from os.path import join

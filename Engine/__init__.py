@@ -21,6 +21,7 @@ import Engine.audio
 # utils
 import Engine.failures
 import Engine.lscript
+import Engine.assets
 
 # space context
 import Engine.objects

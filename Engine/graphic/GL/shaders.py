@@ -11,20 +11,20 @@ import Engine.graphic
 
 
 class Shader:
-    def __init__(self, _path, shader_type, file_type=Engine.DataType.TEXT):
+    def __init__(self, _path, shader_type, file_type=Engine.FileType.Text):
         """ Shader """
         self.id = None  # him id
         """ selecting a type and creating a program """
-        if shader_type & ShaderType.COMPUTE_SHADER:
+        if shader_type & ShaderType.Compute:
             self.program: moderngl.Program = Engine.app.App.graphic.context.compute_shader(
                 self.__read_file__(_path + '.glsl', file_type)
             )
         else:
             program_kwargs = {}
-            if shader_type & ShaderType.VERTEX_SHADER and shader_type & ShaderType.FRAGMENT_SHADER:
+            if shader_type & ShaderType.Vertex and shader_type & ShaderType.Fragment:
                 program_kwargs['vertex_shader'] = self.__read_file__(_path + '.vert', file_type)
                 program_kwargs['fragment_shader'] = self.__read_file__(_path + '.frag', file_type)
-            if shader_type & ShaderType.GEOMETRY_SHADER:
+            if shader_type & ShaderType.Geometry:
                 program_kwargs['geometry_shader'] = self.__read_file__(_path + '.glsl', file_type)
             # simple program creating
             self.program: moderngl.Program = Engine.app.App.graphic.context.program(**program_kwargs)
@@ -32,9 +32,9 @@ class Shader:
     @staticmethod
     def __read_file__(path: str, _type) -> str:
         """ read shader from file with path """
-        if _type is Engine.DataType.TEXT:
+        if _type is Engine.FileType.Text:
             return Shader.__read_text_file__(path)
-        elif _type is Engine.DataType.BINARY:
+        elif _type is Engine.FileType.Binary:
             return Shader.__read_binary_file__(path)
         else:
             raise TypeError(f'cen\'t load shader from {_type} file type')
@@ -74,7 +74,7 @@ class ShadersProgram:
         if len(cls.roster) == 0:
             cls.roster['default-main'] = Shader(
                 rf'{File.__ENGINE_DATA__}\shaders\default\main',
-                ShaderType.VERTEX_SHADER | ShaderType.FRAGMENT_SHADER
+                ShaderType.Vertex | ShaderType.Fragment
             )
 
     @classmethod
