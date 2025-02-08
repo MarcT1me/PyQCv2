@@ -22,14 +22,13 @@ class TestApp(App):
         super().__init__()
         self.fps_font = Engine.pg.font.SysFont("Arial", 30)
         self.rnd_fps_font: Engine.pg.Surface = None
-
-    def __post_init__(self) -> None:
-        super().__post_init__()
-        clip = Engine.audio.Clip(
+        self.clip = Engine.audio.Clip(
             f"{Engine.data.File.APPLICATION_path}\\{Engine.data.File.AUDIO_dir}\\10. Crest.mp3"
         )
 
-        App.audio.active_devices.output.just.play(clip)
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        App.audio.active_devices.output.just.play(self.clip, loops=100)
 
     @Engine.decorators.deferrable_threadsafe
     @Engine.decorators.single_event

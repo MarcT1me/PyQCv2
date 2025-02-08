@@ -10,3 +10,4 @@ loguru
 pyglm
 numpy
 dill
+sounddevice

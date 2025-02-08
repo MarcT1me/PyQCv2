@@ -28,13 +28,13 @@ class Win:
     """ Screen settings """
     # main window
     size: tuple = (720, 480)
-    monitor: int = Engine.EMPTY
+    monitor: int = None
     name: str = Main.APPLICATION_name + ' | node window'
-    vsync: bool = Engine.NULL
-    full: bool = Engine.NO
-    is_desktop: bool = Engine.NO
+    vsync: bool = False
+    full: bool = False
+    is_desktop: bool = False
     flags: int = Engine.pg.DOUBLEBUF
-    fps: int = Engine.NULL
+    fps: int = 0
 
     update: 'ClassVar[classmethod[None, dict[str, Any]]]'  # type: ignore
 
@@ -75,8 +75,7 @@ class File:
             File.data[key].update(value)
         return File.data
 
-    """ Working with config.* file """
-
+    # Working with config.* file
     @staticmethod
     def fill_default_data(
             set_default_core=lambda: File.data.setdefault('Core', {})
@@ -120,7 +119,7 @@ class File:
     def reed_data(cls) -> None:
         """ Apply data from file onto dict """
 
-        if len(File.data) is Engine.NULL:
+        if len(File.data) == 0:
             exec(f"""from {File.config_ext} import load; File.data = File._load(load)""")
 
         if "size" in File.data.get("Win", {}):
@@ -133,59 +132,19 @@ class File:
     def save_data() -> None:
         """ Write CONFIG files """
 
-        if len(File.data) is Engine.NULL:
+        if len(File.data) == 0:
             File.reed_data()
 
         exec(f"""from {File.config_ext} import dump; File._dump(dump)""")
 
-    """ Working with *.engconf """
-    __set_repl = {
-        '<ignore message>': "# ENGDATA_IGNORED\n",
-        '<main>': {
-            "def*ENGDATA_IGNORE(*f*)*:*", 'from*Engine.data.config*import*',
-            "class MainData*:*", "MainData*:*type*",
-            "    *:*str*", "    *:*int*", "    *:*list*", "    *:*float*", "    *:*bool*", '    *:*type*'
-        },
-        'settings': {
-            "class File*:*", "File*:*type*",
-            "class Core*:*", "Core*:*type*",
-        },
-        'graphic': {
-            "class Screen*:*", "Screen*:*type*",
-        },
-    }  # references list
-
+    # Working with *.engconf
     @staticmethod
     def load_engine_config(name: str) -> None:
         logger.info(f'load Engine configs from {File.__ENGINE_DATA__}\\{name}.engconf')
 
-        from fnmatch import fnmatch
         # reading
         with open(rf'{File.__ENGINE_DATA__}\{name}.engconf', 'r') as config_file:
-            lines_data = config_file.readlines()
-        # passing through lines and changing by keys
-        for line_index in range(len(lines_data)):
-            # if the current line is ignored, quickly skip the line
-            if lines_data[line_index] == File.__set_repl['<ignore message>']:
-                continue
-            # if the next line is ignored, mark it as ignored and skip the current line
-            elif fnmatch(lines_data[line_index], "*@*ENGDATA_IGNORE*"):
-                lines_data[line_index] = File.__set_repl['<ignore message>']
-                lines_data[line_index + 1] = File.__set_repl['<ignore message>']
-                continue
-            else:
-                # in other cases, we first look for a reference in <main>
-                for line_reference in File.__set_repl['<main>']:
-                    if fnmatch(lines_data[line_index], line_reference):
-                        lines_data[line_index] = File.__set_repl['<ignore message>']
-                        break
-                else:
-                    if name in File.__set_repl.keys():
-                        # if you haven't found a reference among the main ones and the name is on the list, go through it
-                        for line_reference in File.__set_repl[name]:
-                            if fnmatch(lines_data[line_index], line_reference):
-                                lines_data[line_index] = File.__set_repl['<ignore message>']
-                                break
+            lines_data = config_file.read()
 
         data = ''.join(lines_data)
         with Engine.failures.Catch(identifier=f"{File.load_engine_config}_Catch__ENGINE__"):

@@ -3,7 +3,6 @@ size = [1280, 720]
 vsync = false
 full = false
 is_desktop = false
-monitor = "null"
 fps = 0
 
 [Core]

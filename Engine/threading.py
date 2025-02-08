@@ -30,7 +30,7 @@ class Thread(_PyThread):
 
         super().__init__(name=identifier, daemon=daemon)
         self.id = identifier
-        self._action_result = Engine.NotFinished
+        self._action_result = Engine.ResultType.NOT_FINISHED
         self.action = action or self.action
 
         with Thread.global_lock:
@@ -52,6 +52,8 @@ class Thread(_PyThread):
                 self._action_result = self.action()
 
         self.release()
+
+    def start(self): super().start()
 
     @property
     def result(self):

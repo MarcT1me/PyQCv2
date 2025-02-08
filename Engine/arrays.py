@@ -2,14 +2,12 @@
 """
 from typing import Callable, Self, Any
 
-import Engine
-
 
 class AttributesKeeper(dict):
     """ Hybrid attribute-dictionary container with default values
     """
 
-    def __init__(self, default: Any = Engine.EMPTY, *args, **kwargs):
+    def __init__(self, default: Any = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._default = default
 
@@ -37,6 +35,7 @@ class Roster(AttributesKeeper):
     """ A container for storing objects in a tree structure,
     inherited from AttributesKeeper
     """
+
     def new_branch(self, name: str) -> Self:
         self[name] = Roster(self._default)
         return self

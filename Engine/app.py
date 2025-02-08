@@ -48,14 +48,14 @@ class App(ABC):
         running (bool): a variable is a condition for the operation of the main loop
     """
     running: bool = True
-    InheritedСlass: Self = Engine.EMPTY
-    WorkingInstance: Self = Engine.EMPTY
+    InheritedСlass: Self = None
+    WorkingInstance: Self = None
 
     """ Systems """
-    graphic: Engine.graphic.System = Engine.EMPTY
-    audio: Engine.audio.System = Engine.EMPTY
-    clock: Engine.timing.System = Engine.EMPTY
-    event: Engine.events.System = Engine.EMPTY
+    graphic: Engine.graphic.System = None
+    audio: Engine.audio.System = None
+    clock: Engine.timing.System = None
+    event: Engine.events.System = None
 
     """ Error catching """
     failures: list[Engine.failures.Failure] = []
@@ -64,7 +64,7 @@ class App(ABC):
     joysticks: dict[int, Engine.pg.joystick.JoystickType] = {}
 
     """ Scene and space context """
-    root_scene: Engine.objects.Scene = Engine.EMPTY
+    root_scene: Engine.objects.Scene = None
 
     @final
     def __init_subclass__(cls, **kwargs):
@@ -110,11 +110,12 @@ class App(ABC):
 
     def __init__(self) -> None:
         """ Just app initialisation. """
-        self.graphic.__post_init__()
-        print()
 
     def __post_init__(self) -> None:
         """ Post initialisation, after main __init__ """
+        self.graphic.__post_init__()
+        print()
+        logger.success("APP - INIT\n")
 
     def __repr__(self) -> str:
         return f'<App: {Engine.data.Main.APPLICATION_name} (running={self.running}, failures={self.failures})>'
@@ -201,6 +202,8 @@ class App(ABC):
         :raises KeyboardInterrupt: if the cycle is not completed correctly.
         """
         self.__post_init__()
+
+        logger.info("APP - START\n")
         """ Main-loop """
         while self.running:
             # events
@@ -253,28 +256,29 @@ class App(ABC):
             logger.error(f"can`t release graphic System, {exc.args[0]}")
         Engine.pg.quit()
 
+        print()
         logger.success('ENGINE - QUIT\n')
 
     @classmethod
     def mainloop(cls) -> None:
-        if not issubclass(cls, App):
-            raise AttributeError('Arg `app` must be inherited by `Engine.app.App`')
         App.InheritedСlass = cls
 
         logger.info(
-            f"Start App"
-            f"name: {Engine.data.Main.APPLICATION_name}"
-            f"version: {Engine.data.Main.APPLICATION_version}"
+            f"Start Engine, "
+            f"name: {Engine.data.Main.APPLICATION_name}, "
+            f"version: {Engine.data.Main.APPLICATION_version} "
             f"at {'release' if Engine.data.Main.IS_RELEASE else 'debug'} mode"
         )
 
         while App.running:
+            logger.info("mainloop iteration")
+
             with Engine.failures.Catch(identifier=f"{App.mainloop}_Catch__ENGINE__") as c:
                 App.WorkingInstance = cls()
                 App.WorkingInstance.run()
 
             if KeyboardInterrupt in c.failures:
-                logger.info("KeyboardInterrupt")
+                logger.info("KeyboardInterrupt - exit engine")
                 return
 
             if App.WorkingInstance:

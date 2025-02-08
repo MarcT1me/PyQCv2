@@ -4,7 +4,6 @@ import moderngl
 from loguru import logger
 
 from Engine.constants import (
-    EMPTY, BINARY, TEXT, NULL,
     ShaderType,
 )
 from Engine.data.config import File
@@ -12,9 +11,9 @@ import Engine.graphic
 
 
 class Shader:
-    def __init__(self, _path, shader_type, file_type=NULL):
+    def __init__(self, _path, shader_type, file_type=Engine.DataType.TEXT):
         """ Shader """
-        self.id = EMPTY  # him id
+        self.id = None  # him id
         """ selecting a type and creating a program """
         if shader_type & ShaderType.COMPUTE_SHADER:
             self.program: moderngl.Program = Engine.app.App.graphic.context.compute_shader(
@@ -33,11 +32,9 @@ class Shader:
     @staticmethod
     def __read_file__(path: str, _type) -> str:
         """ read shader from file with path """
-        if _type is NULL:
+        if _type is Engine.DataType.TEXT:
             return Shader.__read_text_file__(path)
-        elif _type is TEXT:
-            return Shader.__read_text_file__(path)
-        elif _type is BINARY:
+        elif _type is Engine.DataType.BINARY:
             return Shader.__read_binary_file__(path)
         else:
             raise TypeError(f'cen\'t load shader from {_type} file type')
@@ -62,11 +59,11 @@ class Shader:
             logger.error(f'uniform `{u_name}` not used in shader')
 
     def __getitem__(self, u_name):
-        return self.program.get(u_name, EMPTY)
+        return self.program.get(u_name, None)
 
     def __release__(self):
         self.program.release()
-        if self.id is not EMPTY:
+        if self.id is not None:
             ShadersProgram.roster.pop(self.id)
 
 
@@ -74,7 +71,7 @@ class ShadersProgram:
     roster: dict[str, Shader] = {}
 
     def __new__(cls, *args, **kwargs):
-        if len(cls.roster) is NULL:
+        if len(cls.roster) == 0:
             cls.roster['default-main'] = Shader(
                 rf'{File.__ENGINE_DATA__}\shaders\default\main',
                 ShaderType.VERTEX_SHADER | ShaderType.FRAGMENT_SHADER

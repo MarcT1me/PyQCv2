@@ -14,12 +14,11 @@ You are allowed to use yourself.
 It is considered bad manners to create functions or overwrite them, not counting lambda
 """
 from Engine.data.config import Win
-from Engine import YES, NO
 from pygame import RESIZABLE
 
 """ Set Screen Settings """
 Win.name = Win.name
 Win.size = Win.size
 Win.fps = Win.fps
-Win.vsync = NO
+Win.vsync = Win.vsync
 Win.flags |= RESIZABLE

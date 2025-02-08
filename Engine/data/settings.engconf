@@ -13,19 +13,15 @@ def ENGDATA_IGNORE(f): return f
 You are allowed to use yourself.
 It is considered bad manners to create functions or overwrite them, not counting lambda
 """
-from Engine.data.config import Core, Main, File
-from Engine.constants import EMPTY, YES, NO
+from Engine.data.config import Main, File
 from os.path import join
-
-""" Set Core Settings """
-Core.default = EMPTY
 
 """ Set Main Settings """
 # const
-Main.IS_RELEASE = NO
+Main.IS_RELEASE = False
 # names
 Main.APPLICATION_name = 'Test App'
-Main.APPLICATION_version = '0.0.1'
+Main.APPLICATION_version = '0.5.0'
 Main.ENGINE_name = Main.ENGINE_name
 
 """ Set File Settings """

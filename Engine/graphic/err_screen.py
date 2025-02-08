@@ -34,7 +34,7 @@ def show_window(*,
     """ Working with pygame """
     clock = pygame.time.Clock()
     # process background
-    background = pygame.image.load(rf'{File.__ENGINE_DATA__}/messages/err_background.png')
+    background = pygame.image.load(rf'{File.__ENGINE_DATA__}\presets/messages/err_background.png')
     background = pygame.transform.scale_by(background, .75)
     # screen
     screen_size = background.get_size()
