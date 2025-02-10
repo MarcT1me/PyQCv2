@@ -24,9 +24,11 @@ class System:
         self.fps = fps
 
         # Initialize roster with dedicated branches
-        self.roster = Engine.arrays.Roster(default=0)
-        self.roster.new_branch("timers")
-        self.roster.new_branch("deferred_events")
+        self.roster = (
+            Engine.arrays.Roster(default=0)
+            .new_branch("timers")
+            .new_branch("deferred_events")
+        )
         self.__event_counter = 0
 
         logger.info(

@@ -59,7 +59,7 @@ class File:
     PRESETS_dir: str = "presets"
     ENGINE_SHADER_dir: str = f'{PRESETS_dir}\\shaders'
     DATA_dir: str = "gamedata"
-    SHADER_dir: str = "presets\\shaders"
+    SHADER_dir: str = "shaders"
     TEXTURE_dir: str = "textures"
     AUDIO_dir: str = "audio"
     data_path: str = \

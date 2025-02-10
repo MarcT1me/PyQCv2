@@ -1,10 +1,12 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from pathlib import Path
 
 import Engine
-from Engine.assets.asset_data import AssetData
+from Engine.data import MetaData
 
 
 @dataclass
-class AssetFileData(AssetData):
-    path: str = None
-    file_type: Engine.FileType = None
+class AssetFileData(MetaData):
+    type: Engine.DataType = Engine.DataType.Asset
+    dependencies: 'list[AssetFileData]' = field(default_factory=list)
+    path: Path = None

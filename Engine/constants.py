@@ -9,26 +9,24 @@ FUNC = TypeVar('FUNC', bound=Callable[..., Any])
 CLS = TypeVar('CLS', bound=type)
 
 
-class FileType(Flag):
-    Binary = auto()
-    Dill = auto()
-    Sav = auto()
-
-    Text = auto()
-    Config = auto()
-
-
 class DataType(Flag):
+    # file types
+    Binary = auto()
+    Text = auto()
+    Asset = auto()
+    Config = auto()
+    Sav = auto()
+    Dill = auto()
     # space or var variable
     D1 = auto()
     D2 = auto()
     D3 = auto()
     # general
-    Asset = auto()
     Failure = auto()
     Catch = auto()
     Thread = auto()
     Joystick = auto()
+    # animation
     Animation = auto()
     # audio
     AudioDevice = auto()

@@ -4,7 +4,8 @@ import Engine
 from Engine.data import MetaData
 
 
-@dataclass(init=True)
+@dataclass
 class AssetData(MetaData):
-    asset_type: Engine.DataType = Engine.DataType.Asset
-    dependencies: list[str] = field(default_factory=list)
+    type: Engine.DataType = Engine.DataType.Asset
+    dependencies: 'list[Engine.assets.LoadedAsset]' = field(default_factory=list)
+    data: Engine.T = None

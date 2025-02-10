@@ -1,6 +1,8 @@
 ﻿""" Various additional structures for data storage
 """
-from typing import Callable, Self, Any
+from typing import Self, Any
+
+import Engine
 
 
 class AttributesKeeper(dict):
@@ -36,16 +38,16 @@ class Roster(AttributesKeeper):
     inherited from AttributesKeeper
     """
 
-    def new_branch(self, name: str) -> Self:
-        self[name] = Roster(self._default)
+    def __init__(self, name: str = "root", branch_type: Engine.CLS = None, *args, **kwargs):
+        self.name = name
+        self._branch_type = Roster if branch_type is None else branch_type
+        super().__init__(*args, **kwargs)
+
+    def new_branch(self, name: str, *args, **kwargs) -> Self:
+        self[name] = self._branch_type(name, default=self._default, *args, **kwargs)
         return self
 
-    def use(self, method_name: str, *args, calling_filter: Callable[[Any], bool], **kwargs) -> None:
+    def use(self, method_name: str, calling_filter: Engine.FUNC, *args, **kwargs) -> None:
         for i in tuple(self.values()):
             if not calling_filter(i):
                 getattr(i, method_name)(*args, **kwargs)
-
-    def release(self) -> None:
-        for i in self.values():
-            i.release()
-        self.clear()

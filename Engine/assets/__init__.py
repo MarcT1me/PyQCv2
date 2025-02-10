@@ -1,5 +1,9 @@
 from Engine.assets.asset_data import AssetData
 from Engine.assets.asset_file import AssetFileData
+from Engine.assets.loaded_asset import LoadedAsset
+
+from Engine.assets.loader import Loader
+from Engine.assets.manager import Manager
 
 from Engine.assets.audio_clip_data import AudioClipData
 from Engine.assets.material_data import MaterialData
