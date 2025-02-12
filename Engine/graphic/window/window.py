@@ -38,7 +38,7 @@ class Window:
         self.utils = getWindowsWithTitle(self.data.name)[0]
 
     def __repr__(self):
-        return f'<Window: {config.Win.name} ({Engine.pg.display.get_window_size()})>'
+        return f'<Window: {config.WinDefault.name} ({Engine.pg.display.get_window_size()})>'
 
     def blit(self, *args, **kwargs):
         self.__pg_win__.blit(*args, **kwargs)

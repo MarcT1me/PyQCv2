@@ -45,8 +45,8 @@ class System:
         self.set_caption(self.window.data.name)
         self.set_icon(
             Engine.pg.image.load(
-                f"{Engine.data.File.APPLICATION_path}\\{Engine.data.File.APPLICATION_ICO_dir}"
-                f"\\{Engine.data.File.APPLICATION_ICO_name}"
+                f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.APPLICATION_ICO_dir}"
+                f"\\{Engine.data.FileSystem.APPLICATION_ICO_name}"
             )
         )
         self.toggle_full()
@@ -102,8 +102,8 @@ class System:
             flags = self.window.data | Engine.pg.FULLSCREEN
         else:
             index = None
-            size = Engine.data.Win.size
-            flags = Engine.data.Win.flags
+            size = Engine.data.WinDefault.size
+            flags = Engine.data.WinDefault.flags
         # setting changes
         self.window.data = self.window.data.extern(
             {

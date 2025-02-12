@@ -1,6 +1,6 @@
 ﻿""" Engine CONSTANTS
 """
-from enum import Flag, auto
+from enum import Enum, Flag, auto
 from typing import TypeVar, Callable, Any
 
 """ types """
@@ -10,13 +10,6 @@ CLS = TypeVar('CLS', bound=type)
 
 
 class DataType(Flag):
-    # file types
-    Binary = auto()
-    Text = auto()
-    Asset = auto()
-    Config = auto()
-    Sav = auto()
-    Dill = auto()
     # space or var variable
     D1 = auto()
     D2 = auto()
@@ -26,6 +19,8 @@ class DataType(Flag):
     Catch = auto()
     Thread = auto()
     Joystick = auto()
+    Asset = auto()
+    Config = auto()
     # animation
     Animation = auto()
     # audio
@@ -53,7 +48,7 @@ class DataType(Flag):
     Light = auto()
 
 
-class ResultType(Flag):
+class ResultType(Enum):
     NotFinished = auto()
     Success = auto()
     Error = auto()

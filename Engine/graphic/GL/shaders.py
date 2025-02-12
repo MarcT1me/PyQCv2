@@ -6,12 +6,12 @@ from loguru import logger
 from Engine.constants import (
     ShaderType,
 )
-from Engine.data.config import File
+from Engine.data.config import FileSystem
 import Engine.graphic
 
 
 class Shader:
-    def __init__(self, _path, shader_type, file_type=Engine.DataType.Text):
+    def __init__(self, _path, shader_type, file_type=Engine.assets.MajorType.Text):
         """ Shader """
         self.id = None  # him id
         """ selecting a type and creating a program """
@@ -32,9 +32,9 @@ class Shader:
     @staticmethod
     def __read_file__(path: str, _type) -> str:
         """ read shader from file with path """
-        if _type is Engine.DataType.Text:
+        if _type is Engine.assets.MajorType.Text:
             return Shader.__read_text_file__(path)
-        elif _type is Engine.DataType.Binary:
+        elif _type is Engine.assets.MajorType.Bin:
             return Shader.__read_binary_file__(path)
         else:
             raise TypeError(f'cen\'t load shader from {_type} file type')
@@ -73,7 +73,7 @@ class ShadersProgram:
     def __new__(cls, *args, **kwargs):
         if len(cls.roster) == 0:
             cls.roster['default-main'] = Shader(
-                rf'{File.__ENGINE_DATA__}\shaders\default\main',
+                rf'{FileSystem.__ENGINE_DATA__}\shaders\default\main',
                 ShaderType.Vertex | ShaderType.Fragment
             )
 

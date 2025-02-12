@@ -12,7 +12,7 @@ class HardInterface:
         self.surface = Engine.pg.Surface(Engine.app.App.graphic.gl_data.interface_resolution, flags=Engine.pg.SRCALPHA)
 
         self.shader = Engine.graphic.GL.Shader(
-            f"{Engine.data.File.__ENGINE_DATA__}\\{Engine.data.File.ENGINE_SHADER_dir}\\"
+            f"{Engine.data.FileSystem.__ENGINE_DATA__}\\{Engine.data.FileSystem.ENGINE_SHADER_dir}\\"
             "interface",
             Engine.ShaderType.Vertex | Engine.ShaderType.Fragment
         )

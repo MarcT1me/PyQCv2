@@ -1,31 +1,29 @@
 """ Engine settings
 Basic Python syntax
 """
-from Engine.data.config import Main, File
+from Engine.data.config import MainData, FileSystem
 from os.path import join
 
 """ Set Main Settings """
-# const
-Main.IS_RELEASE = False
-# names
-Main.APPLICATION_name = 'Test App'
-Main.APPLICATION_version = '0.6.1'
-Main.ENGINE_name = Main.ENGINE_name
+MainData.IS_RELEASE = False
+# string
+MainData.APPLICATION_name = 'Test App'
+MainData.APPLICATION_version = '0.7.0'
 
 """ Set File Settings """
-File.config_name = File.config_name
-File.config_ext = File.config_ext
-File.config_local_dir = File.config_local_dir
-# names
-File.ENGINE_DATA_DIR = File.ENGINE_DATA_DIR
-File.PRESETS_dir = File.PRESETS_dir
-File.ENGINE_SHADER_dir = File.ENGINE_SHADER_dir
+# Directory names
+FileSystem.ENGINE_DATA_DIR = FileSystem.ENGINE_DATA_DIR
+FileSystem.PRESETS_dir = FileSystem.PRESETS_dir
+FileSystem.ENGINE_SHADER_dir = FileSystem.ENGINE_SHADER_dir
+FileSystem.DATA_dir = FileSystem.DATA_dir
+FileSystem.SHADER_dir = join(FileSystem.ENGINE_DATA_DIR, FileSystem.PRESETS_dir, FileSystem.ENGINE_SHADER_dir)
+FileSystem.TEXTURE_dir = join(FileSystem.PRESETS_dir, FileSystem.TEXTURE_dir)
+FileSystem.AUDIO_dir = join(FileSystem.PRESETS_dir, FileSystem.AUDIO_dir)
 
-File.DATA_dir = File.DATA_dir
+# config and other data
+FileSystem.config_name = FileSystem.config_name
+FileSystem.config_local_dir = FileSystem.config_local_dir
 
-File.SHADER_dir = join(File.ENGINE_DATA_DIR, File.PRESETS_dir, File.ENGINE_SHADER_dir)
-File.TEXTURE_dir = join(File.PRESETS_dir, File.TEXTURE_dir)
-File.AUDIO_dir = join(File.PRESETS_dir, File.AUDIO_dir)
-# ico names
-File.APPLICATION_ICO_dir = join(File.ENGINE_DATA_DIR, File.PRESETS_dir)
-File.APPLICATION_ICO_name = "Service.png"
+# ico settings
+FileSystem.APPLICATION_ICO_dir = join(FileSystem.ENGINE_DATA_DIR, FileSystem.PRESETS_dir)
+FileSystem.APPLICATION_ICO_name = "Service.png"

@@ -53,8 +53,6 @@ class Thread(_PyThread):
 
         self.release()
 
-    def start(self): super().start()
-
     @property
     def result(self):
         """Get thread execution result"""

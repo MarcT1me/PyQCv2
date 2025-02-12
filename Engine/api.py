@@ -1,7 +1,7 @@
 ﻿from loguru import logger
 import os
 import subprocess
-from Engine.data.config import File, Main
+from Engine.data.config import FileSystem, MainData
 
 __copy_arr = {
     # engine
@@ -22,10 +22,10 @@ __copy_arr = {
 
 
 def __copy(dir: str, path: str, files: set[str]):
-    os.makedirs(f'{File.APPLICATION_path}\\{path}')
+    os.makedirs(f'{FileSystem.APPLICATION_path}\\{path}')
     for file in files:
-        with open(f"{File.__ENGINE_DATA__}\\{dir}\\{file}", "rb") as f1:
-            with open(f"{File.APPLICATION_path}\\{path}\\{file}", "wb") as f2:
+        with open(f"{FileSystem.__ENGINE_DATA__}\\{dir}\\{file}", "rb") as f1:
+            with open(f"{FileSystem.APPLICATION_path}\\{path}\\{file}", "wb") as f2:
                 f2.write(f1.read())
 
 
@@ -34,16 +34,16 @@ def create_project():
     try:
         for d, (p, f) in __copy_arr:
             __copy(dir=p, path=p, files=f)
-        os.makedirs(rf'{File.APPLICATION_path}/presets')
+        os.makedirs(rf'{FileSystem.APPLICATION_path}/presets')
 
         logger.debug("Creating VirtualEnv")
-        subprocess.run(f"python -m venv {File.APPLICATION_path}")
-        subprocess.run(f"{File.APPLICATION_path}\\venv\\Scripts\\activate")
+        subprocess.run(f"python -m venv {FileSystem.APPLICATION_path}")
+        subprocess.run(f"{FileSystem.APPLICATION_path}\\venv\\Scripts\\activate")
         logger.success("VirtualEnv created")
 
         logger.debug("Adding link on Engine")
-        subprocess.run(f"mklink /D {File.APPLICATION_path}\\venv\\Lib\\site-package\\Engine "
-                       f"{File.__ENGINE_DATA__.replace('/data', '')}")
+        subprocess.run(f"mklink /D {FileSystem.APPLICATION_path}\\venv\\Lib\\site-package\\Engine "
+                       f"{FileSystem.__ENGINE_DATA__.replace('/data', '')}")
         logger.success("link created")
 
         logger.debug("downloading requirements")
@@ -51,7 +51,7 @@ def create_project():
         logger.success("PROJECT CREATED")
 
         logger.debug("starting PyCharm")
-        subprocess.run(f"pycharm {File.APPLICATION_path}")
+        subprocess.run(f"pycharm {FileSystem.APPLICATION_path}")
         logger.success("PyCharm started")
 
     except Exception as e:
@@ -59,9 +59,9 @@ def create_project():
     return start()
 
 
-def build(*, patch: str = File.APPLICATION_path, name: str = 'main.pyw'):
-    File.load_engine_config("settings")
-    if not Main.IS_RELEASE:
+def build(*, patch: str = FileSystem.APPLICATION_path, name: str = 'main.pyw'):
+    FileSystem.load_engine_config("settings")
+    if not MainData.IS_RELEASE:
         logger.debug("start changing configs")
         with open(rf'{patch}/Engine/data/settings.engconf', 'r') as f_r:
             data = ''.join(map(
@@ -73,8 +73,8 @@ def build(*, patch: str = File.APPLICATION_path, name: str = 'main.pyw'):
         logger.success("configs changed")
 
     logger.debug("create cmd")
-    cmd = f'pyinstaller --name \"{Main.APPLICATION_name}\" ' + \
-          f'--icon=\"{patch}/{File.APPLICATION_ICO_dir}/{File.APPLICATION_ICO_name}\" ' + \
+    cmd = f'pyinstaller --name \"{MainData.APPLICATION_name}\" ' + \
+          f'--icon=\"{patch}/{FileSystem.APPLICATION_ICO_dir}/{FileSystem.APPLICATION_ICO_name}\" ' + \
           f'--add-data \"C:/Program Files/Python311/Lib/site-packages/glcontext;glcontext\" ' + \
           f'--add-data \"C:/Program Files/Python311/Lib/site-packages/toml;toml\" ' + \
           f'--add-data \"{patch}/Engine/data;../Engine/data\" ' + \

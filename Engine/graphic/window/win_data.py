@@ -1,20 +1,20 @@
 from dataclasses import dataclass, field
 from typing import Self
 
-from Engine.data import MetaData, Win
+from Engine.data import MetaData, WinDefault
 from Engine.math import vec2
 
 
 @dataclass
 class WinData(MetaData):
     """ data for every engine window """
-    size: vec2 = field(default_factory=lambda: vec2(Win.size))
-    name: str = field(default_factory=lambda: Win.name)
-    monitor: int | None = field(default_factory=lambda: Win.monitor)
-    vsync: int = field(default_factory=lambda: Win.vsync)
-    full: bool = field(default_factory=lambda: Win.full)
-    is_desktop: bool = field(default_factory=lambda: Win.is_desktop)
-    flags: int = field(default_factory=lambda: Win.flags)
+    size: vec2 = field(default_factory=lambda: vec2(WinDefault.size))
+    name: str = field(default_factory=lambda: WinDefault.name)
+    monitor: int | None = field(default_factory=lambda: WinDefault.monitor)
+    vsync: int = field(default_factory=lambda: WinDefault.vsync)
+    full: bool = field(default_factory=lambda: WinDefault.full)
+    is_desktop: bool = field(default_factory=lambda: WinDefault.is_desktop)
+    flags: int = field(default_factory=lambda: WinDefault.flags)
 
     def extern(self, changes: dict) -> Self:
         """ extern ths win_data and return new """

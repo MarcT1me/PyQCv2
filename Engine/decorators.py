@@ -5,7 +5,7 @@ import inspect
 import Engine
 
 
-class StorageFunction:
+class _StorageFunction:
     def __init__(self, func, **attrs):
         self.func = func
         self.__dict__.update(attrs)
@@ -15,9 +15,9 @@ class StorageFunction:
         return self.func(*args, **kwargs)
 
 
-def with_store(**attrs: Any) -> Callable[[Engine.FUNC], StorageFunction]:
+def with_store(**attrs: Any) -> Callable[[Engine.FUNC], _StorageFunction]:
     def decorator(func):
-        return StorageFunction(func, **attrs)
+        return _StorageFunction(func, **attrs)
 
     return decorator
 
@@ -210,7 +210,7 @@ def dev_only(
     def decorator(func: Engine.FUNC) -> Engine.FUNC:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
-            if Engine.data.Main.IS_RELEASE:
+            if Engine.data.MainData.IS_RELEASE:
                 return _default
             return func(*args, **kwargs)
 

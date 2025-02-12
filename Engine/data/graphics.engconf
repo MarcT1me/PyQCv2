@@ -1,12 +1,12 @@
 """ Engine settings
 Basic Python syntax
 """
-from Engine.data.config import Win
+from Engine.data.config import WinDefault
 from pygame import RESIZABLE
 
 """ Set Screen Settings """
-Win.name = Win.name
-Win.size = Win.size
-Win.fps = Win.fps
-Win.vsync = Win.vsync
-Win.flags |= RESIZABLE
+WinDefault.name = WinDefault.name
+WinDefault.size = WinDefault.size
+WinDefault.fps = WinDefault.fps
+WinDefault.vsync = WinDefault.vsync
+WinDefault.flags |= RESIZABLE

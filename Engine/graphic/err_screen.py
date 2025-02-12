@@ -1,7 +1,7 @@
 import traceback
 
 from Engine import pg as pygame
-from Engine.data import File
+from Engine.data import FileSystem
 from Engine.scripts.button import Button
 
 
@@ -34,7 +34,7 @@ def show_window(*,
     """ Working with pygame """
     clock = pygame.time.Clock()
     # process background
-    background = pygame.image.load(rf'{File.__ENGINE_DATA__}\presets/messages/err_background.png')
+    background = pygame.image.load(rf'{FileSystem.__ENGINE_DATA__}\presets/messages/err_background.png')
     background = pygame.transform.scale_by(background, .75)
     # screen
     screen_size = background.get_size()
@@ -43,7 +43,7 @@ def show_window(*,
     white_surf.fill('white')
     pygame.display.set_icon(
         pygame.image.load(
-            rf'{File.__ENGINE_DATA__}\presets\Service.png'
+            rf'{FileSystem.__ENGINE_DATA__}\presets\Service.png'
         )
     )
     # caption

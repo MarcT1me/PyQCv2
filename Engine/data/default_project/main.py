@@ -7,15 +7,15 @@ class QuantumApp(App):
     def __pre_init__(self, *args, **kwargs) -> None:
         super().__pre_init__()
         # load config file
-        Engine.data.File.reed_data()
-        Engine.data.File.fill_default_data()
+        Engine.data.FileSystem.reed_data()
+        Engine.data.FileSystem.fill_default_data()
 
     def __win_data__(self) -> Engine.graphic.WinData:
         # set Window Data
         return Engine.graphic.WinData(
             title="Gravity Simulation 3",
             size=Engine.math.vec2(1600, 900),
-            flags=Engine.data.Win.flags | Engine.pg.OPENGL
+            flags=Engine.data.WinDefault.flags | Engine.pg.OPENGL
         )
 
     def __gl_data__(self) -> Engine.graphic.GlData:
@@ -28,8 +28,8 @@ class QuantumApp(App):
         super().__init__(*args, **kwargs)
         Engine.graphic.System.set_icon(
             Engine.pg.image.load(
-                f"{Engine.data.File.APPLICATION_path}\\{Engine.data.File.APPLICATION_ICO_dir}"
-                f"\\{Engine.data.File.APPLICATION_ICO_name}"
+                f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.APPLICATION_ICO_dir}"
+                f"\\{Engine.data.FileSystem.APPLICATION_ICO_name}"
             )
         )
 
