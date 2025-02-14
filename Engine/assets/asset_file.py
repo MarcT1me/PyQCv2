@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import  Optional
+from typing import Optional, Iterable
 from pathlib import Path
 
 import Engine
@@ -13,6 +13,8 @@ class AssetFileData(MetaData):
     path: Path = None
 
     def __post_init__(self):
+        if not isinstance(self.type, Engine.assets.AssetType) and isinstance(self.type, Iterable):
+            self.type = Engine.assets.AssetType(*self.type)
         self.path = Path(self.path)
         if not self.path.exists():
             raise FileNotFoundError(f"Asset file not found: {self.path}")

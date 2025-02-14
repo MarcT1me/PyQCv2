@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Optional, TextIO
 
 import toml
 
@@ -8,12 +8,12 @@ from loguru import logger
 
 
 class TomlConfigLoader(Engine.assets.AssetLoader):
-    def load(self, asset_file: 'Engine.assets.AssetFileData') -> Any:
+    def load(self, asset_file: 'Engine.assets.AssetFileData') -> TextIO:
         return asset_file.path.open()
 
     def create(
             self, asset_file: 'Engine.assets.AssetFileData', dependencies: 'Optional[list[Engine.assets.LoadedAsset]]',
-            content: Any
+            content: TextIO
     ) -> 'Engine.assets.AssetData':
         config = Engine.assets.ConfigData(
             name=asset_file.name,
@@ -48,11 +48,10 @@ class TestApp(App):
         self.main_config: Engine.assets.LoadedAsset = App.assets.load(
             Engine.assets.AssetFileData(
                 name=Engine.data.FileSystem.config_name,
-                type=Engine.assets.AssetType(Engine.assets.MajorType.Toml, Engine.assets.MinorType.Config),
+                type=(Engine.assets.MajorType.Toml, Engine.assets.MinorType.Config),
                 path=f"{Engine.data.FileSystem.data_path()}\{Engine.data.FileSystem.config_name}.toml"
             )
         )
-        print(self.main_config.asset_data)
 
     @staticmethod
     def __win_data__() -> Engine.graphic.WinData:
@@ -62,9 +61,9 @@ class TestApp(App):
         return Engine.graphic.WinData(
             name="Main Window",
             size=main_config_asset.data["Win"]["size"],
-            # vsync=main_config_asset.data["Win"]["vsync"],
-            # full=main_config_asset.data["Win"]["full"],
-            # is_desktop=main_config_asset.data["Win"]["is_desktop"],
+            vsync=main_config_asset.data["Win"]["vsync"],
+            full=main_config_asset.data["Win"]["full"],
+            is_desktop=main_config_asset.data["Win"]["is_desktop"],
             flags=Engine.data.WinDefault.flags | Engine.pg.OPENGL
         )
 
@@ -78,15 +77,19 @@ class TestApp(App):
         self.rnd_fps_font: Engine.pg.Surface = None
 
         # load music
-        self.clip = Engine.audio.Clip(
-            f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.AUDIO_dir}\\10. Crest.mp3"
+        self.clip = self.assets.load(
+            Engine.assets.AssetFileData(
+                name="10. Crest",
+                type=(Engine.assets.MajorType.PyGame, Engine.assets.MinorType.AudioClip),
+                path=f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.AUDIO_dir}\\10. Crest.mp3"
+            )
         )
 
     def __post_init__(self) -> None:
         super().__post_init__()  # post-init engine
 
         # play music in loop (100 times)
-        App.audio.active_devices.output.just.play(self.clip, loops=100)
+        App.audio.active_devices.output.just.play(self.clip.data, loops=100)
 
     @Engine.decorators.deferrable_threadsafe
     @Engine.decorators.single_event

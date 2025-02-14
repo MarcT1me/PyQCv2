@@ -131,7 +131,7 @@ class App(ABC):
 
     def __post_init__(self) -> None:
         """ Post initialisation, after main __init__ """
-        self.graphic.__post_init__()
+        App.graphic.__post_init__()
         print()
         logger.success("APP - INIT\n")
 
