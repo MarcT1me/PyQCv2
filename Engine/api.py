@@ -69,12 +69,12 @@ def create_project():
         logger.success("PROJECT CREATED")
 
         try:
-            logger.debug("starting Rider")
-            print(f"rider {FileSystem.APPLICATION_path}")
-            subprocess.run(f"rider \"{FileSystem.APPLICATION_path}\"", shell=True)
+            logger.debug("starting PyCharm")
+            print(f"pycharm {FileSystem.APPLICATION_path}")
+            subprocess.run(f"pycharm \"{FileSystem.APPLICATION_path}\"", shell=True)
             logger.success("PyCharm started")
         except Exception as e:
-            logger.warning("Cant lunch Rider.")
+            logger.warning("Cant lunch PyCharm.")
 
     except Exception as e:
         logger.exception(e.args[0])
