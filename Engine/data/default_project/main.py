@@ -1,93 +1,150 @@
+from typing import Optional, TextIO
+import toml
+
 import Engine
-from Engine.app import App
+from Engine.app import App, EventThread
 from loguru import logger
 
 
-class QuantumApp(App):
-    def __pre_init__(self, *args, **kwargs) -> None:
-        super().__pre_init__()
-        # load config file
-        Engine.data.FileSystem.reed_data()
-        Engine.data.FileSystem.fill_default_data()
+class TomlConfigLoader(Engine.assets.AssetLoader):
+    def load(self, asset_file: 'Engine.assets.AssetFileData') -> TextIO:
+        return asset_file.path.open()
 
-    def __win_data__(self) -> Engine.graphic.WinData:
-        # set Window Data
-        return Engine.graphic.WinData(
-            title="Gravity Simulation 3",
-            size=Engine.math.vec2(1600, 900),
-            flags=Engine.data.WinDefault.flags | Engine.pg.OPENGL
+    def create(
+            self, asset_file: 'Engine.assets.AssetFileData', dependencies: 'Optional[list[Engine.assets.LoadedAsset]]',
+            content: TextIO
+    ) -> 'Engine.assets.AssetData':
+        config = Engine.assets.ConfigData(
+            name=asset_file.name,
+            data=toml.load(content)
         )
-
-    def __gl_data__(self) -> Engine.graphic.GlData:
-        return Engine.graphic.GlData(
-            interface_type=Engine.graphic.HardInterface,
-            view_start=Engine.math.vec2(0, 0)
+        config.setdefault(
+            category_name="Win",
+            defaults={'fps': Engine.data.WinDefault.fps,
+                      'size': Engine.math.vec2(Engine.data.WinDefault.size),
+                      'vsync': Engine.data.WinDefault.vsync,
+                      'full': Engine.data.WinDefault.full,
+                      'monitor': Engine.data.WinDefault.monitor}
         )
+        config.setdefault(category_name='Core', defaults={})
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        Engine.graphic.System.set_icon(
-            Engine.pg.image.load(
-                f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.APPLICATION_ICO_dir}"
-                f"\\{Engine.data.FileSystem.APPLICATION_ICO_name}"
+        return config
+
+
+class TestApp(App):
+    def __pre_init__(self, assets_type_configs: list[Engine.assets.AssetLoader]) -> None:
+        # adding config asset type
+        assets_type_configs.extend([
+            TomlConfigLoader(
+                Engine.assets.AssetType(Engine.assets.MajorType.Toml, Engine.assets.MinorType.Config)
+            )
+        ])
+        super().__pre_init__(assets_type_configs)  # init asset manager
+
+        # loading config
+        self.main_config: Engine.assets.LoadedAsset = App.assets.load(
+            Engine.assets.AssetFileData(
+                name=Engine.data.FileSystem.config_name,
+                type=(Engine.assets.MajorType.Toml, Engine.assets.MinorType.Config),
+                path=f"{Engine.data.FileSystem.data_path()}\{Engine.data.FileSystem.config_name}.toml"
             )
         )
 
+    @staticmethod
+    def __win_data__() -> Engine.graphic.WinData:
+        main_config_asset: Engine.assets.AssetData = App.assets.storage.TomlConfig.definite(
+            Engine.data.FileSystem.config_name)
+        # set Window Data from config
+        return Engine.graphic.WinData(
+            name="Main Window",
+            size=main_config_asset.data["Win"]["size"],
+            vsync=main_config_asset.data["Win"]["vsync"],
+            full=main_config_asset.data["Win"]["full"],
+            is_desktop=main_config_asset.data["Win"]["is_desktop"],
+            flags=Engine.data.WinDefault.flags | Engine.pg.OPENGL
+        )
+
+    def __init__(self) -> None:
+        super().__init__(
+            self.main_config.data["Win"]["fps"]
+        )  # init engine
+
+        # create font surface and font
         self.fps_font = Engine.pg.font.SysFont("Arial", 30)
         self.rnd_fps_font: Engine.pg.Surface = None
 
-    @Engine.decorators.multithread
+        # load music
+        self.clip = self.assets.load(
+            Engine.assets.AssetFileData(
+                name="10. Crest",
+                type=(Engine.assets.MajorType.PyGame, Engine.assets.MinorType.AudioClip),
+                path=f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.AUDIO_dir}\\10. Crest.mp3"
+            )
+        )
+
+    def __post_init__(self) -> None:
+        super().__post_init__()  # post-init engine
+
+        # play music in loop (100 times)
+        App.audio.active_devices.output.just.play(self.clip.data, loops=100)
+
+    @Engine.decorators.deferrable_threadsafe
     @Engine.decorators.single_event
-    def events(self, event) -> None:
-        if event.type == Engine.pg.QUIT:
-            App.running = False
-        elif event.type == Engine.pg.KEYDOWN:
+    @Engine.decorators.multithread(thread_class=EventThread)
+    def events(self, *, event, thread) -> None:
+        # handle events
+        if event.type == Engine.pg.KEYDOWN:
             if event.key == Engine.pg.K_ESCAPE:
                 App.running = False
             elif event.key == Engine.pg.K_g:
                 raise Exception("Test exception")
-        elif event.type == Engine.pg.WINDOWRESIZED:
-            Engine.graphic.System.win_data.extern(
-                {
-                    "size": Engine.math.vec2(event.x, event.y)
-                }
-            )
-            Engine.graphic.System.set_viewport(
-                Engine.math.vec4(*Engine.graphic.System.gl_data.view_start, *Engine.graphic.System.win_data.size)
-            )
-            Engine.graphic.System.resset()
+            elif event.key == Engine.pg.K_t:
+                Engine.threading.Thread(action=lambda: print("Hello from thread")).start()
+
+        self.event.handle_default(self.event, event=event)  # default event handling
 
     def pre_update(self) -> None:
+        # pre-update app
         ...
 
     def update(self) -> None:
+        # update app data
         ...
 
     def pre_render(self) -> None:
-        if self.clock.timer("fps_timer", 1 / 1500):
+        # pre-render. Changing surfaces and other data for rendering
+        if self.clock.timer("fps_timer", 1 / 3):
             self.rnd_fps_font = self.fps_font.render(
                 f"fps: {int(round(self.clock.get_fps(), 0))}, "
-                f"interface_type: {Engine.graphic.System.gl_data.interface_type.__name__}",
+                f"interface_type: {self.graphic.gl_data.interface_type.__name__}",
                 True, "white"
             )
 
     @Engine.decorators.gl_render
     def render(self) -> None:
-        with Engine.graphic.System.interface as interface:
+        # main render linear algorithm
+        ...
+        # render interface linear algorithm
+        with self.graphic.interface as interface:
             interface.surface.blit(self.rnd_fps_font, (0, 0))
 
     @staticmethod
     def on_failure(err: Engine.failures.Failure) -> None:
+        # handling errors
         App.on_failure(err)
 
-    @Engine.decorators.dev_only
-    def on_exit_print(self) -> None:
+    @staticmethod
+    @Engine.decorators.dev_only()
+    def on_exit_print() -> None:
+        # debug logging (only in debug mode)
         logger.debug("exiting from App")
 
-    def on_exit(self) -> None:
-        super().on_exit()
-        self.on_exit_print()
+    @staticmethod
+    def on_exit() -> None:
+        # release game and engine data
+        App.on_exit()
+        TestApp.on_exit_print()
 
 
 if __name__ == "__main__":
-    Engine.app.mainloop(QuantumApp)
+    TestApp.mainloop()  # start app mainloop

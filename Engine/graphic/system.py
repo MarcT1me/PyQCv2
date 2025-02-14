@@ -42,15 +42,6 @@ class System:
         win_data.flags = win_data.flags | Engine.pg.HIDDEN
         self.window = Engine.graphic.Window(win_data)
 
-        self.set_caption(self.window.data.name)
-        self.set_icon(
-            Engine.pg.image.load(
-                f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.APPLICATION_ICO_dir}"
-                f"\\{Engine.data.FileSystem.APPLICATION_ICO_name}"
-            )
-        )
-        self.toggle_full()
-
     def _init_gl(self) -> None:
         """ set opengl attribute """
         self.context = Engine.mgl.create_context()
@@ -71,9 +62,17 @@ class System:
         self.set_viewport(self.gl_data.view)
 
     def __post_init__(self):
+        self.set_caption(self.window.data.name)
+        self.set_icon(
+            Engine.pg.image.load(
+                f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.APPLICATION_ICO_dir}"
+                f"\\{Engine.data.FileSystem.APPLICATION_ICO_name}"
+            )
+        )
         self.window.data.flags = self.window.data.flags | Engine.pg.SHOWN
-        self.window.set_mode(self.window.data)
         self.window.__post_init__()
+        self.toggle_full()
+
         self.interface = self.gl_data.interface_type()
 
     def resset(self) -> None:
@@ -94,16 +93,27 @@ class System:
 
     def toggle_full(self) -> None:
         """ toggle fullscreen """
+        index, monitor = self.get_current_monitor()
+        monitor_size = Engine.math.vec2(monitor.width, monitor.height)
+
         if self.window.data.full:
             # find window into any monitor
-            index, monitor = self.get_current_monitor()
             # calculate flags and sizes
-            size = Engine.math.vec2(monitor.width, monitor.height)
+            size = monitor_size
             flags = self.window.data | Engine.pg.FULLSCREEN
+
+            if self.window.data.is_desktop:
+                self.window.data.extern({'flags': flags})
+                self.resset()
+            else:
+                Engine.pg.display.toggle_fullscreen()
         else:
             index = None
-            size = Engine.data.WinDefault.size
-            flags = Engine.data.WinDefault.flags
+            size = Engine.data.WinDefault.size if self.window.data.size == monitor_size else self.window.data.size
+            if self.window.data.flags & Engine.pg.FULLSCREEN:
+                flags = self.window.data.flags | ~Engine.pg.FULLSCREEN
+            else:
+                flags = self.window.data.flags
         # setting changes
         self.window.data = self.window.data.extern(
             {
@@ -112,14 +122,8 @@ class System:
             }
         )
 
-        if self.window.data.is_desktop:
-            self.window.data.extern({'flags': flags})
-            self.resset()
-        else:
-            Engine.pg.display.toggle_fullscreen()
-
         logger.info(
-            f"Engine graphic System - toggle_full{' (desktop)' if self.window.data.is_desktop else ''}"
+            f"Engine graphic System - toggle_full{' (desktop)' if self.window.data.is_desktop else ''}\n"
             f"full: {self.window.data.full}\n"
             f"size:\t{size}\n"
             f"monitor:\t{index}\n"

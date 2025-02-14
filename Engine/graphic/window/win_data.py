@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import Self
 
 from Engine.data import MetaData, WinDefault
 from Engine.math import vec2
@@ -15,11 +14,6 @@ class WinData(MetaData):
     full: bool = field(default_factory=lambda: WinDefault.full)
     is_desktop: bool = field(default_factory=lambda: WinDefault.is_desktop)
     flags: int = field(default_factory=lambda: WinDefault.flags)
-
-    def extern(self, changes: dict) -> Self:
-        """ extern ths win_data and return new """
-        [setattr(self, var, value) for var, value in changes.items()]
-        return self
 
     def to_kwargs(self):
         kwargs = {

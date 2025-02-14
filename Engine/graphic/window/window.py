@@ -34,6 +34,7 @@ class Window:
         self.__pg_win__ = Engine.pg.display.set_mode(**kwargs)
 
     def __post_init__(self):
+        self.set_mode(self.data)
         from pygetwindow import getWindowsWithTitle
         self.utils = getWindowsWithTitle(self.data.name)[0]
 

@@ -1,5 +1,4 @@
-from typing import Any, Optional, TextIO
-
+from typing import Optional, TextIO
 import toml
 
 import Engine
@@ -41,8 +40,6 @@ class TestApp(App):
             )
         ])
         super().__pre_init__(assets_type_configs)  # init asset manager
-
-        logger.debug(f"asset roster {App.assets.storage.__dict__}")
 
         # loading config
         self.main_config: Engine.assets.LoadedAsset = App.assets.load(

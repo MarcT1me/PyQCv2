@@ -8,7 +8,7 @@ from os.path import join
 MainData.IS_RELEASE = False
 # string
 MainData.APPLICATION_name = 'Test App'
-MainData.APPLICATION_version = '0.7.0'
+MainData.APPLICATION_version = '0.7.2'
 
 """ Set File Settings """
 # Directory names
@@ -26,4 +26,4 @@ FileSystem.config_local_dir = FileSystem.config_local_dir
 
 # ico settings
 FileSystem.APPLICATION_ICO_dir = join(FileSystem.ENGINE_DATA_DIR, FileSystem.PRESETS_dir)
-FileSystem.APPLICATION_ICO_name = "Service.png"
+FileSystem.APPLICATION_ICO_name = "Logo.png"

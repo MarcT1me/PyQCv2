@@ -21,7 +21,7 @@ class WinDefault:
     # main window
     size: tuple = Engine.math.vec2(720, 480)
     monitor: int = None
-    name: str = MainData.APPLICATION_name
+    name: str = MainData.APPLICATION_name + " Window"
     vsync: bool = False
     full: bool = False
     is_desktop: bool = False

@@ -7,6 +7,27 @@ from typing import Self, Callable, Optional
 import Engine
 
 
+class ThreadError(Exception): pass
+
+
+class AlreadyExistThreadError(ThreadError): pass
+
+
+class PendingThreadNotExistError(ThreadError): pass
+
+
+class ThreadReleaseError(ThreadError): pass
+
+
+class ThreadWarning(Warning): pass
+
+
+class ThreadActionWarning(ThreadWarning): pass
+
+
+class ThreadJoinWarning(ThreadWarning): pass
+
+
 class Thread(_PyThread):
     create_roster = lambda: Engine.arrays.Roster().new_branch("pending").new_branch("worked")
     _roster: Engine.arrays.Roster[str, Self] = create_roster()
@@ -25,8 +46,9 @@ class Thread(_PyThread):
             daemon: bool = True
     ) -> Self:
         identifier = identifier or str(uuid.uuid4())
+
         if identifier in self._roster.pending:
-            raise ValueError(f"Thread ID {identifier} already exists")
+            raise AlreadyExistThreadError(f"Thread with id: {identifier} already exist")
 
         super().__init__(name=identifier, daemon=daemon)
         self.id = identifier
@@ -46,10 +68,18 @@ class Thread(_PyThread):
                 Thread.important.wait()
 
             with Thread.global_lock:
-                self._roster.worked[self.id] = self._roster.pending.pop(self.id)
+                try:
+                    self._roster.worked[self.id] = self._roster.pending.pop(self.id)
+                except KeyError as e:
+                    raise PendingThreadNotExistError(
+                        f"There is no waiting thread with id {self.id} in Thread.roster.pending"
+                    ) from e
 
-            with Engine.failures.Catch(critical=self.critical):
+            with Engine.failures.Catch(critical=self.critical) as cth:
                 self._action_result = self.action()
+
+            if cth.failures:
+                raise ThreadActionWarning(f"Some error in thread with id {self.id}")
 
         self.release()
 
@@ -61,13 +91,18 @@ class Thread(_PyThread):
     def release(self):
         """Cleanup resources across all roster branches"""
         with self.global_lock:
-            for branch in self._roster.values():
-                if self.id in branch:
-                    del branch[self.id]
+            try:
+                for branch in self._roster.values():
+                    if self.id in branch:
+                        del branch[self.id]
+            except KeyError as e:
+                raise ThreadReleaseError(f"Cant release thread with id: {self.id}") from e
 
-    def join(self, timeout: float = None):
+    def join(self, timeout: Optional[float] = None):
         try:
             super().join(timeout)
+        except RuntimeError as e:
+            raise ThreadJoinWarning(f"Cant join thread with id: {self.id}") from e
         finally:
             self.release()
 
@@ -77,9 +112,8 @@ class Thread(_PyThread):
             Engine.timing.System.wait(10)
 
     @classmethod
-    def wait_worked(cls):
-        while len(cls._roster.worked) > 1:
-            Engine.timing.System.wait(10)
+    def wait_worked(cls, timeout: Optional[float] = None, from_thread_id: Optional[str] = None):
+        cls.join_roster(timeout, from_thread_id=from_thread_id)
 
     @classmethod
     def wait(cls):
@@ -87,8 +121,11 @@ class Thread(_PyThread):
         cls.wait_worked()
 
     def set_important(self):
-        Thread.important_id = self.id
-        Thread.wait_worked()
+        try:
+            Thread.important_id = self.id
+            Thread.wait_worked(from_thread_id=self.id)
+        except Exception as e:
+            raise ThreadError(f"Cant set thread with id: {self.id} as important") from e
 
     @staticmethod
     def mute_important():
@@ -107,5 +144,8 @@ class Thread(_PyThread):
             from_thread_id: Optional[str] = None
     ) -> None:
         filter_func = lambda x: x.id == from_thread_id if from_thread_id else True
-        cls._roster.worked.use("join", timeout, calling_filter=filter_func)
-        cls._roster.pending.use("join", timeout, calling_filter=filter_func)
+        try:
+            cls._roster.worked.use("join", filter_func, timeout)
+            cls._roster.pending.use("join", filter_func, timeout)
+        except RuntimeError as e:
+            raise ThreadJoinWarning("Cant join thread roster") from e

@@ -48,10 +48,6 @@ class Catch:
             exc._is_try_func = True
             self.__got_error(type(exc), exc, False)
 
-    @property
-    def is_clear(self) -> bool:
-        return bool(self.failures)
-
     def __enter__(self) -> Self:
         return self
 

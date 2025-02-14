@@ -1,0 +1,8 @@
+[Win]
+size = [1280, 720]
+vsync = false
+full = false
+is_desktop = false
+fps = 0
+
+[Core]
