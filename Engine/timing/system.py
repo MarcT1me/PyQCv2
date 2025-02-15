@@ -7,6 +7,11 @@ from time import time as uix_time
 import Engine
 
 
+class SystemRoster(Engine.arrays.SimpleRoster):
+    timers: Engine.arrays.AttributesKeeper[str, float] = Engine.arrays.AttributesKeeper(default=0)
+    deferred_events: dict[str, Engine.pg.event.Event]
+
+
 @final
 class System:
     """Engine time manager with deferred events and timers
@@ -24,11 +29,7 @@ class System:
         self.fps = fps
 
         # Initialize roster with dedicated branches
-        self.roster = (
-            Engine.arrays.Roster(default=0)
-            .new_branch("timers")
-            .new_branch("deferred_events")
-        )
+        self.roster: SystemRoster = SystemRoster(default=0)
         self.__event_counter = 0
 
         logger.info(
@@ -66,7 +67,7 @@ class System:
     def timer(self, name: str, cooldown: float) -> bool:
         """Check if timer is ready to trigger"""
         current_time = uix_time()
-        last_time = self.roster.timers[name]
+        last_time = self.roster.timers.get(name, 0)
 
         if current_time - last_time >= cooldown:
             self.roster.timers[name] = current_time

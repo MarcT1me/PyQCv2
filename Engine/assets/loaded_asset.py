@@ -11,7 +11,7 @@ class LoadedAsset:
 
     @property
     def branch(self) -> 'Engine.assets.AssetRoster':
-        return Engine.app.App.assets.storage.branch(self.branch_name)
+        return Engine.App.assets.storage.branch(self.branch_name)
 
     @property
     def asset_data(self) -> 'Engine.assets.AssetData':

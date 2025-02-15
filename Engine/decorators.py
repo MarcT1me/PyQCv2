@@ -96,25 +96,31 @@ def multithread(
     return decorator(f) if f else decorator
 
 
-def single_event(func: Engine.FUNC) -> Engine.FUNC:
+def single_event(
+        f: Optional[Engine.FUNC] = None,
+        *,
+        virtual=False) -> Engine.FUNC:
     """A decorator for automatic event handling. Requires the event parameter in the function."""
 
-    # Checking the mandatory presence of the event parameter
-    sig = inspect.signature(func)
-    if 'event' not in sig.parameters:
-        raise TypeError(f"Function {func.__name__} must have 'event' parameter to use {single_event}")
+    def decorator(func):
+        # Checking the mandatory presence of the event parameter
+        sig = inspect.signature(func)
+        if 'event' not in sig.parameters:
+            raise TypeError(f"Function {func.__name__} must have 'event' parameter to use {single_event}")
 
-    @wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> list[Any]:
-        if 'event' in kwargs:
-            raise ValueError(f"Parameter 'event' must not be passed explicitly with {single_event}")
+        @wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> list[Any]:
+            if 'event' in kwargs:
+                raise ValueError(f"Parameter 'event' must not be passed explicitly with {single_event}")
 
-        return [func(*args, event=event, **kwargs) for event in Engine.app.App.event.event_list]
+            return [func(*args, event=event, **kwargs) for event in Engine.App.event.event_list]
 
-    # Adding a marker for checking in other decorators
-    wrapper._is_single_event_decorated = True  # type: ignore
+        # Adding a marker for checking in other decorators
+        wrapper._is_single_event_decorated = True  # type: ignore
 
-    return cast(Engine.FUNC, wrapper)
+        return cast(Engine.FUNC, wrapper) if not virtual else func
+
+    return decorator(f) if f else decorator
 
 
 def window_event(
@@ -152,7 +158,9 @@ def window_event(
             return func(*args, **{**kwargs, 'window': getattr(event, 'window', None)})
 
         wrapper._is_window_event_decorated = True  # type: ignore
+
         return cast(Engine.FUNC, wrapper)
+
 
     return decorator(f) if f else decorator
 
@@ -193,7 +201,7 @@ def gl_render(func: Engine.FUNC) -> Engine.FUNC:
 
     @wraps(func)
     def wrapper(self: Any) -> None:
-        Engine.app.App.graphic.context.clear(color=Engine.app.App.graphic.gl_data.clear_color)
+        Engine.App.graphic.context.clear(color=Engine.app.App.graphic.gl_data.clear_color)
         func(self)
         Engine.graphic.System.flip()
 

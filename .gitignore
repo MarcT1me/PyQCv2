@@ -9,4 +9,4 @@ build
 *.zip
 *.rar
 
-*_test_*
+gamepad_type_check.py

@@ -9,7 +9,7 @@ class HardInterface:
     anisotropy = 32.0
 
     def __init__(self) -> None:
-        self.surface = Engine.pg.Surface(Engine.app.App.graphic.gl_data.interface_resolution, flags=Engine.pg.SRCALPHA)
+        self.surface = Engine.pg.Surface(Engine.App.graphic.gl_data.interface_resolution, flags=Engine.pg.SRCALPHA)
 
         self.shader = Engine.graphic.GL.Shader(
             f"{Engine.data.FileSystem.__ENGINE_DATA__}\\{Engine.data.FileSystem.ENGINE_SHADER_dir}\\"
@@ -17,28 +17,28 @@ class HardInterface:
             Engine.ShaderType.Vertex | Engine.ShaderType.Fragment
         )
 
-        self.texture: Engine.mgl.Texture = Engine.app.App.graphic.context.texture(self.surface.get_size(), 4)
+        self.texture: Engine.mgl.Texture = Engine.App.graphic.context.texture(self.surface.get_size(), 4)
         self.texture.filter, self.texture.swizzle = (Engine.mgl.NEAREST, Engine.mgl.NEAREST), self.swizzle
         self.texture.build_mipmaps()
         self.texture.anisotropy = self.anisotropy
 
-        self.__vbo = Engine.app.App.graphic.context.buffer(data=array('f', [
+        self.__vbo = Engine.App.graphic.context.buffer(data=array('f', [
             # position (x, y), uv cords (x, y)
             -1.0, -1.0, 0.0, 1.0,  # bottom left
             1.0, -1.0, 1.0, 1.0,  # bottom right
             -1.0, 1.0, 0.0, 0.0,  # top left
             1.0, 1.0, 1.0, 0.0,  # top right
         ]))
-        self.__vao = Engine.app.App.graphic.context.vertex_array(
+        self.__vao = Engine.App.graphic.context.vertex_array(
             self.shader.program, [(self.__vbo, '2f 2f', 'vertices', 'texCoord')], skip_errors=True
         )
 
     def __enter__(self):
-        Engine.app.App.graphic.interface.surface.fill((0, 0, 0, 0))
+        Engine.App.graphic.interface.surface.fill((0, 0, 0, 0))
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        Engine.app.App.graphic.interface.__render__()
+        Engine.App.graphic.interface.__render__()
         return False
 
     @staticmethod

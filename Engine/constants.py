@@ -14,6 +14,7 @@ class DataType(Flag):
     D1 = auto()
     D2 = auto()
     D3 = auto()
+    UI = auto()
     # general
     Failure = auto()
     Catch = auto()
@@ -49,6 +50,7 @@ class DataType(Flag):
 
 
 class ResultType(Enum):
+    Finished = auto()
     NotFinished = auto()
     Success = auto()
     Error = auto()

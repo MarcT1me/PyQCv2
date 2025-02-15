@@ -28,7 +28,7 @@ class Catch:
     """ A context manager for eliminating errors in their storage and processing,
     contains a method for unhindered launching of dangerous functions.
     """
-    roster: dict[str, Self] = {}
+    roster: Engine.arrays.SimpleRoster[str, Self] = Engine.arrays.SimpleRoster()
 
     def __init__(self, identifier=uuid4(), critical=True) -> None:
         self.id = identifier
@@ -57,10 +57,10 @@ class Catch:
         if issubclass(exc_type, Failure):
             exc_val.catch_id = self.id
             err = exc_val
-            Engine.app.App.InheritedСlass.on_failure(err)
+            Engine.App.InheritedСlass.on_failure(err)
         else:
             err: Failure = Failure(catch_id=self.id, critical=critical, err=exc_val)
-            Engine.app.App.InheritedСlass.on_failure(err)
+            Engine.App.InheritedСlass.on_failure(err)
         self.failures[err.id] = err
 
     def __exit__(self, exc_type: type, exc_val: Failure | Exception, _) -> True:

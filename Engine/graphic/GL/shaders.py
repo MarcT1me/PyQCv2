@@ -16,7 +16,7 @@ class Shader:
         self.id = None  # him id
         """ selecting a type and creating a program """
         if shader_type & ShaderType.Compute:
-            self.program: moderngl.Program = Engine.app.App.graphic.context.compute_shader(
+            self.program: moderngl.Program = Engine.App.graphic.context.compute_shader(
                 self.__read_file__(_path + '.glsl', file_type)
             )
         else:
@@ -27,7 +27,7 @@ class Shader:
             if shader_type & ShaderType.Geometry:
                 program_kwargs['geometry_shader'] = self.__read_file__(_path + '.glsl', file_type)
             # simple program creating
-            self.program: moderngl.Program = Engine.app.App.graphic.context.program(**program_kwargs)
+            self.program: moderngl.Program = Engine.App.graphic.context.program(**program_kwargs)
 
     @staticmethod
     def __read_file__(path: str, _type) -> str:

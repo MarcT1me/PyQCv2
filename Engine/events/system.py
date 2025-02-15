@@ -31,13 +31,13 @@ class System:
             return
 
         if event.type == Engine.pg.QUIT:
-            Engine.app.App.running = False
+            Engine.App.running = False
         elif event.type == Engine.pg.WINDOWRESIZED:
             if window:
                 ...
             else:
-                Engine.app.App.graphic.window.data.extern({"size": Engine.math.vec2(event.x, event.y)})
-                Engine.app.App.WorkingInstance.events.defer(Engine.app.App.graphic.resset)
+                Engine.App.graphic.window.data.extern({"size": Engine.math.vec2(event.x, event.y)})
+                Engine.App.WorkingInstance.events.defer(Engine.App.graphic.resset)
         elif event.type == Engine.pg.WINDOWMOVED:
             if window:
                 ...
@@ -45,18 +45,18 @@ class System:
             if window:
                 ...
             else:
-                Engine.app.App.graphic.window.data.extern({"monitor": event.display_index})
+                Engine.App.graphic.window.data.extern({"monitor": event.display_index})
         elif event.type == Engine.pg.JOYDEVICEADDED:
             joy = Engine.pg.joystick.Joystick(event.device_index)
-            Engine.app.App.joysticks[joy.get_instance_id()] = joy
+            Engine.App.joysticks[joy.get_instance_id()] = joy
         elif event.type == Engine.pg.JOYDEVICEREMOVED:
-            del Engine.app.App.joysticks[event.instance_id]
+            del Engine.App.joysticks[event.instance_id]
         elif event.type == Engine.pg.AUDIODEVICEADDED:
-            Engine.app.App.audio.add_device(event.which, bool(event.iscapture))
+            Engine.App.audio.add_device(event.which, bool(event.iscapture))
         elif event.type == Engine.pg.AUDIODEVICEREMOVED:
-            Engine.app.App.audio.remove_device(event.which, bool(event.iscapture))
+            Engine.App.audio.remove_device(event.which, bool(event.iscapture))
         elif event.type == Engine.audio.System.update_default.event.type:
             if event.is_input | 1:
-                Engine.app.App.audio.set_default_device(False)
+                Engine.App.audio.set_default_device(False)
             if event.is_input | 2:
-                Engine.app.App.audio.set_default_device(True)
+                Engine.App.audio.set_default_device(True)

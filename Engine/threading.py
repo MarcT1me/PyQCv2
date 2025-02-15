@@ -28,9 +28,13 @@ class ThreadActionWarning(ThreadWarning): pass
 class ThreadJoinWarning(ThreadWarning): pass
 
 
+class ThreadRoster(Engine.arrays.SimpleRoster):
+    pending: Engine.arrays.SimpleRoster[str, 'Thread']
+    worked: Engine.arrays.SimpleRoster[str, 'Thread']
+
+
 class Thread(_PyThread):
-    create_roster = lambda: Engine.arrays.Roster().new_branch("pending").new_branch("worked")
-    _roster: Engine.arrays.Roster[str, Self] = create_roster()
+    _roster: ThreadRoster[str, Self] = ThreadRoster()
     global_lock = Lock()
 
     important = Condition()

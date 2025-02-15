@@ -15,11 +15,11 @@ class System:
         self.__monitors__ = get_monitors()
 
         # window
-        win_data: Engine.graphic.WinData = Engine.app.App.InheritedСlass.__win_data__()
+        win_data: Engine.graphic.WinData = Engine.App.InheritedСlass.__win_data__()
         self.window: Engine.graphic.Window = None  # Window
 
         # gl
-        self.gl_data: Optional[Engine.graphic.GlData] = Engine.app.App.InheritedСlass.__gl_data__(win_data)
+        self.gl_data: Optional[Engine.graphic.GlData] = Engine.App.InheritedСlass.__gl_data__(win_data)
         self.context: Optional[Engine.mgl.Context] = None  # MGL context
         # game ui surface
         self.interface: Optional[Engine.graphic.HardInterface] = None  # Interface renderer
@@ -79,7 +79,7 @@ class System:
         self.window.set_mode(self.window.data)
 
         if self.gl_data:
-            self.gl_data = Engine.app.App.InheritedСlass.__gl_data__(self.window.data)  # set data from App methods
+            self.gl_data = Engine.App.InheritedСlass.__gl_data__(self.window.data)  # set data from App methods
 
             self.interface.__destroy__()
             self.interface = self.gl_data.interface_type()

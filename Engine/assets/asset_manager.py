@@ -1,4 +1,4 @@
-from typing import Dict, Set, List, Any
+from typing import Dict, Set, List, Any, Self
 
 import Engine
 
@@ -7,7 +7,7 @@ class AssetError(Exception):
     """Base class for all asset loading exceptions"""
 
 
-class AssetRoster(Engine.arrays.Roster):
+class AssetRoster(Engine.arrays.SimpleRoster):
     def __init__(self, name: str, loader: 'Engine.assets.Loader | None', *args, **kwargs):
         super().__init__(name, *args, **kwargs)
         self.loader = loader
@@ -17,6 +17,9 @@ class AssetRoster(Engine.arrays.Roster):
             if asset.name == name:
                 return asset
         raise AssetError(f"Cant find definite asset with name {name}")
+
+    def new_branch(self, name: str, value: Any = dict(), *args, **kwargs) -> Self:
+        super().new_branch(name, AssetRoster(name, *args, **kwargs))
 
 
 class CyclicDependencyError(AssetError):
@@ -84,7 +87,7 @@ class DuplicatedAssetTypeConfig(AssetError):
 class AssetManager:
     def __init__(self, asset_loaders: 'list[Engine.assets.AssetLoader]'):
         # Initializing the root Roster
-        self.storage: AssetRoster[str, Engine.assets.AssetData] = AssetRoster(name="root", loader=None)
+        self.storage: AssetRoster[str, AssetRoster[str, Engine.assets.AssetData]] = AssetRoster(name="root", loader=None)
         self.dependency_resolver = DependencyResolver(self.load)
 
         # Registering asset types as branches in the Roster

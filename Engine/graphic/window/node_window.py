@@ -25,7 +25,7 @@ class NodeWindow:
         self.win: sdl2_video.Window = sdl2_video.Window(
             title=win_data.name
         )
-        self.win.set_modal_for(Engine.app.App.graphic.window.__pg_win__ if not modal_window else modal_window)
+        self.win.set_modal_for(Engine.App.graphic.window.__pg_win__ if not modal_window else modal_window)
         self.update()
 
         """ other window and render variables """
@@ -44,7 +44,7 @@ class NodeWindow:
 
     def update(self):
         if self.win_data.monitor is not None:
-            monitor = Engine.app.App.graphic.__monitors__[self.win_data.monitor]
+            monitor = Engine.App.graphic.__monitors__[self.win_data.monitor]
             self.pos = vec2(monitor.x, -monitor.y)
         if self.win_data.pos is not None:
             self.pos += self.win_data.pos

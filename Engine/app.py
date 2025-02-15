@@ -12,22 +12,22 @@ from Engine.graphic import err_screen
 
 class EventThread(Engine.threading.Thread):
     """ Thread class for Handling GUI Events """
-    _roster = Engine.threading.Thread.create_roster()
+    _roster: Engine.threading.ThreadRoster[str, Self] = Engine.threading.ThreadRoster()
 
 
 class PreUpdateThread(Engine.threading.Thread):
     """ Thread class for pre updating app """
-    _roster = Engine.threading.Thread.create_roster()
+    _roster: Engine.threading.ThreadRoster[str, Self] = Engine.threading.ThreadRoster()
 
 
 class UpdateThread(Engine.threading.Thread):
     """ Thread class for updating app """
-    _roster = Engine.threading.Thread.create_roster()
+    _roster: Engine.threading.ThreadRoster[str, Self] = Engine.threading.ThreadRoster()
 
 
 class PreRenderThread(Engine.threading.Thread):
     """ Thread class for pre rendering app """
-    _roster = Engine.threading.Thread.create_roster()
+    _roster: Engine.threading.ThreadRoster[str, Self] = Engine.threading.ThreadRoster()
 
 
 class App(ABC):
@@ -84,14 +84,14 @@ class App(ABC):
     @final
     def __new__(cls, *args, **kwargs):
         """ creating App class """
-        obj: App = super().__new__(cls)
+        __obj: App = super().__new__(cls)
         Engine.pg.init()
 
-        assets_type_configs: list[Engine.assets.AssetLoader] = []
-        obj.__pre_init__(assets_type_configs)
+        __assets_type_configs: list[Engine.assets.AssetLoader] = []
+        __obj.__pre_init__(__assets_type_configs)
 
         logger.success('ENGINE - INIT\n')
-        return obj
+        return __obj
 
     @abstractmethod
     def __pre_init__(self, assets_type_configs: list[Engine.assets.AssetLoader]) -> None:

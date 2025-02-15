@@ -7,13 +7,13 @@ from loguru import logger
 
 
 class TomlConfigLoader(Engine.assets.AssetLoader):
-    def load(self, asset_file: 'Engine.assets.AssetFileData') -> TextIO:
+    def load(self, asset_file: Engine.assets.AssetFileData) -> TextIO:
         return asset_file.path.open()
 
     def create(
-            self, asset_file: 'Engine.assets.AssetFileData', dependencies: 'Optional[list[Engine.assets.LoadedAsset]]',
+            self, asset_file: Engine.assets.AssetFileData, dependencies: Optional[list[Engine.assets.LoadedAsset]],
             content: TextIO
-    ) -> 'Engine.assets.AssetData':
+    ) -> Engine.assets.AssetData:
         config = Engine.assets.ConfigData(
             name=asset_file.name,
             data=toml.load(content)

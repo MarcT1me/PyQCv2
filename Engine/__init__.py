@@ -7,6 +7,7 @@ import Engine.math
 
 """ Engine """
 from Engine.constants import *
+from Engine.lscript import *
 # data
 import Engine.arrays
 import Engine.threading
@@ -20,7 +21,6 @@ import Engine.audio
 
 # utils
 import Engine.failures
-import Engine.lscript
 import Engine.assets
 
 # space context
@@ -31,4 +31,5 @@ import Engine.network
 import Engine.graphic
 # GENERAL APP CLASS
 import Engine.app
+from Engine.app import App
 import Engine.api
