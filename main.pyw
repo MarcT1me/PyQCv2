@@ -73,6 +73,14 @@ class TestApp(App):
         self.fps_font = Engine.pg.font.SysFont("Arial", 30)
         self.rnd_fps_font: Engine.pg.Surface = None
 
+        self.rnd_version_font = self.fps_font.render(
+            f"APP INFO.  "
+            f"Name: {Engine.data.MainData.APPLICATION_name},  "
+            f"Version: {Engine.data.MainData.APPLICATION_version},  "
+            f"IsRelease: {Engine.data.MainData.IS_RELEASE}",
+            True, "white"
+        )
+
         # load music
         self.clip = self.assets.load(
             Engine.assets.AssetFileData(
@@ -126,7 +134,14 @@ class TestApp(App):
         ...
         # render interface linear algorithm
         with self.graphic.interface as interface:
-            interface.surface.blit(self.rnd_fps_font, (0, 0))
+            interface.surface.blit(
+                self.rnd_fps_font,
+                (0, 0)
+            )
+            interface.surface.blit(
+                self.rnd_version_font,
+                (0, interface.surface.get_size()[1] - self.rnd_version_font.get_size()[1])
+            )
 
     @staticmethod
     def on_failure(err: Engine.failures.Failure) -> None:

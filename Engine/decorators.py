@@ -115,10 +115,13 @@ def single_event(
 
             return [func(*args, event=event, **kwargs) for event in Engine.App.event.event_list]
 
-        # Adding a marker for checking in other decorators
-        wrapper._is_single_event_decorated = True  # type: ignore
-
-        return cast(Engine.FUNC, wrapper) if not virtual else func
+        if not virtual:
+            # Adding a marker for checking in other decorators
+            wrapper._is_single_event_decorated = True  # type: ignore
+            return cast(Engine.FUNC, wrapper)
+        else:
+            func._is_single_event_decorated = True
+            return func
 
     return decorator(f) if f else decorator
 
@@ -160,7 +163,6 @@ def window_event(
         wrapper._is_window_event_decorated = True  # type: ignore
 
         return cast(Engine.FUNC, wrapper)
-
 
     return decorator(f) if f else decorator
 
