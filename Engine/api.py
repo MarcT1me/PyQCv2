@@ -30,7 +30,12 @@ __copy_arr = {
         "default_project\\presets",
         "presets", (
             'Logo.png',
-            'audio\\10. Crest.mp3',
+        )
+    ),
+    (
+        "default_project\\presets\\audio",
+        "presets\\audio", (
+            '10. Crest.mp3',
         )
     )
 }

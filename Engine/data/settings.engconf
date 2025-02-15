@@ -8,7 +8,7 @@ from os.path import join
 MainData.IS_RELEASE = False
 # string
 MainData.APPLICATION_name = 'Test App'
-MainData.APPLICATION_version = '0.7.2'
+MainData.APPLICATION_version = '0.7.2+1'
 
 """ Set File Settings """
 # Directory names

@@ -1,5 +1,4 @@
-from dataclasses import dataclass, field
-from typing_extensions import NamedTuple
+from dataclasses import dataclass
 from typing import Optional
 from enum import Enum, auto
 
@@ -38,7 +37,8 @@ class MinorType(Enum):
     Material = auto()
 
 
-class AssetType(NamedTuple):
+@dataclass
+class AssetType:
     major: MajorType
     minor: MinorType
     tertiary: Optional[Enum] = None  # Опциональный параметр

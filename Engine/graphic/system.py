@@ -65,7 +65,7 @@ class System:
         self.set_caption(self.window.data.name)
         self.set_icon(
             Engine.pg.image.load(
-                f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.APPLICATION_ICO_dir}"
+                f"{Engine.data.FileSystem.APPLICATION_ICO_dir}"
                 f"\\{Engine.data.FileSystem.APPLICATION_ICO_name}"
             )
         )

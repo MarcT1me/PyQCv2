@@ -59,10 +59,11 @@ class FileSystem:
     # engine configs (*.engconf)
     @staticmethod
     def load_engine_config(name: str) -> None:
-        logger.info(f'load Engine configs from {FileSystem.__ENGINE_DATA__}\\{name}.engconf')
+        path: str = f"{FileSystem.APPLICATION_path}\\{FileSystem.ENGINE_DATA_DIR}\\{name}.engconf"
+        logger.info(f'load Engine configs from {path}')
 
         # reading
-        with open(rf'{FileSystem.__ENGINE_DATA__}\{name}.engconf', 'r') as config_file:
+        with open(path, 'r') as config_file:
             lines_data = config_file.read()
 
         data = ''.join(lines_data)
