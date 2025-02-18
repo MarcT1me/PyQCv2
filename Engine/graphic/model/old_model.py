@@ -24,7 +24,7 @@ class MetaData:
     tex_id: str
     
     time_list: dict = field(init=True, default_factory=dict)
-    ID: str = field(init=True, default_factory=uuid4)  # unique object id
+    ID: str = field(init=True, default_factory=uuid4)  # unique object_node id
     
     def __post_init__(self):
         self.pos = glm.vec3(self.pos)

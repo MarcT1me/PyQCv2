@@ -7,8 +7,8 @@ from time import time as uix_time
 import Engine
 
 
-class SystemRoster(Engine.arrays.SimpleRoster):
-    timers: Engine.arrays.AttributesKeeper[str, float] = Engine.arrays.AttributesKeeper(default=0)
+class SystemRoster(Engine.data.arrays.SimpleRoster):
+    timers: Engine.data.arrays.AttributesKeeper[str, float] = Engine.data.arrays.AttributesKeeper(default=0)
     deferred_events: dict[str, Engine.pg.event.Event]
 
 

@@ -28,9 +28,9 @@ class ThreadActionWarning(ThreadWarning): pass
 class ThreadJoinWarning(ThreadWarning): pass
 
 
-class ThreadRoster(Engine.arrays.SimpleRoster):
-    pending: Engine.arrays.SimpleRoster[str, 'Thread']
-    worked: Engine.arrays.SimpleRoster[str, 'Thread']
+class ThreadRoster(Engine.data.arrays.SimpleRoster):
+    pending: Engine.data.arrays.SimpleRoster[str, 'Thread']
+    worked: Engine.data.arrays.SimpleRoster[str, 'Thread']
 
 
 class Thread(_PyThread):

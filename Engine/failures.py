@@ -16,7 +16,7 @@ class Failure(Exception, Engine.data.TimedMetaData):
     err: Exception | None = None
 
 
-class FailuresRoster(Engine.arrays.Roster):
+class FailuresRoster(Engine.data.arrays.Roster):
     def __contains__(self, item):
         for failure in self.values():
             if item == type(failure.err) or item == failure.err:
@@ -28,7 +28,7 @@ class Catch:
     """ A context manager for eliminating errors in their storage and processing,
     contains a method for unhindered launching of dangerous functions.
     """
-    roster: Engine.arrays.SimpleRoster[str, Self] = Engine.arrays.SimpleRoster()
+    roster: Engine.data.arrays.SimpleRoster[str, Self] = Engine.data.arrays.SimpleRoster()
 
     def __init__(self, identifier=uuid4(), critical=True) -> None:
         self.id = identifier

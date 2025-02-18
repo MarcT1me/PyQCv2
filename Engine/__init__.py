@@ -7,12 +7,10 @@ import Engine.math
 
 """ Engine """
 from Engine.constants import *
-from Engine.lscript import *
 # data
-import Engine.arrays
+import Engine.data
 import Engine.threading
 import Engine.decorators  # need threading and used in data
-import Engine.data
 
 # wrapper classes
 import Engine.timing

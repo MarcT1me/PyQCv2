@@ -7,7 +7,7 @@ class AssetError(Exception):
     """Base class for all asset loading exceptions"""
 
 
-class AssetRoster(Engine.arrays.SimpleRoster):
+class AssetRoster(Engine.data.arrays.SimpleRoster):
     def __init__(self, name: str, loader: 'Engine.assets.Loader | None', *args, **kwargs):
         super().__init__(name, *args, **kwargs)
         self.loader = loader
@@ -130,7 +130,7 @@ class AssetManager:
             # Uploading content
             content: Any = branch.loader.load(asset_file)
 
-            # Creating an asset object
+            # Creating an asset object_node
             asset_data = branch.loader.create(
                 asset_file=asset_file,
                 dependencies=dependencies,

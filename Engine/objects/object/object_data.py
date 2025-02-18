@@ -1,12 +1,13 @@
 from dataclasses import dataclass
+from typing import Optional
 
-from Engine.data import MetaData
-from Engine.math import vec3
+import Engine
+from Engine.objects.scene_node.scene_node_data import SceneNodeData
 
 
 @dataclass(init=True)
-class ObjectData(MetaData):
-    is_active: bool = True
-    position: vec3 = vec3(0)
-    direction: vec3 = vec3(0)
-    scale: vec3 = vec3(1)
+class ObjectData(SceneNodeData):
+    transform: 'Engine.data.Transform' = None
+    flags: 'Engine.objects.ObjectFlags' = None
+    priority: int = 0
+    model: Optional[str] = None
