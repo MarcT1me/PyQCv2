@@ -2,12 +2,11 @@ from dataclasses import dataclass, field, InitVar
 from typing import Self
 
 import Engine
-from Engine.data import MetaData
 from Engine.graphic.interface import HardInterface
 
 
-@dataclass
-class GlData(MetaData):
+@dataclass(kw_only=True)
+class GlData(Engine.data.MetaData):
     win_data: 'InitVar[Engine.graphic.WinData]' = None
     # core
     major_version: int = field(default=3)
@@ -35,7 +34,7 @@ class GlData(MetaData):
         self.resolution = Engine.math.vec2(win_data.size)
         self.interface_resolution = self.interface_resolution if self.interface_resolution else self.resolution
 
-    def extern(self, changes: dict) -> Self:
+    def modify(self, changes: dict) -> Self:
         """ extern ths win_data and return new """
         [setattr(self, var, value) for var, value in changes.items()]
         return self

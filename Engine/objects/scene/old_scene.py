@@ -37,8 +37,8 @@ class Location:
                     abbr = f'{abbr}{self.increment}'
             self.objects_list[abbr] = obj
             return abbr
-        self.objects_list[obj.metadata.ID] = obj
-        return obj.metadata.ID
+        self.objects_list[obj.data.ID] = obj
+        return obj.data.ID
     
     def light(self, light, abbr: str = None) -> str:
         if abbr is not None:
@@ -107,7 +107,7 @@ class Builder:
         """ format save for load in file, or get satisfaction format """
         objects_data = {}
         for _, value in bld.scene.objects_list.items():
-            objects_data[value.metadata.ID] = value.metadata
+            objects_data[value.data.ID] = value.data
         
         return {
             'progress': bld.scene.progress_list,

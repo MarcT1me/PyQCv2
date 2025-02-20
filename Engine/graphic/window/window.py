@@ -36,10 +36,10 @@ class Window:
     def __post_init__(self):
         self.set_mode(self.data)
         from pygetwindow import getWindowsWithTitle
-        self.utils = getWindowsWithTitle(self.data.name)[0]
+        self.utils = getWindowsWithTitle(self.data.title)[0]
 
     def __repr__(self):
-        return f'<Window: {config.WinDefault.name} ({Engine.pg.display.get_window_size()})>'
+        return f'<Window: {config.WinDefault.title} ({Engine.pg.display.get_window_size()})>'
 
     def blit(self, *args, **kwargs):
         self.__pg_win__.blit(*args, **kwargs)

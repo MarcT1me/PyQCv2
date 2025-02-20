@@ -4,7 +4,7 @@ from Engine.graphic.window import WinData
 from Engine.math import vec2
 
 
-@dataclass
+@dataclass(kw_only=True)
 class NodeWinData(WinData):
     pos: vec2 | None = field(default=None)
     opacity: float = field(default=1.0)

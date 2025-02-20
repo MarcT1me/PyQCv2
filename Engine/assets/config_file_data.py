@@ -5,10 +5,10 @@ import Engine
 from Engine.assets.asset_data import AssetData
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ConfigData(AssetData):
-    asset_type = Engine.DataType.Config
-    data: dict = None
+    type = Engine.DataType.Config
+    content: dict = None
 
     def setdefault(self, defaults: dict, category_name: str = None):
         """
@@ -18,7 +18,7 @@ class ConfigData(AssetData):
         :param defaults: Dictionary of default values
         :param category_name: The path to the category is separated by '/' (for example, "Win/size")
         """
-        category = self.data
+        category = self.content
         if category_name:
             for name in category_name.split('/'):
                 # Creating a new level, if there is none

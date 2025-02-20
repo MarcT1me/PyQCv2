@@ -3,45 +3,44 @@ from typing import Optional
 
 import Engine
 from Engine.assets.asset_data import AssetData
-from Engine.math import vec3, vec4
 
 
-@dataclass
+@dataclass(kw_only=True)
 class PBRProperties:
     metallic: float = 0
     roughness: float = 0.5
-    mr_texture_id: Optional[str] = None
+    mr_texture_id: Optional[Engine.data.Identifier] = None
     transmission: float = 1
     ior: float = 1
 
 
-@dataclass
+@dataclass(kw_only=True)
 class SubsurfaceProperties:
-    color: vec3 = vec3(1)
+    color: Engine.math.vec3 = Engine.math.vec3(1)
     radius: float = 0
     thickness: float = 1
 
 
-@dataclass
+@dataclass(kw_only=True)
 class EmissionProperties:
-    color: Optional[vec3] = None
-    texture_id: Optional[str] = None
+    color: Optional[Engine.math.vec3] = None
+    texture_id: Optional[Engine.data.Identifier] = None
     intensity: float = 1
 
 
-@dataclass
+@dataclass(kw_only=True)
 class NormalMapProperties:
-    texture_id: Optional[str] = None
+    texture_id: Optional[Engine.data.Identifier] = None
     scale: float = 1
 
 
-@dataclass(init=True)
+@dataclass(kw_only=True)
 class MaterialData(AssetData):
-    asset_type = Engine.DataType.Material
-    shader_id: str = "default"
+    type = Engine.DataType.Material
+    shader_id: Engine.data.Identifier = "default"
 
-    albedo_color: vec4 = vec4(1)
-    albedo_texture_id: Optional[str] = None
+    albedo_color: Engine.math.vec4 = Engine.math.vec4(1)
+    albedo_texture_id: Optional[Engine.data.Identifier] = None
 
     pbr: Optional[PBRProperties] = None
     emission: Optional[EmissionProperties] = None

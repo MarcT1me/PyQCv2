@@ -1,7 +1,6 @@
 """ Engine threads controlling """
 from threading import Thread as _PyThread
 from threading import Lock, Condition, current_thread
-import uuid
 from typing import Self, Callable, Optional
 
 import Engine
@@ -44,18 +43,19 @@ class Thread(_PyThread):
 
     def __init__(
             self,
-            identifier: Optional[str] = None,
+            name: Optional[str] = None,
             *,
             action: Optional[Callable] = None,
             daemon: bool = True
     ) -> Self:
-        identifier = identifier or str(uuid.uuid4())
+        identifier = Engine.data.Identifier(name=name)
 
         if identifier in self._roster.pending:
             raise AlreadyExistThreadError(f"Thread with id: {identifier} already exist")
 
-        super().__init__(name=identifier, daemon=daemon)
+        super().__init__(name=identifier.name, daemon=daemon)
         self.id = identifier
+
         self._action_result = Engine.ResultType.NotFinished
         self.action = action or self.action
 
@@ -96,7 +96,7 @@ class Thread(_PyThread):
         """Cleanup resources across all roster branches"""
         with self.global_lock:
             try:
-                for branch in self._roster.values():
+                for branch in self._roster.branches:
                     if self.id in branch:
                         del branch[self.id]
             except KeyError as e:

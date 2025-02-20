@@ -1,5 +1,5 @@
-from typing import Optional, Self
 from abc import ABC
+from typing import Optional, Self
 
 import Engine
 
@@ -7,31 +7,55 @@ import Engine
 class SceneNode(ABC, Engine.data.MetaObject):
     data: 'Engine.objects.SceneNodeData'
     # SceneNodeData
-    scene_type: Engine.DataType = None
-    parent_id: Optional[str]
-    children_ids: dict[str, Self]
+    parent_id: Optional[Engine.data.Identifier]
+    children_ids: set[Engine.data.Identifier]
+    scene_type: Engine.DataType
+    scene_id: Engine.data.Identifier
 
     def __init__(self, data: 'Engine.objects.SceneNodeData'):
         super().__init__(data)
 
+    @staticmethod
+    def root_roster() -> 'Engine.objects.SceneRoster':
+        return Engine.objects.Scene.root_roster
+
+    @staticmethod
+    def get_node(node_id: Engine.data.Identifier) -> 'SceneNode':
+        return SceneNode.root_roster()[node_id]
+
     @property
     def scene_branch(self) -> dict[str, Self]:
-        return Engine.objects.Scene.roster.branch(self.scene_type.name)
+        return self.root_roster().branch(self.scene_type.name)
 
-    def from_id(self, object_id: str):
-        return self.scene_branch[object_id]
+    @property
+    def scene(self) -> 'Engine.objects.Scene':
+        return self.scene_branch[self.scene_id]
 
-    def iter_children(self, func_name: str, *args, **kwargs):
-        for child_id in self.children_ids.values():
-            self.from_id(child_id).__getattribute__(func_name)(*args, **kwargs)
+    def iter_children(self):
+        for child_id in self.children_ids:
+            yield self.scene.roster[child_id]
 
     def add_child(self, value: Self) -> None:
-        self.children_ids[value.id] = value
+        self.children_ids.add(value.id)
+        self.scene.add_child(value)
 
-    def remove_child(self, _id: str) -> None:
-        del self.children_ids[_id]
+    def remove_child(self, identifier: Engine.data.Identifier) -> None:
+        self.children_ids.remove(identifier)
+        self.scene.remove_child(identifier)
 
-    def link_to_parent(self, scene_type: Engine.DataType, parent_id: str):
-        obj: Engine.objects.SceneNode = Engine.objects.Scene.roster.branch(scene_type.name)[parent_id]
-        obj.data.children_ids[self.id] = self
-        self.parent_id = obj.data.id
+    @property
+    def parent(self) -> 'Engine.objects.SceneData':
+        return self.root_roster()[self.parent_id]
+
+    def link_to_parent(self, parent_id: Engine.data.Identifier):
+        if self.parent:
+            self.unlink_parent()
+        parent = self.get_node(parent_id)
+        parent.children_ids.add(self.id)
+        self.parent_id = parent.data.id
+
+    def unlink_parent(self):
+        parent: Engine.objects.SceneNode = self.parent
+        if not parent:
+            parent.children_ids.remove(self.id)
+            self.parent_id = None

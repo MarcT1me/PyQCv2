@@ -1,19 +1,18 @@
 from dataclasses import dataclass, field
 
-from Engine.data import MetaData, WinDefault
-from Engine.math import vec2
+import Engine
 
 
-@dataclass
-class WinData(MetaData):
+@dataclass(kw_only=True)
+class WinData(Engine.data.MetaData):
     """ data for every engine window """
-    size: vec2 = field(default_factory=lambda: vec2(WinDefault.size))
-    name: str = field(default_factory=lambda: WinDefault.name)
-    monitor: int | None = field(default_factory=lambda: WinDefault.monitor)
-    vsync: int = field(default_factory=lambda: WinDefault.vsync)
-    full: bool = field(default_factory=lambda: WinDefault.full)
-    is_desktop: bool = field(default_factory=lambda: WinDefault.is_desktop)
-    flags: int = field(default_factory=lambda: WinDefault.flags)
+    size: Engine.math.vec2 = field(default_factory=lambda: Engine.math.vec2(Engine.data.WinDefault.size))
+    title: str = field(default_factory=lambda: Engine.data.WinDefault.title)
+    monitor: int | None = field(default_factory=lambda: Engine.data.WinDefault.monitor)
+    vsync: int = field(default_factory=lambda: Engine.data.WinDefault.vsync)
+    full: bool = field(default_factory=lambda: Engine.data.WinDefault.full)
+    is_desktop: bool = field(default_factory=lambda: Engine.data.WinDefault.is_desktop)
+    flags: int = field(default_factory=lambda: Engine.data.WinDefault.flags)
 
     def to_kwargs(self):
         kwargs = {

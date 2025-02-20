@@ -1,9 +1,13 @@
-from dataclasses import dataclass
+from typing import Optional
+from dataclasses import dataclass, field
 
-from Engine.data import MetaData
+import Engine
 
 
-@dataclass(init=True)
-class ModelData(MetaData):
-    mesh_id: str = "default"
-    model_type: str = "static"
+@dataclass(kw_only=True)
+class ModelData(Engine.data.MetaData):
+    mesh_id: Engine.data.Identifier = "default"
+    model_type: Engine.data.Identifier = "static"
+
+    lod_levels: list[Engine.data.Identifier] = field(default_factory=list)
+    collision_mesh_id: Optional[Engine.data.Identifier] = None

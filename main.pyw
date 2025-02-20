@@ -13,11 +13,12 @@ class TomlConfigLoader(Engine.assets.AssetLoader):
     def create(
             self, asset_file: Engine.assets.AssetFileData, dependencies: Optional[list[Engine.assets.LoadedAsset]],
             content: TextIO
-    ) -> Engine.assets.AssetData:
+    ) -> Engine.assets.ConfigData:
         config = Engine.assets.ConfigData(
-            name=asset_file.name,
-            data=toml.load(content)
+            id=asset_file.id,
+            content=toml.load(content)
         )
+
         config.setdefault(
             category_name="Win",
             defaults={'fps': Engine.data.WinDefault.fps,
@@ -36,31 +37,33 @@ class TestApp(App):
         # adding config asset type
         assets_type_configs.extend([
             TomlConfigLoader(
-                Engine.assets.AssetType(Engine.assets.MajorType.Toml, Engine.assets.MinorType.Config)
-            )
+                Engine.assets.AssetType(Engine.DataType.Toml | Engine.DataType.Config)
+            ),
         ])
         super().__pre_init__(assets_type_configs)  # init asset manager
+
+        Engine.threading.Thread.critical = True
 
         # loading config
         self.main_config: Engine.assets.LoadedAsset = App.assets.load(
             Engine.assets.AssetFileData(
-                name=Engine.data.FileSystem.config_name,
-                type=(Engine.assets.MajorType.Toml, Engine.assets.MinorType.Config),
+                type=Engine.assets.AssetType(Engine.DataType.Toml | Engine.DataType.Config),
                 path=f"{Engine.data.FileSystem.data_path()}\{Engine.data.FileSystem.config_name}.toml"
             )
         )
 
     @staticmethod
     def __win_data__() -> Engine.graphic.WinData:
-        main_config_asset: Engine.assets.AssetData = App.assets.storage.TomlConfig.definite(
-            Engine.data.FileSystem.config_name)
+        main_config_asset: Engine.assets.ConfigData = App.assets.storage.TomlConfig.definite(
+            Engine.data.FileSystem.config_name + ".toml"
+        )
         # set Window Data from config
         return Engine.graphic.WinData(
-            name="Main Window",
-            size=main_config_asset.data["Win"]["size"],
-            vsync=main_config_asset.data["Win"]["vsync"],
-            full=main_config_asset.data["Win"]["full"],
-            is_desktop=main_config_asset.data["Win"]["is_desktop"],
+            title="Main Window",
+            size=main_config_asset.content["Win"]["size"],
+            vsync=main_config_asset.content["Win"]["vsync"],
+            full=main_config_asset.content["Win"]["full"],
+            is_desktop=main_config_asset.content["Win"]["is_desktop"],
             flags=Engine.data.WinDefault.flags | Engine.pg.OPENGL
         )
 
@@ -84,8 +87,7 @@ class TestApp(App):
         # load music
         self.clip = self.assets.load(
             Engine.assets.AssetFileData(
-                name="10. Crest",
-                type=(Engine.assets.MajorType.PyGame, Engine.assets.MinorType.AudioClip),
+                type=Engine.DataType.AudioClip,
                 path=f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.AUDIO_dir}\\Sf Fiksitinc.mp3"
             )
         )
@@ -94,12 +96,12 @@ class TestApp(App):
         super().__post_init__()  # post-init engine
 
         # play music in loop (100 times)
-        App.audio.active_devices.output.just.play(self.clip.data, loops=100)
+        # App.audio.active_devices.output.just.play(self.clip.data)
 
     @Engine.decorators.deferrable_threadsafe
     @Engine.decorators.single_event
     @Engine.decorators.multithread(thread_class=EventThread)
-    def events(self, *, event, thread) -> None:
+    def events(self, *, event) -> None:
         # handle events
         if event.type == Engine.pg.KEYDOWN:
             if event.key == Engine.pg.K_ESCAPE:
@@ -143,10 +145,9 @@ class TestApp(App):
                 (0, interface.surface.get_size()[1] - self.rnd_version_font.get_size()[1])
             )
 
-    @staticmethod
-    def on_failure(err: Engine.failures.Failure) -> None:
+    def on_failure(self, err: Engine.failures.Failure) -> None:
         # handling errors
-        App.on_failure(err)
+        super().on_failure(err)
 
     @staticmethod
     @Engine.decorators.dev_only()
@@ -154,10 +155,9 @@ class TestApp(App):
         # debug logging (only in debug mode)
         logger.debug("exiting from App")
 
-    @staticmethod
-    def on_exit() -> None:
+    def on_exit(self) -> None:
         # release game and engine data
-        App.on_exit()
+        super().on_exit()
         TestApp.on_exit_print()
 
 

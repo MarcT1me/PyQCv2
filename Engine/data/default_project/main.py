@@ -56,11 +56,11 @@ class TestApp(App):
             Engine.data.FileSystem.config_name)
         # set Window Data from config
         return Engine.graphic.WinData(
-            name="Main Window",
-            size=main_config_asset.data["Win"]["size"],
-            vsync=main_config_asset.data["Win"]["vsync"],
-            full=main_config_asset.data["Win"]["full"],
-            is_desktop=main_config_asset.data["Win"]["is_desktop"],
+            title="Main Window",
+            size=main_config_asset.content["Win"]["size"],
+            vsync=main_config_asset.content["Win"]["vsync"],
+            full=main_config_asset.content["Win"]["full"],
+            is_desktop=main_config_asset.content["Win"]["is_desktop"],
             flags=Engine.data.WinDefault.flags | Engine.pg.OPENGL
         )
 

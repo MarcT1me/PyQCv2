@@ -4,7 +4,7 @@ import Engine
 from Engine.assets.asset_data import AssetData
 
 
-@dataclass
+@dataclass(kw_only=True)
 class TextureData(AssetData):
-    asset_type = Engine.DataType.Texture
-    data: Engine.pg.Surface = None
+    type = Engine.DataType.Texture
+    content: Engine.pg.Surface = None

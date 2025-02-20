@@ -1,13 +1,12 @@
 ﻿""" Various additional structures for data storage
 """
 from argparse import ArgumentError
-from typing import Self, Any, TYPE_CHECKING
+from typing import Self, Any
 
 import Engine
 
 
-class AttributesKeeperError(Exception):
-    pass
+class AttributesKeeperError(Exception): pass
 
 
 class AttributesKeeper(dict):
@@ -44,8 +43,7 @@ class AttributesKeeper(dict):
         return super().__contains__(key) or key in self.__dict__
 
 
-class RosterError(Exception):
-    pass
+class RosterError(Exception): pass
 
 
 class SimpleRoster(AttributesKeeper):
@@ -62,18 +60,22 @@ class SimpleRoster(AttributesKeeper):
         return __obj
 
     def __init__(self, name: str = "root", *args, **kwargs):
-        self.name = name
         super().__init__(*args, **kwargs)
+        self.id = Engine.data.Identifier(name=name)
+        self._branch_ids: set[str] = {}
+
+    @property
+    def branches(self) -> list[dict]:
+        return [self.branch(identifier) for identifier in self._branch_ids]
 
     def new_branch(self, name: str, value: Any = dict()) -> Self:
         """ create dict as attribute in roster with name """
-
         if name in self:
             raise RosterError(f"Branch with name {name} already in roster")
 
         try:
-            self.__setattr__(name, value)
-
+            self[name] = value
+            self._branch_ids.add(name)
         except Exception as e:
             raise RosterError(f"Cant create branch with name {name} - {e.__class__.__name__}") from e
         finally:
@@ -95,7 +97,7 @@ class SimpleRoster(AttributesKeeper):
 
     def branch(self, name: str) -> dict | None:
         """ Return branch dict or None if not exist """
-        return getattr(self, name, None)
+        return self.get(name, None)
 
 
 class Roster(SimpleRoster):
@@ -103,23 +105,24 @@ class Roster(SimpleRoster):
     inherited from SimpleRoster and change new_branch method (create new Roster)
     """
 
-    def __init__(self, name: str = "root", *args, **kwargs):
-        super().__init__(name, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.branch_ids: set[Engine.data.Identifier] = {}
 
     def new_branch(self, name: str, *args, **kwargs) -> Self:
         """ create embedded Roster as attribute in current roster with name """
-
         if name in self:
             raise RosterError(f"Branch with name {name} already in roster")
 
         try:
-            self.__setattr__(name, self.__class__(name, default=self._default, *args, **kwargs))
+            branch = self.__class__(name, default=self._default, *args, **kwargs)
+            self.__setattr__(name, branch)
+            self.branch_ids.add(branch.id)
         except Exception as e:
             raise RosterError(f"Cant create branch with name {name} - {e.__class__.__name__}") from e
         finally:
             return self
 
-    if TYPE_CHECKING:
-        def branch(self, name: str) -> Self | None:
-            """ Return (Roster type) branch or None if not exist """
-            ...
+    def branch(self, name: str) -> Self | None:
+        """ Return (Roster type) branch or None if not exist """
+        return getattr(self, name, None)

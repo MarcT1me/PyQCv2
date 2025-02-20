@@ -1,13 +1,13 @@
+from abc import ABC
+from typing import Optional
 from dataclasses import dataclass, field
-from typing import Optional, Self
 
 import Engine
-from Engine.data import MetaData
 
 
-@dataclass(init=True)
-class SceneNodeData(MetaData):
-    parent_id: Optional[str] = None
-    children_ids: dict[str, Self] = field(default_factory=dict)
-
+@dataclass(kw_only=True)
+class SceneNodeData(ABC, Engine.data.MetaData):
+    parent_id: Optional[Engine.data.Identifier] = None
+    children_ids: set[Engine.data.Identifier] = field(default_factory=set)
     scene_type: Engine.DataType = None
+    scene_id: Engine.data.Identifier = None

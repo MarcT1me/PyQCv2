@@ -2,21 +2,20 @@
 """
 from dataclasses import dataclass, field
 from typing import Any, Self
-from uuid import uuid4
 from loguru import logger
 
 import Engine
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Failure(Exception, Engine.data.TimedMetaData):
     """ A common error class """
-    catch_id: str | None = field(default=None)
+    catch_id: 'Engine.data.Identifier | None' = field(default=None)
     critical: bool = field(default=True)
     err: Exception | None = None
 
 
-class FailuresRoster(Engine.data.arrays.Roster):
+class FailuresRoster(Engine.data.arrays.SimpleRoster):
     def __contains__(self, item):
         for failure in self.values():
             if item == type(failure.err) or item == failure.err:
@@ -30,8 +29,8 @@ class Catch:
     """
     roster: Engine.data.arrays.SimpleRoster[str, Self] = Engine.data.arrays.SimpleRoster()
 
-    def __init__(self, identifier=uuid4(), critical=True) -> None:
-        self.id = identifier
+    def __init__(self, identifier: Engine.data.Identifier = None, critical=True) -> None:
+        self.id = identifier if identifier else Engine.data.Identifier()
 
         if identifier in Catch.roster:
             RuntimeError(f"Catch with the name {identifier} already in Catch.list")
@@ -39,7 +38,7 @@ class Catch:
         self.failures: FailuresRoster[str, Failure] = FailuresRoster()
         self.critical = critical
 
-        Catch.roster[identifier] = self
+        Catch.roster[self.id] = self
 
     def try_func(self, func: Engine.FUNC, *args, **kwargs) -> Any:
         try:
@@ -57,10 +56,10 @@ class Catch:
         if issubclass(exc_type, Failure):
             exc_val.catch_id = self.id
             err = exc_val
-            Engine.App.InheritedСlass.on_failure(err)
+            Engine.App.instance.on_failure(err)
         else:
             err: Failure = Failure(catch_id=self.id, critical=critical, err=exc_val)
-            Engine.App.InheritedСlass.on_failure(err)
+            Engine.App.instance.on_failure(err)
         self.failures[err.id] = err
 
     def __exit__(self, exc_type: type, exc_val: Failure | Exception, _) -> True:

@@ -5,7 +5,7 @@ import Engine
 from Engine.objects.scene_node.scene_node_data import SceneNodeData
 
 
-@dataclass(init=True)
+@dataclass(kw_only=True)
 class ObjectData(SceneNodeData):
     transform: 'Engine.data.Transform' = None
     flags: 'Engine.objects.ObjectFlags' = None

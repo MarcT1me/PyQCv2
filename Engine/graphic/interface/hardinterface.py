@@ -1,4 +1,5 @@
 from array import array
+from loguru import logger
 
 import Engine
 
@@ -9,13 +10,11 @@ class HardInterface:
     anisotropy = 32.0
 
     def __init__(self) -> None:
-        self.surface = Engine.pg.Surface(Engine.App.graphic.gl_data.interface_resolution, flags=Engine.pg.SRCALPHA)
-
-        self.shader = Engine.graphic.GL.Shader(
-            f"{Engine.data.FileSystem.__ENGINE_DATA__}\\{Engine.data.FileSystem.ENGINE_SHADER_dir}\\"
-            "interface",
-            Engine.ShaderType.Vertex | Engine.ShaderType.Fragment
+        self.surface = Engine.pg.Surface(
+            Engine.App.graphic.gl_data.interface_resolution, flags=Engine.pg.SRCALPHA
         )
+
+        self.shader = Engine.App.assets.storage.Shader.definite("interface").content
 
         self.texture: Engine.mgl.Texture = Engine.App.graphic.context.texture(self.surface.get_size(), 4)
         self.texture.filter, self.texture.swizzle = (Engine.mgl.NEAREST, Engine.mgl.NEAREST), self.swizzle
@@ -32,6 +31,8 @@ class HardInterface:
         self.__vao = Engine.App.graphic.context.vertex_array(
             self.shader.program, [(self.__vbo, '2f 2f', 'vertices', 'texCoord')], skip_errors=True
         )
+
+        logger.success(f"Interface initialized: HardInterface<>(size: {Engine.math.vec2(self.surface.get_size())})")
 
     def __enter__(self):
         Engine.App.graphic.interface.surface.fill((0, 0, 0, 0))
@@ -53,8 +54,12 @@ class HardInterface:
 
         self.__vao.render(mode=Engine.mgl.TRIANGLE_STRIP)
 
-    def __destroy__(self) -> None:
-        self.texture.release()
+    def __release__(self):
+        self.__destroy__()
         self.shader.__release__()
         self.__vbo.release()
         self.__vao.release()
+        logger.info("Interface released")
+
+    def __destroy__(self) -> None:
+        self.texture.release()

@@ -64,9 +64,6 @@ class Button:
         self.on_release = on_release
         self.roster[_id] = self
 
-    def on_init(self):
-        """ CREATING a button using data """
-
     def __event__(self, event: pygame.event.Event) -> None:
         """ События кнопки, нажатие (короткое/долгое) и реализация функционала """
         if self.release_start is not None:

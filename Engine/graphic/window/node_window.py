@@ -23,7 +23,7 @@ class NodeWindow:
         self.rect = Rect(0, 0, *win_data.size)
         """ setting window """
         self.win: sdl2_video.Window = sdl2_video.Window(
-            title=win_data.name
+            title=win_data.title
         )
         self.win.set_modal_for(Engine.App.graphic.window.__pg_win__ if not modal_window else modal_window)
         self.update()

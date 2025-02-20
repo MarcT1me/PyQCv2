@@ -34,12 +34,16 @@ class _DeferrableFunction:
         self.deferred_calls = []
         return self.func(*args, **kwargs)
 
-    def defer(self, func: Callable, *args, **kwargs) -> None:
-        self.deferred_calls.append((func, args, kwargs))
+    def defer(self, func: Callable, once=False, *args, **kwargs) -> None:
+        self.deferred_calls.append((func, args, kwargs, once))
 
     def do_defer(self) -> None:
+        once_funcs = set()
         while self.deferred_calls:
-            func, args, kwargs = self.deferred_calls.pop(0)
+            func, args, kwargs, once = self.deferred_calls.pop(0)
+            if once and func in once_funcs:
+                continue
+            once_funcs.add(func)
             func(*args, **kwargs)
 
 
@@ -52,9 +56,9 @@ class _ThreadSafeDeferrableFunction(_DeferrableFunction):
         super().__init__(func)
         self.lock = Engine.threading.Lock()
 
-    def defer(self, func, *args, **kwargs) -> None:
+    def defer(self, func, once=False, *args, **kwargs) -> None:
         with self.lock:
-            super().defer(func, *args, **kwargs)
+            super().defer(func, once, *args, **kwargs)
 
     def do_defer(self) -> None:
         with self.lock:
@@ -113,7 +117,7 @@ def single_event(
             if 'event' in kwargs:
                 raise ValueError(f"Parameter 'event' must not be passed explicitly with {single_event}")
 
-            return [func(*args, event=event, **kwargs) for event in Engine.App.event.event_list]
+            return [func(*args, event=event, **kwargs) for event in Engine.App.instance.event.event_list]
 
         if not virtual:
             # Adding a marker for checking in other decorators

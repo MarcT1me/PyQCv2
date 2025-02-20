@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from typing import Optional
 
 import Engine
@@ -17,19 +16,5 @@ class Light(ObjectNode, IEventful, IUpdatable, IPreRenderable):
     # for the Point light type
     radius: Optional[int]
 
-    @abstractmethod
     def __init__(self, data: 'Engine.objects.SimpleLightData'):
         super().__init__(data)
-
-    @abstractmethod
-    @Engine.decorators.single_event(virtual=True)
-    def event(self, event: Engine.pg.event.Event):
-        pass
-
-    @abstractmethod
-    def update(self):
-        pass
-
-    @abstractmethod
-    def pre_render(self):
-        pass

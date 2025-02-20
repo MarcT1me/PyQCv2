@@ -10,6 +10,19 @@ CLS = TypeVar('CLS', bound=type)
 
 
 class DataType(Flag):
+    Empty = auto()
+    # file types
+    File = auto()
+
+    Text = auto()
+    Toml = auto()
+    Json = auto()
+
+    Bin = auto()
+    Dill = auto()
+    Pickle = auto()
+
+    PyGame = auto()
     # space or var variable
     D1 = auto()
     D2 = auto()
@@ -22,6 +35,7 @@ class DataType(Flag):
     Joystick = auto()
     Asset = auto()
     Config = auto()
+    Sav = auto()
     # animation
     Animation = auto()
     # audio
@@ -47,6 +61,8 @@ class DataType(Flag):
     UiObject = auto()
     Camera = auto()
     Light = auto()
+
+    UserDataType = auto()
 
 
 class ResultType(Enum):

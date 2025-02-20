@@ -36,8 +36,10 @@ class System:
             if window:
                 ...
             else:
-                Engine.App.graphic.window.data.extern({"size": Engine.math.vec2(event.x, event.y)})
-                Engine.App.WorkingInstance.events.defer(Engine.App.graphic.resset)
+                Engine.App.inherited.events.defer(
+                    Engine.App.graphic.window.data.modify, True, {"size": Engine.math.vec2(event.x, event.y)})
+                Engine.App.inherited.events.defer(
+                    Engine.App.graphic.resset, True)
         elif event.type == Engine.pg.WINDOWMOVED:
             if window:
                 ...
@@ -45,12 +47,27 @@ class System:
             if window:
                 ...
             else:
-                Engine.App.graphic.window.data.extern({"monitor": event.display_index})
+                Engine.App.inherited.events.defer(
+                    Engine.App.graphic.window.data.modify, True, {"monitor": event.display_index})
+                logger.info(f"Engine Window - change monitor: {event.display_index}\n")
+
+        # coming soon
+        elif event.type == Engine.pg.WINDOWMINIMIZED:
+            logger.info(f"Engine Window - minimized: {window}\n")
+        elif event.type == Engine.pg.WINDOWMAXIMIZED:
+            logger.info(f"Engine Window - maximized: {window}\n")
+        elif event.type == Engine.pg.WINDOWFOCUSGAINED:
+            logger.info(f"Engine Window - take gained: {window}\n")
+        elif event.type == Engine.pg.WINDOWFOCUSLOST:
+            logger.info(f"Engine Window - lost focus: {window}\n")
+
         elif event.type == Engine.pg.JOYDEVICEADDED:
             joy = Engine.pg.joystick.Joystick(event.device_index)
             Engine.App.joysticks[joy.get_instance_id()] = joy
+            logger.info(f"PyGame Joystick - added: {event.device_index}\n")
         elif event.type == Engine.pg.JOYDEVICEREMOVED:
             del Engine.App.joysticks[event.instance_id]
+            logger.info(f"PyGame Joystick - removed: {event.instance_id}\n")
         elif event.type == Engine.pg.AUDIODEVICEADDED:
             Engine.App.audio.add_device(event.which, bool(event.iscapture))
         elif event.type == Engine.pg.AUDIODEVICEREMOVED:

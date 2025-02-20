@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from typing import Optional
 
 import Engine
@@ -15,27 +14,5 @@ class Object(ObjectNode, IEventful, IPreUpdatable, IUpdatable, IPreRenderable, I
     priority: int
     model: Optional[str]
 
-    @abstractmethod
     def __init__(self, data: 'Engine.objects.ObjectData'):
         super().__init__(data)
-
-    @abstractmethod
-    @Engine.decorators.single_event(virtual=True)
-    def event(self, event: Engine.pg.event.Event):
-        pass
-
-    @abstractmethod
-    def pre_update(self):
-        pass
-
-    @abstractmethod
-    def update(self):
-        pass
-
-    @abstractmethod
-    def pre_render(self):
-        pass
-
-    @abstractmethod
-    def render(self):
-        pass

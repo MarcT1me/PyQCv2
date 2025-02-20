@@ -3,7 +3,7 @@
 from loguru import logger
 # default
 from abc import abstractmethod, ABC
-from typing import Self, TYPE_CHECKING, final
+from typing import Self, TYPE_CHECKING, final, Optional
 
 # Engine import
 import Engine
@@ -48,8 +48,8 @@ class App(ABC):
         running (bool): a variable is a condition for the operation of the main loop
     """
     running: bool = True
-    InheritedСlass: Self = None
-    WorkingInstance: Self = None
+    inherited: type[Self] = None
+    instance: Self = None
 
     assets: Engine.assets.AssetManager = None
     """ Systems """
@@ -70,6 +70,7 @@ class App(ABC):
     @final
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__()
+        App.inherited = cls
         # Engine configs
         Engine.data.FileSystem.load_engine_config('settings')  # general
         Engine.data.FileSystem.load_engine_config('graphics')  # graphics
@@ -85,29 +86,37 @@ class App(ABC):
     def __new__(cls, *args, **kwargs):
         """ creating App class """
         __obj: App = super().__new__(cls)
-        Engine.pg.init()
+        App.instance = __obj
 
-        __assets_type_configs: list[Engine.assets.AssetLoader] = []
-        __obj.__pre_init__(__assets_type_configs)
-
-        logger.success('ENGINE - INIT\n')
+        App.instance.__pre_init__([])
+        logger.success('ENGINE - PRE-INIT\n')
         return __obj
 
     @abstractmethod
     def __pre_init__(self, assets_type_configs: list[Engine.assets.AssetLoader]) -> None:
         """ Just app Pre-initialisation. Before main __init__ """
         assets_type_configs.extend([
-            # default assets
+            # Default Assets
             Engine.assets.asset_data.DefaultAssetLoader(
-                Engine.assets.AssetType(Engine.assets.MajorType.Text, Engine.assets.MinorType.Asset)
+                Engine.assets.AssetType(Engine.DataType.Text | Engine.DataType.Asset)
             ),
             Engine.assets.asset_data.DefaultAssetLoader(
-                Engine.assets.AssetType(Engine.assets.MajorType.Bin, Engine.assets.MinorType.Asset)
+                Engine.assets.AssetType(Engine.DataType.Bin | Engine.DataType.Asset)
             ),
             # Audio Asset
             Engine.assets.audio_clip.AudioAssetLoader(
-                Engine.assets.AssetType(Engine.assets.MajorType.PyGame, Engine.assets.MinorType.AudioClip)
-            )
+                Engine.assets.AssetType(Engine.DataType.AudioClip)
+            ),
+            # Shaders Assets
+            Engine.assets.shader.GLSLShaderLoader(
+                Engine.assets.AssetType(Engine.DataType.Text | Engine.DataType.Shader)
+            ),
+            Engine.assets.shader.GLSLShaderLoader(
+                Engine.assets.AssetType(Engine.DataType.Bin | Engine.DataType.Shader)
+            ),
+            Engine.assets.shader.ShaderLoader(
+                Engine.assets.AssetType(Engine.DataType.Shader)
+            ),
         ])
         App.assets = Engine.assets.AssetManager(assets_type_configs)
 
@@ -117,22 +126,25 @@ class App(ABC):
         """ Pre-initialisation main Window. Before main __init__ """
 
     @staticmethod
-    def __gl_data__(win_data: Engine.graphic.WinData) -> Engine.graphic.GlData:
+    def __gl_data__(win_data: Engine.graphic.WinData) -> Engine.graphic.GL.GlData:
         """ Pre-initialisation Graphic Libreary. Before main __init__ """
-        return Engine.graphic.GlData(win_data=win_data) if win_data.flags & Engine.pg.OPENGL else None
+        return Engine.graphic.GL.GlData(win_data=win_data) if win_data.flags & Engine.pg.OPENGL else None
 
-    def __init__(self, fps: float) -> None:
+    @abstractmethod
+    def __init__(self, fps: Optional[float] = 0) -> None:
         """ Just app initialisation. In Engine - initialisation all systems """
+        Engine.pg.init()
         # init systems
-        App.graphic = Engine.graphic.System()
-        App.audio = Engine.audio.System()
         App.clock = Engine.timing.System(fps)
+        App.audio = Engine.audio.System()
+        App.graphic = Engine.graphic.System()
         App.event = Engine.events.System()
+
+        logger.success('ENGINE - INIT\n')
 
     def __post_init__(self) -> None:
         """ Post initialisation, after main __init__ """
         App.graphic.__post_init__()
-        print()
         logger.success("APP - INIT\n")
 
     def __repr__(self) -> str:
@@ -254,16 +266,14 @@ class App(ABC):
         App.failures.append(err)
         App.running = False
 
-    @staticmethod
-    def on_failure(err: Engine.failures.Failure) -> None:
+    def on_failure(self, err: Engine.failures.Failure) -> None:
         """ calling, if got exception in mainloop """
         if err.critical:
             App.critical_failure(err)
         print('\n\n')
         logger.exception(err)
 
-    @staticmethod
-    def on_exit() -> None:
+    def on_exit(self) -> None:
         for err in tuple(App.failures):
             if not err.critical:
                 App.failures.remove(err)
@@ -274,13 +284,13 @@ class App(ABC):
             logger.error(f"can`t release graphic System, {exc.args[0]}")
         Engine.pg.quit()
 
+        App.instance = None
+
         print()
         logger.success('ENGINE - QUIT\n')
 
     @classmethod
     def mainloop(cls: Engine.CLS) -> None:
-        App.InheritedСlass = cls
-
         logger.info(
             f"Start Engine, "
             f"name: {Engine.data.MainData.APPLICATION_name}, "
@@ -289,18 +299,18 @@ class App(ABC):
         )
 
         while App.running:
-            logger.info("mainloop iteration")
+            logger.info("mainloop iteration\n")
 
             with Engine.failures.Catch(identifier=f"{App.mainloop}_Catch__ENGINE__") as c:
-                App.WorkingInstance = cls()
-                App.WorkingInstance.run()
+                cls()
+                App.instance.run()
 
             if KeyboardInterrupt in c.failures:
                 logger.info("KeyboardInterrupt - exit engine")
                 return
 
-            if App.WorkingInstance:
-                App.WorkingInstance.on_exit()
+            if App.instance:
+                App.instance.on_exit()
             if App.failures:
                 # show err window
                 App.running = err_screen.show_window() if Engine.data.MainData.IS_RELEASE \

@@ -8,7 +8,7 @@ from os.path import join
 MainData.IS_RELEASE = False
 # string
 MainData.APPLICATION_name = 'Test App'
-MainData.APPLICATION_version = '0.7.5'
+MainData.APPLICATION_version = '0.8.0'
 
 """ Set File Settings """
 # Directory names
@@ -16,7 +16,7 @@ FileSystem.ENGINE_DATA_DIR = FileSystem.ENGINE_DATA_DIR
 FileSystem.PRESETS_dir = FileSystem.PRESETS_dir
 FileSystem.ENGINE_SHADER_dir = FileSystem.ENGINE_SHADER_dir
 FileSystem.DATA_dir = FileSystem.DATA_dir
-FileSystem.SHADER_dir = join(FileSystem.ENGINE_DATA_DIR, FileSystem.PRESETS_dir, FileSystem.ENGINE_SHADER_dir)
+FileSystem.SHADER_dir = join(FileSystem.PRESETS_dir, FileSystem.SHADER_dir)
 FileSystem.TEXTURE_dir = join(FileSystem.PRESETS_dir, FileSystem.TEXTURE_dir)
 FileSystem.AUDIO_dir = join(FileSystem.PRESETS_dir, FileSystem.AUDIO_dir)
 

@@ -5,7 +5,7 @@ from Engine.objects.object_node.object_node_data import ObjectNodeData
 from Engine.math import vec2
 
 
-@dataclass(init=True)
+@dataclass(kw_only=True)
 class CameraData(ObjectNodeData):
     camera_type: 'Engine.objects.CameraTypes' = None
     fov: int = None

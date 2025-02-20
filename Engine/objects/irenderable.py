@@ -1,11 +1,11 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 
-class IPreRenderable:
+class IPreRenderable(ABC):
     @abstractmethod
     def pre_render(self): ...
 
 
-class IRenderable:
+class IRenderable(ABC):
     @abstractmethod
     def render(self): ...

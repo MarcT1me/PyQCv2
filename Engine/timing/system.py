@@ -23,8 +23,13 @@ class System:
     """
 
     def __init__(self, fps: float = 0):
-        self.__pg_clock = Engine.pg.time.Clock()
         self.start: float = uix_time()
+        logger.info(
+            f"Engine timing System - init data:\n"
+            f"start: {self.start},\n"
+            f"fps: {fps}"
+        )
+        self.__pg_clock = Engine.pg.time.Clock()
         self.delta: float = 0.0
         self.fps = fps
 
@@ -32,11 +37,6 @@ class System:
         self.roster: SystemRoster = SystemRoster(default=0)
         self.__event_counter = 0
 
-        logger.info(
-            f"Engine timing System - init data:\n"
-            f"start: {self.start},\n"
-            f"fps: {self.fps}"
-        )
         logger.success(
             f"Engine timing System - init\n"
         )

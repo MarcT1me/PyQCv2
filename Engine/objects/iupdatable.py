@@ -1,11 +1,11 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 
-class IPreUpdatable:
+class IPreUpdatable(ABC):
     @abstractmethod
     def pre_update(self): ...
 
 
-class IUpdatable:
+class IUpdatable(ABC):
     @abstractmethod
     def update(self): ...

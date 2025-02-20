@@ -1,72 +1,49 @@
 from dataclasses import dataclass
-from typing import Optional
-from enum import Enum, auto
+from typing import Optional, Iterable
+from enum import Enum
 
 import Engine
-from Engine.data import MetaData
 from Engine.assets.asset_loader import AssetLoader
-
-
-class MajorType(Enum):
-    # file types
-    Text = auto()
-    Toml = auto()
-    Json = auto()
-
-    Bin = auto()
-    Dill = auto()
-    Pickle = auto()
-
-    PyGame = auto()
-
-
-class MinorType(Enum):
-    # file encoding
-    Asset = auto()
-    Config = auto()
-    Sav = auto()
-
-    AudioClip = auto()
-    VideoClip = auto()
-
-    Shader = auto()
-    Texture = auto()
-
-    Model = auto()
-    Mesh = auto()
-    Material = auto()
 
 
 @dataclass
 class AssetType:
-    major: MajorType
-    minor: MinorType
-    tertiary: Optional[Enum] = None  # Опциональный параметр
+    major: Engine.DataType
+    minor: Enum = None
 
-    def get_name(self) -> str:
-        base = f"{self.major.name}{self.minor.name}"
-        if self.tertiary is not None:
-            return f"{base}{self.tertiary.name}"
-        return base
+    @property
+    def name(self) -> str:
+        return f"{self.major.name}".replace("|", "")
+
+    def __repr__(self):
+        return (f"AssetType<{self.name}>("
+                f"major: {self.major.name} "
+                f"minor: {self.minor.name if self.minor else None})")
 
 
-@dataclass
-class AssetData(MetaData):
-    type: Engine.DataType = Engine.DataType.Asset
+@dataclass(kw_only=True)
+class AssetData(Engine.data.MetaData):
+    type: AssetType = Engine.DataType.Asset
     dependencies: 'Optional[list[Engine.assets.LoadedAsset]]' = None
-    data: Engine.T = None
+    content: Engine.T = None
+
+    def __post_init__(self):
+        if isinstance(self.type, Iterable):
+            self.type = Engine.assets.AssetType(*self.type)
+        elif isinstance(self.type, Engine.DataType):
+            self.type = Engine.assets.AssetType(self.type)
 
 
 class DefaultAssetLoader(AssetLoader):
     def load(self, asset_file: 'Engine.assets.AssetFileData') -> str | bytes:
-        mode: str = "r" if asset_file.type.major == MajorType.Text else "br"
+        mode: str = "r" if asset_file.type & Engine.DataType.Text else "br"
 
         return asset_file.path.open(mode).read()
 
     def create(self, asset_file: 'Engine.assets.AssetFileData', dependencies: 'list[Engine.assets.LoadedAsset]',
                content: str | bytes) -> 'Engine.assets.AssetData':
         return AssetData(
-            name=asset_file.name,
+            id=asset_file.id,
             dependencies=dependencies,
-            data=content
+            content=content
         )

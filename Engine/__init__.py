@@ -5,28 +5,31 @@ import Engine.pg
 import Engine.mgl
 import Engine.math
 
-""" Engine """
-from Engine.constants import *
+""" Basic """
 # data
+from Engine.constants import *
 import Engine.data
+# utils
+import Engine.failures
 import Engine.threading
 import Engine.decorators  # need threading and used in data
 
 # wrapper classes
 import Engine.timing
-import Engine.events.event  # user events class
+import Engine.events  # user events class
 import Engine.audio
 
-# utils
-import Engine.failures
+""" Systems """
+# file loading
 import Engine.assets
-
 # space context
 import Engine.objects
-# Engine network API
+# network
 import Engine.network
-# main `graphic` module and main graphic class
+# main `graphic` module
 import Engine.graphic
+
+import Engine.scripts
 # GENERAL APP CLASS
 import Engine.app
 from Engine.app import App

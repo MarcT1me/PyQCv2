@@ -21,7 +21,7 @@ class WinDefault:
     # main window
     size: tuple = Engine.math.vec2(720, 480)
     monitor: int = None
-    name: str = MainData.APPLICATION_name + " Window"
+    title: str = MainData.APPLICATION_name + " Window"
     vsync: bool = False
     full: bool = False
     is_desktop: bool = False
@@ -40,7 +40,7 @@ class FileSystem:
     # Directory names
     ENGINE_DATA_DIR: str = f'Engine\\data'
     PRESETS_dir: str = "presets"
-    ENGINE_SHADER_dir: str = f'{PRESETS_dir}\\shaders'
+    ENGINE_SHADER_dir: str = f'{ENGINE_DATA_DIR}\\{PRESETS_dir}\\shaders'
     DATA_dir: str = "gamedata"
     SHADER_dir: str = "shaders"
     TEXTURE_dir: str = "textures"

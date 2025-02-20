@@ -4,6 +4,6 @@ from time import time
 from Engine.data.metadata import MetaData
 
 
-@dataclass
+@dataclass(kw_only=True)
 class TimedMetaData(MetaData):
     time_stamp: float = field(default_factory=time)

@@ -12,7 +12,7 @@ import QuantumCore.graphic
 from QuantumCore.data.config import FAR, GAMMA
 
 
-@dataclass
+@dataclass(kw_only=True)
 class MetaData:
     """ model data """
     pos: tuple[float, float, float] | glm.vec3

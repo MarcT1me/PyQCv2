@@ -1,8 +1,17 @@
-from dataclasses import dataclass
+from typing import Any
+from dataclasses import dataclass, field
 
-from Engine.graphic.GL.GlObject import GlObjectData
+import Engine
+from Engine.graphic.GL.gl_object import GlObjectData
 
 
-@dataclass(init=True)
+@dataclass(kw_only=True)
 class BufferData(GlObjectData):
     dynamic: bool = False
+    array: list[Engine.T] = field(default_factory=list)
+    layout: Any = None
+    offset: int = 0
+
+    @property
+    def size(self) -> int:
+        return len(self.array)

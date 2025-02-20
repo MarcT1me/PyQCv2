@@ -15,11 +15,11 @@ class System:
         self.__monitors__ = get_monitors()
 
         # window
-        win_data: Engine.graphic.WinData = Engine.App.InheritedСlass.__win_data__()
+        win_data: Engine.graphic.WinData = Engine.App.inherited.__win_data__()
         self.window: Engine.graphic.Window = None  # Window
 
         # gl
-        self.gl_data: Optional[Engine.graphic.GlData] = Engine.App.InheritedСlass.__gl_data__(win_data)
+        self.gl_data: Optional[Engine.graphic.GL.GlData] = Engine.App.inherited.__gl_data__(win_data)
         self.context: Optional[Engine.mgl.Context] = None  # MGL context
         # game ui surface
         self.interface: Optional[Engine.graphic.HardInterface] = None  # Interface renderer
@@ -30,6 +30,9 @@ class System:
             Engine.pg.display.gl_set_attribute(Engine.pg.GL_CONTEXT_MINOR_VERSION, self.gl_data.minor_version)
             Engine.pg.display.gl_set_attribute(Engine.pg.GL_CONTEXT_PROFILE_MASK, self.gl_data.profile_mask)
             logger.info(f'set gl attributes, {self.gl_data.minor_version, self.gl_data.minor_version}\n')
+
+        """ rosters and sub-systems """
+        self.shader_roster = Engine.graphic.GL.ShadersRoster()
 
         # init sub-systems
         self._init_window(win_data)
@@ -62,7 +65,7 @@ class System:
         self.set_viewport(self.gl_data.view)
 
     def __post_init__(self):
-        self.set_caption(self.window.data.name)
+        self.set_caption(self.window.data.title)
         self.set_icon(
             Engine.pg.image.load(
                 f"{Engine.data.FileSystem.APPLICATION_ICO_dir}"
@@ -73,20 +76,40 @@ class System:
         self.window.__post_init__()
         self.toggle_full()
 
+        """ Load default Shaders """
+        self.shader: Engine.graphic.GL.Shader = Engine.App.assets.load(
+            Engine.assets.AssetFileData(
+                id=Engine.data.Identifier("interface"),  # interface shader
+                type=Engine.DataType.Shader,
+                dependencies=[
+                    Engine.assets.AssetFileData(
+                        type=(Engine.DataType.Text | Engine.DataType.Shader, Engine.ShaderType.Vertex),
+                        path=f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.ENGINE_SHADER_dir}\\"
+                             f"interface.vert"
+                    ),
+                    Engine.assets.AssetFileData(
+                        type=(Engine.DataType.Text | Engine.DataType.Shader, Engine.ShaderType.Fragment),
+                        path=f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.ENGINE_SHADER_dir}\\"
+                             f"interface.frag"
+                    ),
+                ]
+            )
+        )
+
         self.interface = self.gl_data.interface_type()
 
     def resset(self) -> None:
         self.window.set_mode(self.window.data)
 
         if self.gl_data:
-            self.gl_data = Engine.App.InheritedСlass.__gl_data__(self.window.data)  # set data from App methods
+            self.gl_data = Engine.App.__gl_data__(self.window.data)  # set data from App methods
 
             self.interface.__destroy__()
             self.interface = self.gl_data.interface_type()
 
             self._set_gl_configs()
 
-        logger.success("Engine graphic System - resset")
+        logger.success("Engine graphic System - resset\n")
 
     def set_viewport(self, viewport: Engine.math.vec4) -> None:
         self.context.viewport = viewport
@@ -103,7 +126,7 @@ class System:
             flags = self.window.data | Engine.pg.FULLSCREEN
 
             if self.window.data.is_desktop:
-                self.window.data.extern({'flags': flags})
+                self.window.data.modify({'flags': flags})
                 self.resset()
             else:
                 Engine.pg.display.toggle_fullscreen()
@@ -115,7 +138,7 @@ class System:
             else:
                 flags = self.window.data.flags
         # setting changes
-        self.window.data = self.window.data.extern(
+        self.window.data = self.window.data.modify(
             {
                 'size': size,
                 'monitor': index,
@@ -183,7 +206,7 @@ class System:
     def __release__(self) -> None:
         if self.gl_data:
             try:
-                self.interface.__destroy__()
+                self.interface.__release__()
                 self.context.release()
             except Exception as exc:
                 logger.error(f'can`t release GL, {exc.args[0]}')
