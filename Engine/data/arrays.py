@@ -1,9 +1,19 @@
 ﻿""" Various additional structures for data storage
 """
-from argparse import ArgumentError
 from typing import Self, Any
+from argparse import ArgumentError
 
 import Engine
+from Engine.data.return_value import ReturnValue
+
+
+class DataTable:
+    def __init__(self, **data):
+        self._data = data
+
+    def get(self, item: 'str | Engine.data.Identifier') -> Any:
+        value: Any = self._data.get(str(item), Engine.ResultType.NOT)
+        return ReturnValue(value, Engine.ResultType.Found)
 
 
 class AttributesKeeperError(Exception): pass

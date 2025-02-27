@@ -56,7 +56,7 @@ class Thread(_PyThread):
         super().__init__(name=identifier.name, daemon=daemon)
         self.id = identifier
 
-        self._action_result = Engine.ResultType.NotFinished
+        self._action_result = Engine.ResultType.NOT
         self.action = action or self.action
 
         with Thread.global_lock:
@@ -90,7 +90,7 @@ class Thread(_PyThread):
     @property
     def result(self):
         """Get thread execution result"""
-        return self._action_result
+        return Engine.data.ReturnValue(self._action_result, Engine.ResultType.Finished)
 
     def release(self):
         """Cleanup resources across all roster branches"""

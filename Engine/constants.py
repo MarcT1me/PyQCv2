@@ -66,10 +66,16 @@ class DataType(Flag):
 
 
 class ResultType(Enum):
+    Found = auto()
+    NotFound = auto()
+
     Finished = auto()
     NotFinished = auto()
+
     Success = auto()
     Error = auto()
+
+    NOT = 1
 
 
 # flags
