@@ -1,12 +1,13 @@
 ﻿""" Various additional structures for data storage
 """
-from typing import Self, Any
+from typing import Self, Any, final
 from argparse import ArgumentError
 
 import Engine
 from Engine.data.return_value import ReturnValue
 
 
+@final
 class DataTable:
     def __init__(self, **data):
         self._data = data

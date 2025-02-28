@@ -1,7 +1,7 @@
 """ Engine threads controlling """
+from typing import Self, Callable, Optional, final
 from threading import Thread as _PyThread
 from threading import Lock, Condition, current_thread
-from typing import Self, Callable, Optional
 
 import Engine
 
@@ -67,6 +67,7 @@ class Thread(_PyThread):
         """Base action method to be overridden"""
         raise NotImplementedError("Thread action must be implemented")
 
+    @final
     def run(self):
         with Thread.important:
             while Thread.important_id is not None and Thread.important_id is not self.id:
@@ -93,6 +94,7 @@ class Thread(_PyThread):
         self.release()
 
     @property
+    @final
     def result(self):
         """Get thread execution result"""
         return Engine.data.ReturnValue(self._action_result, Engine.ResultType.Finished)
@@ -129,6 +131,7 @@ class Thread(_PyThread):
         cls.wait_pending()
         cls.wait_worked()
 
+    @final
     def set_important(self):
         try:
             Thread.important_id = self.id
@@ -137,11 +140,13 @@ class Thread(_PyThread):
             raise ThreadError(f"Cant set thread with id: {self.id} as important") from e
 
     @staticmethod
+    @final
     def mute_important():
         Thread.important_id = None
         Thread.important.notify_all()
 
     @classmethod
+    @final
     def current_thread_id(cls) -> Self:
         return current_thread().name
 

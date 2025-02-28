@@ -1,13 +1,14 @@
 """ Engine settings and configs
 """
-from loguru import logger
-# default
+from typing import final
 import os
 from inspect import stack
-# engine
+
+from loguru import logger
+
 import Engine
 
-
+@final
 class MainData:
     """ Main engine constants """
     IS_RELEASE: bool = False
@@ -16,6 +17,7 @@ class MainData:
     APPLICATION_version = "DEV-0.0.0"
 
 
+@final
 class WinDefault:
     """ Screen settings """
     # main window
@@ -29,6 +31,7 @@ class WinDefault:
     fps: int = 0
 
 
+@final
 class FileSystem:
     """ File and path data """
 

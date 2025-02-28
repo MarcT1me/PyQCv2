@@ -2,13 +2,14 @@
 """
 from abc import abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Self, Optional
+from typing import Any, Self, Optional, final
 from loguru import logger
 
 import Engine
 
 
 @dataclass(kw_only=True)
+@final
 class Failure(Exception, Engine.data.TimedMetaData):
     """ A common error class """
     catch_id: 'Engine.data.Identifier | None' = field(default=None)
@@ -20,6 +21,7 @@ class Failure(Exception, Engine.data.TimedMetaData):
         raise exc from self.err
 
 
+@final
 class FailuresRoster(Engine.data.arrays.SimpleRoster):
     def __contains__(self, item):
         for failure in self.values():
@@ -34,6 +36,7 @@ class IFailureHandler:
         """ Handling failure from catching """
 
 
+@final
 class Catch:
     """ A context manager for eliminating errors in their storage and processing,
     contains a method for unhindered launching of dangerous functions.
@@ -69,7 +72,9 @@ class Catch:
     def handle_err(self, err: Failure):
         if self.is_handling:
             if self.handler:
-                (self.handler if self.handler is not None else Engine.App.instance).on_failure(err)
+                self.handler.on_failure(err)
+            else:
+                Engine.App.instance.on_failure(err)
 
     def __got_error(self, exc_type: type, exc_val: Exception | Failure, critical: bool):
         # Проверяем, является ли исключение экземпляром класса Exception или его подкласса

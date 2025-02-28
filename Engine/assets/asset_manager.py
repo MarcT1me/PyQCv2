@@ -1,4 +1,4 @@
-from typing import Dict, Set, Any
+from typing import Dict, Set, Any, final
 from pprint import pformat
 from loguru import logger
 
@@ -9,6 +9,7 @@ class AssetError(Exception):
     """Base class for all asset loading exceptions"""
 
 
+@final
 class AssetRoster(Engine.data.arrays.Roster):
     def __init__(self, name: str, loader: 'Engine.assets.Loader | None', *args, **kwargs):
         super().__init__(name, *args, **kwargs)
@@ -29,6 +30,7 @@ class MissingDependencyError(AssetError):
     pass
 
 
+@final
 class DependencyResolver:
     def __init__(self, loading_func: Engine.FUNC):
         self.loading_func = loading_func
@@ -82,6 +84,7 @@ class DuplicatedAssetTypeConfig(AssetError):
     pass
 
 
+@final
 class AssetManager:
     def __init__(self, asset_loaders: 'list[Engine.assets.AssetLoader]'):
         # Initializing the root Roster

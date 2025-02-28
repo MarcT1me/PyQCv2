@@ -1,10 +1,11 @@
-from typing import Any
+from typing import Any, final
 from dataclasses import dataclass, InitVar, field
 
 import Engine
 
 
 @dataclass
+@final
 class ReturnValue:
     _value: Any
     best_result_type: InitVar[Engine.ResultType]

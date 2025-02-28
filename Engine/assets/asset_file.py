@@ -1,11 +1,12 @@
 from dataclasses import dataclass
-from typing import Optional, Iterable, List
+from typing import Optional, Iterable, List, final
 from pathlib import Path
 
 import Engine
 
 
 @dataclass(kw_only=True)
+@final
 class AssetFileData(Engine.data.MetaData):
     type: 'Optional[Engine.assets.AssetType]' = None
     dependencies: 'Optional[List[AssetFileData]]' = None

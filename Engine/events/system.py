@@ -63,7 +63,7 @@ class System:
 
         elif event.type == Engine.pg.JOYDEVICEADDED:
             joy = Engine.pg.joystick.Joystick(event.device_index)
-            Engine.App.joysticks[joy.get_instance_id()] = joy
+            Engine.App.instance.joysticks[joy.get_instance_id()] = joy
             logger.info(f"PyGame Joystick - added: {event.device_index}\n")
         elif event.type == Engine.pg.JOYDEVICEREMOVED:
             del Engine.App.joysticks[event.instance_id]

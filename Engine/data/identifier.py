@@ -1,4 +1,4 @@
-from typing import TypeAlias, Tuple, Hashable, Optional, Self
+from typing import TypeAlias, Tuple, final, Hashable, Optional, Self
 from dataclasses import dataclass, field
 from uuid import UUID, uuid4
 
@@ -6,6 +6,7 @@ IdentifierType: TypeAlias = 'str | Tuple[str, UUID] | Identifier'
 
 
 @dataclass
+@final
 class Identifier(Hashable):
     name: Optional[str] = None
     uuid: UUID = field(init=False, default_factory=uuid4)

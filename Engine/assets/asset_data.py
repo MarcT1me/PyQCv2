@@ -1,5 +1,5 @@
+from typing import Optional, Iterable, final
 from dataclasses import dataclass
-from typing import Optional, Iterable
 from enum import Enum
 
 import Engine
@@ -7,6 +7,7 @@ from Engine.assets.asset_loader import AssetLoader
 
 
 @dataclass
+@final
 class AssetType:
     major: Engine.DataType
     minor: Enum = None
@@ -34,6 +35,7 @@ class AssetData(Engine.data.MetaData):
             self.type = Engine.assets.AssetType(self.type)
 
 
+@final
 class DefaultAssetLoader(AssetLoader):
     def load(self, asset_file: 'Engine.assets.AssetFileData') -> str | bytes:
         mode: str = "r" if asset_file.type & Engine.DataType.Text else "br"

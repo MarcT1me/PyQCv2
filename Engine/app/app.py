@@ -3,7 +3,7 @@
 from loguru import logger
 # default
 from abc import abstractmethod, ABC
-from typing import Self, TYPE_CHECKING, final, Optional
+from typing import Self, TYPE_CHECKING, final
 
 # Engine import
 import Engine
@@ -11,6 +11,7 @@ from Engine.graphic import err_screen
 from Engine.app.app_data import AppData
 
 
+@final
 class EventThread(Engine.threading.Thread, Engine.failures.IFailureHandler):
     """ Thread class for Handling GUI Events """
 
@@ -21,6 +22,7 @@ class EventThread(Engine.threading.Thread, Engine.failures.IFailureHandler):
         App.instance.on_failure(err)
 
 
+@final
 class PreUpdateThread(Engine.threading.Thread, Engine.failures.IFailureHandler):
     """ Thread class for pre updating app """
 
@@ -31,6 +33,7 @@ class PreUpdateThread(Engine.threading.Thread, Engine.failures.IFailureHandler):
         App.instance.on_failure(err)
 
 
+@final
 class UpdateThread(Engine.threading.Thread, Engine.failures.IFailureHandler):
     """ Thread class for updating app """
 
@@ -41,6 +44,7 @@ class UpdateThread(Engine.threading.Thread, Engine.failures.IFailureHandler):
         App.instance.on_failure(err)
 
 
+@final
 class PreRenderThread(Engine.threading.Thread, Engine.failures.IFailureHandler):
     """ Thread class for pre rendering app """
 
@@ -77,9 +81,6 @@ class App(ABC, Engine.data.MetaObject, Engine.failures.IFailureHandler):
     failures: list[Engine.failures.Failure]  # Error catching
     joysticks: dict[int, Engine.pg.joystick.JoystickType]  # joysticks
     root_scene_object_id: Engine.data.Identifier  # Scene and space context
-    # graphic data
-    win_data: Engine.graphic.WinData
-    gl_data: Optional[Engine.graphic.GL.GlData]
 
     """ The App class object Data """
     running: bool = True  # in App.running - Engine loop, in self.running - App loop
@@ -120,12 +121,6 @@ class App(ABC, Engine.data.MetaObject, Engine.failures.IFailureHandler):
 
     """ __pre_init__ logic """
 
-    @final
-    def __new__(cls, *args, **kwargs):
-        """ creating App class """
-        App.instance = super().__new__(cls)  # memorize App instance
-        return App.instance
-
     @classmethod
     @abstractmethod
     def __pre_init__(cls) -> AppData:
@@ -135,6 +130,7 @@ class App(ABC, Engine.data.MetaObject, Engine.failures.IFailureHandler):
         Using for init AppData and for initialization Asset Manager. """
 
     @staticmethod
+    @final
     def init_asset_manager(assets_type_configs: list[Engine.assets.AssetLoader]) -> None:
         """ Initialize Asset manager.
         Need to use in __pre_init__.
@@ -276,6 +272,7 @@ class App(ABC, Engine.data.MetaObject, Engine.failures.IFailureHandler):
             ...
 
     # running app
+    @final
     def run(self) -> None:
         """ Run game.
         The method that starts the event loop.
@@ -352,6 +349,7 @@ class App(ABC, Engine.data.MetaObject, Engine.failures.IFailureHandler):
     """ Main mainloop """
 
     @classmethod
+    @final
     def mainloop(cls) -> None:
         """ mainloop of App (pre-, just, post- initializations and instance mainloop)
         Handle failures and show exception window """
@@ -368,7 +366,7 @@ class App(ABC, Engine.data.MetaObject, Engine.failures.IFailureHandler):
             with Engine.failures.Catch(identifier=f"{App.mainloop}_Catch__ENGINE__") as c:
                 data: Engine.assets.ConfigData = cls.__pre_init__()
                 logger.success('ENGINE - PRE-INIT\n')
-                cls(data)
+                App.instance = cls(data)
                 App.instance.run()
 
             if KeyboardInterrupt in c.failures:

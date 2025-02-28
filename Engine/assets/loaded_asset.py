@@ -1,10 +1,11 @@
-from typing import Any
+from typing import Any, final
 from dataclasses import dataclass
 
 import Engine
 
 
 @dataclass(kw_only=True)
+@final
 class LoadedAsset:
     branch_id: Engine.data.Identifier
     id: Engine.data.Identifier
