@@ -8,29 +8,50 @@ from typing import Self, TYPE_CHECKING, final, Optional
 # Engine import
 import Engine
 from Engine.graphic import err_screen
+from Engine.app.app_data import AppData
 
 
-class EventThread(Engine.threading.Thread):
+class EventThread(Engine.threading.Thread, Engine.failures.IFailureHandler):
     """ Thread class for Handling GUI Events """
+
     _roster: Engine.threading.ThreadRoster[str, Self] = Engine.threading.ThreadRoster()
 
+    def on_failure(self, err: Engine.failures.Failure):
+        logger.error("Failure catching from EventThread")
+        App.instance.on_failure(err)
 
-class PreUpdateThread(Engine.threading.Thread):
+
+class PreUpdateThread(Engine.threading.Thread, Engine.failures.IFailureHandler):
     """ Thread class for pre updating app """
+
     _roster: Engine.threading.ThreadRoster[str, Self] = Engine.threading.ThreadRoster()
 
+    def on_failure(self, err: Engine.failures.Failure):
+        logger.error("Failure catching from PreUpdateThread")
+        App.instance.on_failure(err)
 
-class UpdateThread(Engine.threading.Thread):
+
+class UpdateThread(Engine.threading.Thread, Engine.failures.IFailureHandler):
     """ Thread class for updating app """
+
     _roster: Engine.threading.ThreadRoster[str, Self] = Engine.threading.ThreadRoster()
 
+    def on_failure(self, err: Engine.failures.Failure):
+        logger.error("Failure catching from UpdateThread")
+        App.instance.on_failure(err)
 
-class PreRenderThread(Engine.threading.Thread):
+
+class PreRenderThread(Engine.threading.Thread, Engine.failures.IFailureHandler):
     """ Thread class for pre rendering app """
+
     _roster: Engine.threading.ThreadRoster[str, Self] = Engine.threading.ThreadRoster()
 
+    def on_failure(self, err: Engine.failures.Failure):
+        logger.error("Failure catching from PreRenderThread")
+        App.instance.on_failure(err)
 
-class App(ABC):
+
+class App(ABC, Engine.data.MetaObject, Engine.failures.IFailureHandler):
     """
     Main App class.
     The main parent class for creating logic and running it in the main loop
@@ -47,54 +68,78 @@ class App(ABC):
     CLASS FIELD
         running (bool): a variable is a condition for the operation of the main loop
     """
-    running: bool = True
+    """ AppData object """
+    data: AppData
+    # AppData
+    fps: int  # clock
+    data_table: Engine.data.arrays.DataTable  # data
+    assets_type_configs: list[Engine.assets.AssetLoader]  # assets
+    failures: list[Engine.failures.Failure]  # Error catching
+    joysticks: dict[int, Engine.pg.joystick.JoystickType]  # joysticks
+    root_scene_object_id: Engine.data.Identifier  # Scene and space context
+    # graphic data
+    win_data: Engine.graphic.WinData
+    gl_data: Optional[Engine.graphic.GL.GlData]
+
+    """ The App class object Data """
+    running: bool = True  # in App.running - Engine loop, in self.running - App loop
+    # inherited app class and current app instance
     inherited: type[Self] = None
     instance: Self = None
 
+    """ Engine Systems """
+    # pre-init
     assets: Engine.assets.AssetManager = None
-    """ Systems """
-    graphic: Engine.graphic.System = None
-    audio: Engine.audio.System = None
+    # init
     clock: Engine.timing.System = None
+    audio: Engine.audio.System = None
     event: Engine.events.System = None
+    graphic: Engine.graphic.System = None
 
-    """ Error catching """
-    failures: list[Engine.failures.Failure] = []
-
-    """ Events """
-    joysticks: dict[int, Engine.pg.joystick.JoystickType] = {}
-
-    """ Scene and space context """
-    root_scene: Engine.objects.Scene = None
+    """ Inherited App definition logic """
 
     @final
     def __init_subclass__(cls, **kwargs):
+        """ creating App inherited class and loading Engine configs
+        After all initializations """
         super().__init_subclass__()
-        App.inherited = cls
+        App.inherited = cls  # memorize inherited class
         # Engine configs
         Engine.data.FileSystem.load_engine_config('settings')  # general
         Engine.data.FileSystem.load_engine_config('graphics')  # graphics
 
-        # deferrable functions
+        # set deferrable functions
         for method_name in {"events", "pre_update", "update", "pre_render", "render"}:
             method = getattr(cls, method_name)
             if not hasattr(method, "__is_deferred__"):
                 deferred_method = Engine.decorators.deferrable(method)
                 setattr(cls, method_name, deferred_method)
 
+    def __repr__(self) -> str:
+        return f'<App: {Engine.data.MainData.APPLICATION_name} (running={self.running}, failures={self.failures})>'
+
+    """ __pre_init__ logic """
+
     @final
     def __new__(cls, *args, **kwargs):
         """ creating App class """
-        __obj: App = super().__new__(cls)
-        App.instance = __obj
+        App.instance = super().__new__(cls)  # memorize App instance
+        return App.instance
 
-        App.instance.__pre_init__([])
-        logger.success('ENGINE - PRE-INIT\n')
-        return __obj
-
+    @classmethod
     @abstractmethod
-    def __pre_init__(self, assets_type_configs: list[Engine.assets.AssetLoader]) -> None:
-        """ Just app Pre-initialisation. Before main __init__ """
+    def __pre_init__(cls) -> AppData:
+        """ App pre-initialisation.
+        After lunching (inherited App.mainloop()).
+        Before main __init__ logic.
+        Using for init AppData and for initialization Asset Manager. """
+
+    @staticmethod
+    def init_asset_manager(assets_type_configs: list[Engine.assets.AssetLoader]) -> None:
+        """ Initialize Asset manager.
+        Need to use in __pre_init__.
+        1) adding default assets types
+        2) AssetManager.__init__ """
         assets_type_configs.extend([
             # Default Assets
             Engine.assets.asset_data.DefaultAssetLoader(
@@ -120,35 +165,44 @@ class App(ABC):
         ])
         App.assets = Engine.assets.AssetManager(assets_type_configs)
 
-    @staticmethod
-    @abstractmethod
-    def __win_data__() -> Engine.graphic.WinData:
-        """ Pre-initialisation main Window. Before main __init__ """
-
-    @staticmethod
-    def __gl_data__(win_data: Engine.graphic.WinData) -> Engine.graphic.GL.GlData:
-        """ Pre-initialisation Graphic Libreary. Before main __init__ """
-        return Engine.graphic.GL.GlData(win_data=win_data) if win_data.flags & Engine.pg.OPENGL else None
+    """ Main __init__ logic """
 
     @abstractmethod
-    def __init__(self, fps: Optional[float] = 0) -> None:
-        """ Just app initialisation. In Engine - initialisation all systems """
+    def __init__(self, data: AppData) -> None:
+        """ Engine Initialization -> Initialization systems.
+        Before inherited __pre_init__.
+        Take AppData from the __pre_init__ """
+        super().__init__(data)
         Engine.pg.init()
         # init systems
-        App.clock = Engine.timing.System(fps)
+        App.clock = Engine.timing.System(data.fps)
         App.audio = Engine.audio.System()
         App.graphic = Engine.graphic.System()
         App.event = Engine.events.System()
 
         logger.success('ENGINE - INIT\n')
 
+    @staticmethod
+    @abstractmethod
+    def __win_data__() -> Engine.graphic.WinData:
+        """ Pre-initialisation -> Initialization main Window Data.
+        After inherited __pre_init__ but in App.__init__ -> Engine.graphic.System.__init__ """
+
+    @staticmethod
+    def __gl_data__(win_data: Engine.graphic.WinData) -> Engine.graphic.GL.GlData:
+        """ Pre-initialisation -> Initialization Graphic Libreary Data.
+        After __win_data__
+        Take WinData from the __win_data__"""
+        return Engine.graphic.GL.GlData(win_data=win_data) if win_data.flags & Engine.pg.OPENGL else None
+
+    """ App instance mainloop logic """
+
     def __post_init__(self) -> None:
-        """ Post initialisation, after main __init__ """
+        """ Engine post-initialisation.
+        Before inherited __init__
+        Calling in instance App.mainloop"""
         App.graphic.__post_init__()
         logger.success("APP - INIT\n")
-
-    def __repr__(self) -> str:
-        return f'<App: {Engine.data.MainData.APPLICATION_name} (running={self.running}, failures={self.failures})>'
 
     # events
     if TYPE_CHECKING:
@@ -226,10 +280,7 @@ class App(ABC):
         """ Run game.
         The method that starts the event loop.
         This is a while loop that uses the current variable in the App class field as a condition. 3 methods are
-        called in the loop itself: events, update_app, update_window
-        
-        :return: Nothing
-        :raises KeyboardInterrupt: if the cycle is not completed correctly.
+        called in the loop itself: (pre-)events, (pre-)update, (pre-)render
         """
         self.__post_init__()
 
@@ -261,22 +312,33 @@ class App(ABC):
             # clok tick
             App.clock.tick()
 
+    """ App exit logic """
+
     @staticmethod
     def critical_failure(err):
-        App.failures.append(err)
+        """ Using when app catch critical failure
+        Already Implement in App.on_failure """
+        App.instance.failures.append(err)
         App.running = False
 
-    def on_failure(self, err: Engine.failures.Failure) -> None:
-        """ calling, if got exception in mainloop """
-        if err.critical:
-            App.critical_failure(err)
+    def on_failure(self, failure: Engine.failures.Failure) -> None:
+        """ Calling when Ap got exception in mainloop """
+        if isinstance(failure.err, KeyboardInterrupt):
+            return Engine.ResultType.Finished
+
+        if failure.critical:
+            App.critical_failure(failure)
         print('\n\n')
-        logger.exception(err)
+
+        logger.exception(failure.err)
+
+        return Engine.ResultType.NotFinished
 
     def on_exit(self) -> None:
-        for err in tuple(App.failures):
+        """ Quiting from Engine """
+        for err in tuple(self.failures):
             if not err.critical:
-                App.failures.remove(err)
+                self.failures.remove(err)
 
         try:
             App.graphic.__release__()
@@ -284,13 +346,15 @@ class App(ABC):
             logger.error(f"can`t release graphic System, {exc.args[0]}")
         Engine.pg.quit()
 
-        App.instance = None
-
         print()
         logger.success('ENGINE - QUIT\n')
 
+    """ Main mainloop """
+
     @classmethod
-    def mainloop(cls: Engine.CLS) -> None:
+    def mainloop(cls) -> None:
+        """ mainloop of App (pre-, just, post- initializations and instance mainloop)
+        Handle failures and show exception window """
         logger.info(
             f"Start Engine, "
             f"name: {Engine.data.MainData.APPLICATION_name}, "
@@ -302,7 +366,9 @@ class App(ABC):
             logger.info("mainloop iteration\n")
 
             with Engine.failures.Catch(identifier=f"{App.mainloop}_Catch__ENGINE__") as c:
-                cls()
+                data: Engine.assets.ConfigData = cls.__pre_init__()
+                logger.success('ENGINE - PRE-INIT\n')
+                cls(data)
                 App.instance.run()
 
             if KeyboardInterrupt in c.failures:
@@ -311,8 +377,10 @@ class App(ABC):
 
             if App.instance:
                 App.instance.on_exit()
-            if App.failures:
+            if App.instance.failures:
                 # show err window
                 App.running = err_screen.show_window() if Engine.data.MainData.IS_RELEASE \
                     else err_screen.show_window()
-                App.failures.clear()
+                App.instance.failures.clear()
+
+            App.instance = None

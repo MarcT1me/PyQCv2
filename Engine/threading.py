@@ -39,7 +39,8 @@ class Thread(_PyThread):
     important = Condition()
     important_id: Optional[str] = None
 
-    critical: bool = False
+    is_critical_failures: bool = False
+    do_wrapping_failures: bool = False
 
     def __init__(
             self,
@@ -79,11 +80,15 @@ class Thread(_PyThread):
                         f"There is no waiting thread with id {self.id} in Thread.roster.pending"
                     ) from e
 
-            with Engine.failures.Catch(critical=self.critical) as cth:
+            with Engine.failures.Catch(critical=self.is_critical_failures, handler=self, is_handling=not Thread.do_wrapping_failures) as cth:
                 self._action_result = self.action()
 
-            if cth.failures:
-                raise ThreadActionWarning(f"Some error in thread with id {self.id}")
+            if Thread.do_wrapping_failures:
+                for failure in cth.failures.values():
+                    try:
+                        failure.wrap(ThreadActionWarning(f"Some error in thread with id {self.id}"))
+                    except:
+                        cth.handler.on_failure(failure)
 
         self.release()
 

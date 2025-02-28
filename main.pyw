@@ -1,4 +1,5 @@
 from typing import Optional, TextIO
+from dataclasses import dataclass
 import toml
 
 import Engine
@@ -32,24 +33,38 @@ class TomlConfigLoader(Engine.assets.AssetLoader):
         return config
 
 
+@dataclass(kw_only=True)
+class TestAppData(Engine.app.AppData):
+    main_config: Engine.assets.ConfigData
+
+
 class TestApp(App):
-    def __pre_init__(self, assets_type_configs: list[Engine.assets.AssetLoader]) -> None:
+    deta: TestAppData
+    # TestAppData
+    main_config: Engine.assets.ConfigData
+
+    @classmethod
+    def __pre_init__(cls) -> None:
         # adding config asset type
-        assets_type_configs.extend([
+        assets_type_configs = [
             TomlConfigLoader(
                 Engine.assets.AssetType(Engine.DataType.Toml | Engine.DataType.Config)
             ),
-        ])
-        super().__pre_init__(assets_type_configs)  # init asset manager
-
-        Engine.threading.Thread.critical = True
+        ]
+        cls.init_asset_manager(assets_type_configs)  # init asset manager
 
         # loading config
-        self.main_config: Engine.assets.LoadedAsset = App.assets.load(
+        main_config: Engine.assets.LoadedAsset = App.assets.load(
             Engine.assets.AssetFileData(
                 type=Engine.assets.AssetType(Engine.DataType.Toml | Engine.DataType.Config),
                 path=f"{Engine.data.FileSystem.data_path()}\{Engine.data.FileSystem.config_name}.toml"
             )
+        )
+
+        return TestAppData(
+            fps=main_config.data["Win"]["fps"],
+            assets_type_configs=assets_type_configs,
+            main_config=main_config
         )
 
     @staticmethod
@@ -67,10 +82,8 @@ class TestApp(App):
             flags=Engine.data.WinDefault.flags | Engine.pg.OPENGL
         )
 
-    def __init__(self) -> None:
-        super().__init__(
-            self.main_config.data["Win"]["fps"]
-        )  # init engine
+    def __init__(self, data: TestAppData) -> None:
+        super().__init__(data)  # init engine
 
         # create font surface and font
         self.fps_font = Engine.pg.font.SysFont("Arial", 30)
@@ -96,7 +109,7 @@ class TestApp(App):
         super().__post_init__()  # post-init engine
 
         # play music in loop (100 times)
-        # App.audio.active_devices.output.just.play(self.clip.data)
+        App.audio.active_devices.output.just.play(self.clip.data)
 
     @Engine.decorators.deferrable_threadsafe
     @Engine.decorators.single_event
@@ -145,9 +158,12 @@ class TestApp(App):
                 (0, interface.surface.get_size()[1] - self.rnd_version_font.get_size()[1])
             )
 
-    def on_failure(self, err: Engine.failures.Failure) -> None:
+    def on_failure(self, failure: Engine.failures.Failure) -> None:
         # handling errors
-        super().on_failure(err)
+        if super().on_failure(failure) is Engine.ResultType.Finished: return
+
+        # logger.debug(
+        logger.error(f"App catch any failure: {failure.err}")
 
     @staticmethod
     @Engine.decorators.dev_only()

@@ -104,7 +104,7 @@ class System:
 
     @staticmethod
     def get_device_name(which: int, is_input: bool):
-        return Engine.pg.sdl2.get_audio_device_names(is_input)[which]
+        return Engine.pg.sdl2.get_audio_device_names(is_input)[which][:31]
 
     def get_device_by_name(self, name: str) -> Optional[Device]:
         """Возвращает устройство по имени"""

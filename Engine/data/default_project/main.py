@@ -129,9 +129,9 @@ class TestApp(App):
             interface.surface.blit(self.rnd_fps_font, (0, 0))
 
     @staticmethod
-    def on_failure(err: Engine.failures.Failure) -> None:
+    def on_failure(failure: Engine.failures.Failure) -> None:
         # handling errors
-        App.on_failure(err)
+        App.on_failure(failure)
 
     @staticmethod
     @Engine.decorators.dev_only()

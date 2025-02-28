@@ -36,9 +36,9 @@ class System:
             if window:
                 ...
             else:
-                Engine.App.inherited.events.defer(
+                Engine.App.instance.events.defer(
                     Engine.App.graphic.window.data.modify, True, {"size": Engine.math.vec2(event.x, event.y)})
-                Engine.App.inherited.events.defer(
+                Engine.App.instance.events.defer(
                     Engine.App.graphic.resset, True)
         elif event.type == Engine.pg.WINDOWMOVED:
             if window:
@@ -47,7 +47,7 @@ class System:
             if window:
                 ...
             else:
-                Engine.App.inherited.events.defer(
+                Engine.App.instance.events.defer(
                     Engine.App.graphic.window.data.modify, True, {"monitor": event.display_index})
                 logger.info(f"Engine Window - change monitor: {event.display_index}\n")
 

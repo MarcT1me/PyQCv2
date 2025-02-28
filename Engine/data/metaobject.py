@@ -13,7 +13,7 @@ class MetaObject:
     id: 'Engine.data.Identifier'
 
     def __init__(self, data: 'Engine.data.MetaData'):
-        self.__dict__["_data"] = data
+        self.__dict__["_data"]  = data
 
     @property
     def data(self):

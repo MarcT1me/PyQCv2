@@ -77,10 +77,10 @@ def show_window(*,
            )
     font_color = (50, 50, 50)
     err_text_font = pygame.font.SysFont('Unispace', 30).render(
-        f'text: `{[err.err for err in App.failures]}`', True, font_color
+        f'text: `{[err.err for err in App.instance.failures]}`', True, font_color
     )
     err_type_font = pygame.font.SysFont('Unispace', 30).render(
-        f'type: {[str(type(err.err))[8:-2] for err in App.failures]}', True, font_color
+        f'type: {[str(type(err.err))[8:-2] for err in App.instance.failures]}', True, font_color
     )
     help_font = pygame.font.SysFont('Unispace', 30).render(
         "press on 'BUTTON' or 'R' to restart and 'BUTTON', 'Esc' or 'QUIT'", True, (20, 20, 20)
