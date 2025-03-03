@@ -1,13 +1,15 @@
-# graphic
+# Engine.graphics
 pygame
 moderngl
-# working with window
+# Engine.graphics.window
 screeninfo
 pygetwindow
-# other
-toml
-loguru
+# Engine.math
 pyglm
-numpy
-dill
+# Engine.audio
 sounddevice
+# other
+loguru
+
+# App
+toml

@@ -18,7 +18,7 @@ class AssetFileData(Engine.data.MetaData):
             self.id.name = self.path.name
 
             if not self.path.exists():
-                raise FileNotFoundError(f"Asset file not found: {self.path}")
+                raise FileNotFoundError(f"Asset file with id: `{self.id}`, path: `{self.path}` not found")
 
         if isinstance(self.type, Iterable):
             self.type = Engine.assets.AssetType(*self.type)
@@ -26,5 +26,5 @@ class AssetFileData(Engine.data.MetaData):
             self.type = Engine.assets.AssetType(self.type)
 
     def __repr__(self):
-        return f"AssetFileData<{self.id}>(type: {self.type.name}, path: {self.path}, deps: {self.dependencies})"
+        return f"AssetFileData<{self.id}>(type: `{self.type.name}`, path: `{self.path}`, deps: {self.dependencies})"
 

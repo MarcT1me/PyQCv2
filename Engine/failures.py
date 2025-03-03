@@ -2,7 +2,7 @@
 """
 from abc import abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Self, Optional, final
+from typing import Self, Optional, final
 from loguru import logger
 
 import Engine
@@ -16,7 +16,7 @@ class Failure(Exception, Engine.data.TimedMetaData):
     critical: bool = field(default=True)
     err: Exception | None = None
 
-    def wrap(self, exc:  Exception):
+    def wrap(self, exc: Exception):
         """ Wraps failure into given exception """
         raise exc from self.err
 
@@ -46,25 +46,26 @@ class Catch:
     def __init__(self, *,
                  identifier: Optional[Engine.data.IdentifierType] = None,
                  handler: IFailureHandler = None,
-                 critical: bool = True, is_handling: bool = True) -> None:
+                 is_critical: bool = True, is_handling: bool = True) -> None:
         self.id = Engine.data.Identifier.from_uncertain(identifier) if identifier else Engine.data.Identifier()
 
         if identifier in Catch.roster:
             RuntimeError(f"Catch with the name {identifier} already in Catch.list")
 
         self.failures: FailuresRoster[str, Failure] = FailuresRoster()
-        self.critical = critical
+        self.critical = is_critical
         self.is_handling = is_handling
         self.handler = handler
 
         Catch.roster[self.id] = self
 
-    def try_func(self, func: Engine.FUNC, *args, **kwargs) -> Any:
+    def try_func(self, func: Engine.FUNC, *args, **kwargs) -> 'Any | Engine.ResultType.Error':
         try:
-            func(*args, **kwargs)
+            return func(*args, **kwargs)
         except Exception as exc:
             exc._is_try_func = True
             self.__got_error(type(exc), exc, False)
+            return Engine.ResultType.Error
 
     def __enter__(self) -> Self:
         return self
@@ -78,7 +79,9 @@ class Catch:
 
     def __got_error(self, exc_type: type, exc_val: Exception | Failure, critical: bool):
         # Проверяем, является ли исключение экземпляром класса Exception или его подкласса
-        logger.warning(f"Catch {self.id} got a {'critical' if critical else 'not critical'} error {exc_type}")
+        logger.warning(
+            f"Catch {self.id} got a {'critical' if critical else 'not critical'} error {exc_type}:\n{exc_val}\n"
+        )
         if issubclass(exc_type, Failure):
             exc_val.catch_id = self.id
             err = exc_val

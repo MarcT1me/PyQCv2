@@ -81,7 +81,7 @@ class Thread(_PyThread):
                         f"There is no waiting thread with id {self.id} in Thread.roster.pending"
                     ) from e
 
-            with Engine.failures.Catch(critical=self.is_critical_failures, handler=self, is_handling=not Thread.do_wrapping_failures) as cth:
+            with Engine.failures.Catch(is_critical=self.is_critical_failures, handler=self, is_handling=not Thread.do_wrapping_failures) as cth:
                 self._action_result = self.action()
 
             if Thread.do_wrapping_failures:

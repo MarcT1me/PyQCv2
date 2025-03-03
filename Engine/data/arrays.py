@@ -4,7 +4,6 @@ from typing import Self, Any, final
 from argparse import ArgumentError
 
 import Engine
-from Engine.data.return_value import ReturnValue
 
 
 @final
@@ -12,9 +11,11 @@ class DataTable:
     def __init__(self, **data):
         self._data = data
 
-    def get(self, item: 'str | Engine.data.Identifier') -> Any:
-        value: Any = self._data.get(str(item), Engine.ResultType.NOT)
-        return ReturnValue(value, Engine.ResultType.Found)
+    def get(self, item: 'str | Engine.data.Identifier'):
+        return self._data.get(str(item), None)
+
+    def __getattr__(self, item):
+        return self.get(item)
 
 
 class AttributesKeeperError(Exception): pass

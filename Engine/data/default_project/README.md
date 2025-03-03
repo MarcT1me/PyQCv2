@@ -1,7 +1,7 @@
 > # QuantumGame
 ###### powered by QuantumCore
 
-![icon](Engine/data/Logo.png)
+<img alt="icon" height="128" src="presets/Logo.png" width="128"/>
 
 > ##### Description
 game description

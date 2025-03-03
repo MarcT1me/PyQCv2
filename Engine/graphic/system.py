@@ -15,11 +15,11 @@ class System:
         self.__monitors__ = get_monitors()
 
         # window
-        win_data: Engine.graphic.WinData = Engine.App.inherited.__win_data__()
+        win_data: Engine.graphic.WinData = Engine.App.instance.__win_data__()
         self.window: Engine.graphic.Window = None  # Window
 
         # gl
-        self.gl_data: Optional[Engine.graphic.GL.GlData] = Engine.App.inherited.__gl_data__(win_data)
+        self.gl_data: Optional[Engine.graphic.GL.GlData] = Engine.App.instance.__gl_data__(win_data)
         self.context: Optional[Engine.mgl.Context] = None  # MGL context
         # game ui surface
         self.interface: Optional[Engine.graphic.HardInterface] = None  # Interface renderer
@@ -205,10 +205,8 @@ class System:
 
     def __release__(self) -> None:
         if self.gl_data:
-            try:
-                self.interface.__release__()
-                self.context.release()
-            except Exception as exc:
-                logger.error(f'can`t release GL, {exc.args[0]}')
+            with Engine.failures.Catch(identifier="Graphic system GL release", is_critical=False, is_handling=False) as cth:
+                cth.try_func(self.interface.__release__)
+                cth.try_func(self.context.release)
         if self.window is not None:
             del self.window

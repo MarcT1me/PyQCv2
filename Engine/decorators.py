@@ -174,7 +174,7 @@ def window_event(
 def updatable(cls: Engine.CLS) -> Engine.CLS:
     """Class decorator that adds static fields update capability
 
-    Adds clas smethod 'update' to modify class attributes in bulk
+    Adds class method 'update' to modify class attributes in bulk
     """
 
     def update(_, changes: dict[str, Any]) -> None:

@@ -25,7 +25,7 @@ class MetaObject:
                 return getattr(self._data, name)
             except Exception as e:
                 raise MetaObjectDataDelegationError(f"Cant delegate field {name} from self.data") from e
-        raise AttributeError(f"'{self.__class__.__name__}' not have a attr '{name}'", name)
+        raise AttributeError(f"'{self.__class__.__name__}' not have a attr '{name}'")
 
     def __setattr__(self, name, value):
         if hasattr(self._data, name):

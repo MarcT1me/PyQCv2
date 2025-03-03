@@ -1,10 +1,11 @@
 from typing import Optional, TextIO
-from dataclasses import dataclass
 import toml
 
 import Engine
 from Engine.app import App, EventThread
 from loguru import logger
+
+from Engine.objects.iupdatable import IUpdatable
 
 
 class TomlConfigLoader(Engine.assets.AssetLoader):
@@ -33,57 +34,115 @@ class TomlConfigLoader(Engine.assets.AssetLoader):
         return config
 
 
-@dataclass(kw_only=True)
-class TestAppData(Engine.app.AppData):
-    main_config: Engine.assets.ConfigData
-
-
 class TestApp(App):
-    deta: TestAppData
-    # TestAppData
-    main_config: Engine.assets.ConfigData
-
-    @classmethod
-    def __pre_init__(cls) -> None:
+    def __pre_init__(self) -> None:
         # adding config asset type
-        assets_type_configs = [
+        self.init_asset_manager(
             TomlConfigLoader(
                 Engine.assets.AssetType(Engine.DataType.Toml | Engine.DataType.Config)
             ),
-        ]
-        cls.init_asset_manager(assets_type_configs)  # init asset manager
+        )
 
         # loading config
-        main_config: Engine.assets.LoadedAsset = App.assets.load(
+        main_config: Engine.assets.ConfigData = self.assets.load(
             Engine.assets.AssetFileData(
                 type=Engine.assets.AssetType(Engine.DataType.Toml | Engine.DataType.Config),
                 path=f"{Engine.data.FileSystem.data_path()}\{Engine.data.FileSystem.config_name}.toml"
             )
+        ).asset_data
+
+        with Engine.failures.Catch(identifier=f"{self.__pre_init__} Asset loading", is_critical=False,
+                                   is_handling=False) as cth:
+            init_clip: Engine.audio.Clip | Engine.ResultType.Error = cth.try_func(
+                lambda: self.assets.load(
+                    Engine.assets.AssetFileData(
+                        type=Engine.DataType.AudioClip,
+                        path=f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.AUDIO_dir}"
+                             "\\Sf Fiksitinc.mp3"
+                    )
+                ).data
+            )
+
+        with Engine.failures.Catch(identifier="test scene updating", is_critical=False):
+            # class for testing nodes
+            class TestSceneNode(Engine.objects.SceneNode, IUpdatable):
+                def update(self):
+                    print(f"update {self.id}")
+                    for child in self.iter_children():
+                        if child.is_updatable(): child.update()
+
+            """scene2"""
+            scene2 = Engine.objects.Scene(
+                Engine.objects.SceneData(
+                    id=Engine.data.Identifier("test scene 2"),
+                    scene_type=Engine.DataType.D1,
+                )
+            )
+
+            # scene2 child1
+            scene2_child_1 = TestSceneNode(
+                Engine.objects.SceneNodeData(
+                    id=Engine.data.Identifier("test scene2 child_1")
+                )
+            )
+            scene2.add_child(scene2_child_1)
+
+            """scene"""
+            scene = Engine.objects.Scene(
+                Engine.objects.SceneData(
+                    id=Engine.data.Identifier("test scene"),
+                    scene_type=Engine.DataType.D1,
+                )
+            )
+
+            # scene2
+            scene.add_child(scene2)
+
+            # child1
+            child_1 = TestSceneNode(
+                Engine.objects.SceneNodeData(
+                    id=Engine.data.Identifier("test scene child_1")
+                )
+            )
+            child_1_1 = TestSceneNode(
+                Engine.objects.SceneNodeData(
+                    id=Engine.data.Identifier("test scene child_1_1")
+                )
+            )
+            scene.add_child(child_1).add_child(child_1_1)
+
+            # child2
+            child_2 = TestSceneNode(
+                Engine.objects.SceneNodeData(
+                    id=Engine.data.Identifier("test scene child_2")
+                )
+            )
+            scene.add_child(child_2)
+
+            scene.update()
+
+        return Engine.app.AppData(
+            fps=main_config.content["Win"]["fps"],
+            data_table=Engine.data.arrays.DataTable(
+                main_config=main_config,
+                init_clip=init_clip
+            )
         )
 
-        return TestAppData(
-            fps=main_config.data["Win"]["fps"],
-            assets_type_configs=assets_type_configs,
-            main_config=main_config
-        )
-
-    @staticmethod
-    def __win_data__() -> Engine.graphic.WinData:
-        main_config_asset: Engine.assets.ConfigData = App.assets.storage.TomlConfig.definite(
-            Engine.data.FileSystem.config_name + ".toml"
-        )
+    def __win_data__(self) -> Engine.graphic.WinData:
+        main_config: Engine.assets.ConfigData = self.data_table.main_config
         # set Window Data from config
         return Engine.graphic.WinData(
             title="Main Window",
-            size=main_config_asset.content["Win"]["size"],
-            vsync=main_config_asset.content["Win"]["vsync"],
-            full=main_config_asset.content["Win"]["full"],
-            is_desktop=main_config_asset.content["Win"]["is_desktop"],
+            size=main_config.content["Win"]["size"],
+            vsync=main_config.content["Win"]["vsync"],
+            full=main_config.content["Win"]["full"],
+            is_desktop=main_config.content["Win"]["is_desktop"],
             flags=Engine.data.WinDefault.flags | Engine.pg.OPENGL
         )
 
-    def __init__(self, data: TestAppData) -> None:
-        super().__init__(data)  # init engine
+    def __init__(self) -> None:
+        super().__init__()  # init engine
 
         # create font surface and font
         self.fps_font = Engine.pg.font.SysFont("Arial", 30)
@@ -97,19 +156,11 @@ class TestApp(App):
             True, "white"
         )
 
-        # load music
-        self.clip = self.assets.load(
-            Engine.assets.AssetFileData(
-                type=Engine.DataType.AudioClip,
-                path=f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.AUDIO_dir}\\Sf Fiksitinc.mp3"
-            )
-        )
-
     def __post_init__(self) -> None:
         super().__post_init__()  # post-init engine
 
-        # play music in loop (100 times)
-        App.audio.active_devices.output.just.play(self.clip.data)
+        # play music
+        App.audio.active_devices.output.just.play(self.data_table.init_clip)
 
     @Engine.decorators.deferrable_threadsafe
     @Engine.decorators.single_event

@@ -1,4 +1,5 @@
 from typing import Optional, Iterable, Self
+from loguru import logger
 
 import Engine
 
@@ -39,6 +40,10 @@ class Channel:
             fade_ms: int = 0,
             start_time: float = 0.0
     ) -> Self:
+        if not isinstance(clip, Engine.audio.Clip):
+            logger.warning("cant play given clip")
+            return
+
         self._check_active()
 
         self.stop()
