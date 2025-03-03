@@ -25,6 +25,7 @@ class SceneNode(ABC, Engine.data.MetaObject):
     def add_child(self, value: Self) -> Self:
         self.children_ids.add(value.id)
         self.scene.add_node(value)
+        value.scene_id = self.scene_id
         return value
 
     def iter_children(self) -> Iterator[Self]:

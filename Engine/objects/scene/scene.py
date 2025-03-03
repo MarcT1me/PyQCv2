@@ -36,6 +36,7 @@ class Scene(SceneNode, IEventful, IPreUpdatable, IUpdatable, IPreRenderable, IRe
     def add_child(self, value: Self) -> Self:
         self.add_node(value)
         self.children_ids.add(value.id)
+        value.scene_id = self.scene_id
         return value
 
     def event(self, event: Engine.pg.event.Event):

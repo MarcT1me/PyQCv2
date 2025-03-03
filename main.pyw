@@ -75,7 +75,6 @@ class TestApp(App):
             scene2 = Engine.objects.Scene(
                 Engine.objects.SceneData(
                     id=Engine.data.Identifier("test scene 2"),
-                    scene_type=Engine.DataType.D1,
                 )
             )
 
@@ -91,7 +90,6 @@ class TestApp(App):
             scene = Engine.objects.Scene(
                 Engine.objects.SceneData(
                     id=Engine.data.Identifier("test scene"),
-                    scene_type=Engine.DataType.D1,
                 )
             )
 
@@ -109,7 +107,8 @@ class TestApp(App):
                     id=Engine.data.Identifier("test scene child_1_1")
                 )
             )
-            scene.add_child(child_1).add_child(child_1_1)
+            ret = scene.add_child(child_1)
+            ret.add_child(child_1_1)
 
             # child2
             child_2 = TestSceneNode(
