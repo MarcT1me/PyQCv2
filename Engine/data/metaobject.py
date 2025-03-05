@@ -12,12 +12,21 @@ class MetaObject:
     # MetaData
     id: 'Engine.data.Identifier'
 
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__()
+
+        for method_name in ("event", "events", "pre_update", "update", "pre_render", "render"):
+            if hasattr(cls, method_name):
+                method = getattr(cls, method_name)
+                if not hasattr(method, "__is_deferred__"):
+                    setattr(cls, method_name, Engine.decorators.deferrable(method))
+
     def __init__(self, data: 'Engine.data.MetaData'):
-        self.__dict__["_data"]  = data
+        self.__dict__["_data"] = data
 
     @property
     def data(self):
-        return self.data
+        return self.__dict__["_data"]
 
     def __getattr__(self, name):
         if hasattr(self._data, name):

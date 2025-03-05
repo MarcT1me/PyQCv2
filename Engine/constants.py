@@ -23,10 +23,12 @@ class DataType(Flag):
     Pickle = auto()
 
     PyGame = auto()
-    # space or var variable
+    # d vars
     D1 = auto()
     D2 = auto()
     D3 = auto()
+    D4 = auto()
+
     UI = auto()
     # general
     Failure = auto()

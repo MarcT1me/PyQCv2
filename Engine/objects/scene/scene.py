@@ -9,21 +9,23 @@ from Engine.objects.irenderable import IPreRenderable, IRenderable
 
 
 class Scene(SceneNode, IEventful, IPreUpdatable, IUpdatable, IPreRenderable, IRenderable):
-    data: 'Engine.objects.SceneData'
-    # SceneData
-    multithread: bool
-    is_critical_failures: bool
-
     node_heap: dict[Engine.data.Identifier, SceneNode] = {}
 
-    def __init__(self, data: 'Engine.objects.SceneData'):
+    def __init__(self, data: 'Engine.objects.SceneNodeData'):
         super().__init__(data)
-        self.scene_id = self.id
+        self.data.scene_id = self.id
         Scene.node_heap[self.id] = self
 
     @staticmethod
     def add_node(value: SceneNode) -> None:
         Scene.node_heap[value.id] = value
+
+    @staticmethod
+    def get_node_identifier_from_name(name: str) -> 'Engine.data.Identifier | Engine.ResultType.NotFound':
+        return next(
+            filter(lambda _id: _id.name == name, Scene.node_heap),
+            Engine.ResultType.NotFound
+        )
 
     @staticmethod
     def get_node(identifier: Engine.data.Identifier) -> SceneNode:
@@ -35,8 +37,8 @@ class Scene(SceneNode, IEventful, IPreUpdatable, IUpdatable, IPreRenderable, IRe
 
     def add_child(self, value: Self) -> Self:
         self.add_node(value)
-        self.children_ids.add(value.id)
-        value.scene_id = self.scene_id
+        self.data.children_ids.add(value.id)
+        value.data.scene_id = self.data.scene_id
         return value
 
     def event(self, event: Engine.pg.event.Event):

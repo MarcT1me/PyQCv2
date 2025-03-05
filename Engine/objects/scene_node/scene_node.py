@@ -20,38 +20,48 @@ class SceneNode(ABC, Engine.data.MetaObject):
 
     @property
     def scene(self) -> 'Engine.objects.Scene':
-        return Engine.objects.Scene.get_node(self.scene_id)
+        return Engine.objects.Scene.get_node(self.data.scene_id)
 
     def add_child(self, value: Self) -> Self:
-        self.children_ids.add(value.id)
+        self.data.children_ids.add(value.data.id)
         self.scene.add_node(value)
-        value.scene_id = self.scene_id
+        value.data.scene_id = self.data.scene_id
         return value
 
+    def get_child_identifier_from_name(self, name: str) -> 'Engine.data.Identifier | Engine.ResultType.NotFound':
+        return next(
+            filter(lambda _id: _id.name == name, self.data.children_ids),
+            Engine.ResultType.NotFound
+        )
+
+    def iter_children_ids(self):
+        for child_id in self.data.children_ids:
+            yield child_id
+
     def iter_children(self) -> Iterator[Self]:
-        for child_id in self.children_ids:
+        for child_id in self.iter_children_ids():
             yield Engine.objects.Scene.get_node(child_id)
 
     def pop_child(self, identifier: Engine.data.Identifier) -> None:
-        self.children_ids.remove(identifier)
+        self.data.children_ids.remove(identifier)
         return self.scene.pop_node(identifier)
 
     @property
-    def parent(self) -> 'Engine.objects.SceneData':
+    def parent(self) -> Self:
         return self.scene.get_node(self.parent_id)
 
     def link_to_parent(self, parent_id: Engine.data.Identifier) -> Self:
         if self.parent:
             self.unlink_parent()
         parent = self.scene.get_node(parent_id)
-        parent.children_ids.add(self.id)
-        self.parent_id = parent.data.id
+        parent.data.children_ids.add(self.id)
+        self.data.parent_id = parent.data.id
         return parent
 
     def unlink_parent(self):
         if self.parent:
-            self.parent.children_ids.remove(self.id)
-            self.parent_id = None
+            self.parent.data.children_ids.remove(self.id)
+            self.data.parent_id = None
 
     def is_eventful(self):
         return isinstance(self, IEventful)

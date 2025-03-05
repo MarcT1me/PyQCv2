@@ -11,6 +11,7 @@ from Engine.graphic import err_screen
 from Engine.app.app_data import AppData
 from Engine.failures import IFailureHandler, Failure
 
+from Engine.objects.iinitanle import IPreInitable, IPostInitable
 from Engine.objects.ieventful import IEventful
 from Engine.objects.iupdatable import IPreUpdatable, IUpdatable
 from Engine.objects.irenderable import IPreRenderable, IRenderable
@@ -60,7 +61,9 @@ class PreRenderThread(Engine.threading.Thread, IFailureHandler):
         App.instance.on_failure(err)
 
 
-class App(ABC, Engine.data.MetaObject, IEventful, IPreUpdatable, IUpdatable, IPreRenderable, IRenderable,
+class App(ABC, Engine.data.MetaObject,
+          IPreInitable, IPostInitable,
+          IEventful, IPreUpdatable, IUpdatable, IPreRenderable, IRenderable,
           IFailureHandler):
     """
     Main App class.
@@ -134,13 +137,6 @@ class App(ABC, Engine.data.MetaObject, IEventful, IPreUpdatable, IUpdatable, IPr
         # Engine configs
         Engine.data.FileSystem.load_engine_config('settings')  # general
         Engine.data.FileSystem.load_engine_config('graphics')  # graphics
-
-        # set deferrable functions
-        for method_name in {"events", "pre_update", "update", "pre_render", "render"}:
-            method = getattr(cls, method_name)
-            if not hasattr(method, "__is_deferred__"):
-                deferred_method = Engine.decorators.deferrable(method)
-                setattr(cls, method_name, deferred_method)
 
     def __repr__(self) -> str:
         return f'<App: {Engine.data.MainData.APPLICATION_name} (running={self.running})>'
@@ -289,7 +285,6 @@ class App(ABC, Engine.data.MetaObject, IEventful, IPreUpdatable, IUpdatable, IPr
         @Engine.decorators.deferrable
         @Engine.decorators.sdl_render
         @Engine.decorators.gl_render
-        @Engine.decorators.window_event
         @abstractmethod
         def render(self) -> None:
             """ render all app surfaces, and use engine render methods """
@@ -356,24 +351,19 @@ class App(ABC, Engine.data.MetaObject, IEventful, IPreUpdatable, IUpdatable, IPr
             App.event.prepare()
             self.events(self)
             EventThread.wait()
-            self.events.do_defer()
 
             # update
             self.pre_update(self)
             PreUpdateThread.wait()
-            self.pre_update.do_defer()
 
             self.update(self)
             UpdateThread.wait()
-            self.update.do_defer()
 
             # render
             self.pre_render(self)
             PreRenderThread.wait()
-            self.pre_render.do_defer()
 
             self.render(self)
-            self.render.do_defer()
             # clok tick
             App.clock.tick()
 

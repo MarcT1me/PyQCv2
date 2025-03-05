@@ -1,10 +1,19 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import Engine
 
 
-@dataclass(kw_only=True)
+@dataclass
 class Transform:
-    position: Engine.math.vec3
-    direction: Engine.math.vec3
-    scale: Engine.math.vec3
+    position: Engine.math.vec_type = field(default=None)
+    direction: Engine.math.vec_type = field(default=None)
+    scale: Engine.math.vec_type = field(default=None)
+
+    def move(self, position: Engine.math.vec_type):
+        self.position += position
+
+    def rotate(self, rotation: Engine.math.vec_type):
+        self.direction += rotation
+
+    def zoom(self, scale: Engine.math.vec_type):
+        self.scale += scale

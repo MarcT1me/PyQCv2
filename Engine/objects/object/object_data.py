@@ -1,13 +1,10 @@
 from dataclasses import dataclass
 from typing import Optional
 
-import Engine
-from Engine.objects.scene_node.scene_node_data import SceneNodeData
+from Engine.objects.object_node.object_node_data import ObjectNodeData
 
 
 @dataclass(kw_only=True)
-class ObjectData(SceneNodeData):
-    transform: 'Engine.data.Transform' = None
-    flags: 'Engine.objects.ObjectFlags' = None
+class ObjectData(ObjectNodeData):
     priority: int = 0
     model: Optional[str] = None

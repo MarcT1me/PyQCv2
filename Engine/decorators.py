@@ -9,6 +9,7 @@ class _StorageFunction:
     def __init__(self, func, **attrs):
         self.func = func
         self.__dict__.update(attrs)
+        self.__is_storage__ = True
         wraps(func)(self)
 
     def __call__(self, *args, **kwargs):
@@ -32,7 +33,9 @@ class _DeferrableFunction:
     def __call__(self, *args, **kwargs) -> Any:
         # Сбрасываем очередь перед каждым вызовом функции
         self.deferred_calls = []
-        return self.func(*args, **kwargs)
+        ret = self.func(*args, **kwargs)
+        self.do_defer()
+        return ret
 
     def defer(self, func: Callable, once=False, *args, **kwargs) -> None:
         self.deferred_calls.append((func, args, kwargs, once))
@@ -54,6 +57,7 @@ def deferrable(func: Engine.FUNC) -> _DeferrableFunction:
 class _ThreadSafeDeferrableFunction(_DeferrableFunction):
     def __init__(self, func) -> Self:
         super().__init__(func)
+        self.__is_thread_safe__ = True
         self.lock = Engine.threading.Lock()
 
     def defer(self, func, once=False, *args, **kwargs) -> None:
@@ -94,6 +98,8 @@ def multithread(
             thread.start()
             return thread
 
+        wrapper.__is_multithread__ = True
+
         return cast(Engine.FUNC, wrapper)
 
     # Processing for both @multithread and @multithread(...)
@@ -121,10 +127,10 @@ def single_event(
 
         if not virtual:
             # Adding a marker for checking in other decorators
-            wrapper._is_single_event_decorated = True  # type: ignore
+            wrapper.__is_single_event_decorated__ = True  # type: ignore
             return cast(Engine.FUNC, wrapper)
         else:
-            func._is_single_event_decorated = True
+            func.__is_single_event_decorated__ = True
             return func
 
     return decorator(f) if f else decorator
@@ -143,7 +149,7 @@ def window_event(
 
     def decorator(func):
         # checking for @single_event
-        if not hasattr(func, '_is_single_event_decorated') and not already_single:
+        if not hasattr(func, '__is_single_event_decorated__') and not already_single:
             raise TypeError(
                 f"Function must be decorated {single_event} before using {window_event}"
             )
@@ -164,7 +170,7 @@ def window_event(
             # Adding window to the arguments
             return func(*args, **{**kwargs, 'window': getattr(event, 'window', None)})
 
-        wrapper._is_window_event_decorated = True  # type: ignore
+        wrapper.__is_window_event_decorated__ = True  # type: ignore
 
         return cast(Engine.FUNC, wrapper)
 

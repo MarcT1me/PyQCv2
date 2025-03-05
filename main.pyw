@@ -63,7 +63,7 @@ class TestApp(App):
                 ).data
             )
 
-        with Engine.failures.Catch(identifier="test scene updating", is_critical=False):
+        with Engine.failures.Catch(identifier="test scene updating", is_critical=False, is_handling=False):
             # class for testing nodes
             class TestSceneNode(Engine.objects.SceneNode, IUpdatable):
                 def update(self):
@@ -73,7 +73,7 @@ class TestApp(App):
 
             """scene2"""
             scene2 = Engine.objects.Scene(
-                Engine.objects.SceneData(
+                Engine.objects.SceneNodeData(
                     id=Engine.data.Identifier("test scene 2"),
                 )
             )
@@ -88,7 +88,7 @@ class TestApp(App):
 
             """scene"""
             scene = Engine.objects.Scene(
-                Engine.objects.SceneData(
+                Engine.objects.SceneNodeData(
                     id=Engine.data.Identifier("test scene"),
                 )
             )
@@ -142,6 +142,12 @@ class TestApp(App):
 
     def __init__(self) -> None:
         super().__init__()  # init engine
+
+        # incorrect image loading
+        self.qc_img = Engine.pg.transform.scale(Engine.pg.image.load(
+            f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.PRESETS_dir}\\"
+            "Logo.png"
+        ), (600, 600))
 
         # create font surface and font
         self.fps_font = Engine.pg.font.SysFont("Arial", 30)
@@ -208,10 +214,14 @@ class TestApp(App):
                 (0, interface.surface.get_size()[1] - self.rnd_version_font.get_size()[1])
             )
 
+            interface.surface.blit(
+                self.qc_img,
+                (350, 60)
+            )
+
     def on_failure(self, failure: Engine.failures.Failure) -> None:
         # handling errors
         if super().on_failure(failure) is Engine.ResultType.Finished: return
-
         # logger.debug(
         logger.error(f"App catch any failure: {failure.err}")
 
