@@ -2,14 +2,14 @@
 Basic Python syntax
 """
 from Engine.data.config import MainData, FileSystem
-from Engine.threading import Thread
+from Engine.threading import *
 from os.path import join
 
 """ Set Main Settings """
 MainData.IS_RELEASE = False
 # string
 MainData.APPLICATION_name = 'Test App'
-MainData.APPLICATION_version = '0.10.0'
+MainData.APPLICATION_version = '0.11.0'
 
 """ Set File Settings """
 # Directory names
@@ -31,4 +31,8 @@ FileSystem.APPLICATION_ICO_name = "Logo.png"
 
 """ Set Thread Settings """
 Thread.is_critical_failures = Thread.is_critical_failures
-Thread.do_wrapping_failures = Thread.do_wrapping_failures
+
+EventThread.is_critical_failures = EventThread.is_critical_failures
+PreUpdateThread.is_critical_failures = PreUpdateThread.is_critical_failures
+UpdateThread.is_critical_failures = UpdateThread.is_critical_failures
+PreRenderThread.is_critical_failures = PreRenderThread.is_critical_failures

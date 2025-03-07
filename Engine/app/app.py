@@ -3,11 +3,11 @@
 from loguru import logger
 # default
 from abc import abstractmethod, ABC
-from typing import Self, TYPE_CHECKING, final, cast, Optional
+from typing import TYPE_CHECKING, Type, final, Optional, cast
 
 # Engine import
 import Engine
-from Engine.graphic import err_screen
+from Engine.app import err_screen
 from Engine.app.app_data import AppData
 from Engine.failures import IFailureHandler, Failure
 
@@ -17,48 +17,20 @@ from Engine.objects.iupdatable import IPreUpdatable, IUpdatable
 from Engine.objects.irenderable import IPreRenderable, IRenderable
 
 
-@final
-class EventThread(Engine.threading.Thread, IFailureHandler):
-    """ Thread class for Handling GUI Events """
-
-    _roster: Engine.threading.ThreadRoster[str, Self] = Engine.threading.ThreadRoster()
-
-    def on_failure(self, err: Failure):
-        logger.error("Failure catching from EventThread")
-        App.instance.on_failure(err)
+class AppException(Exception):
+    pass
 
 
-@final
-class PreUpdateThread(Engine.threading.Thread, IFailureHandler):
-    """ Thread class for pre updating app """
-
-    _roster: Engine.threading.ThreadRoster[str, Self] = Engine.threading.ThreadRoster()
-
-    def on_failure(self, err: Failure):
-        logger.error("Failure catching from PreUpdateThread")
-        App.instance.on_failure(err)
+class AppMainloopException(AppException):
+    pass
 
 
-@final
-class UpdateThread(Engine.threading.Thread, IFailureHandler):
-    """ Thread class for updating app """
-
-    _roster: Engine.threading.ThreadRoster[str, Self] = Engine.threading.ThreadRoster()
-
-    def on_failure(self, err: Failure):
-        logger.error("Failure catching from UpdateThread")
-        App.instance.on_failure(err)
+class AppInitException(AppMainloopException):
+    pass
 
 
-@final
-class PreRenderThread(Engine.threading.Thread, IFailureHandler):
-    """ Thread class for pre rendering app """
-
-    _roster: Engine.threading.ThreadRoster[str, Self] = Engine.threading.ThreadRoster()
-
-    def on_failure(self, err: Failure):
-        logger.error("Failure catching from PreRenderThread")
-        App.instance.on_failure(err)
+class AppRunException(AppMainloopException):
+    pass
 
 
 class App(ABC, Engine.data.MetaObject,
@@ -113,7 +85,7 @@ class App(ABC, Engine.data.MetaObject,
     """ The App class object Data """
     running: bool = True  # in App.running - Engine loop, in self.running - App loop
     # inherited app class and current app instance
-    # inherited: 'Type[App]' = cast('Type[App]', None)
+    inherited: 'Type[App]' = cast('Type[App]', None)
     instance: 'App' = cast('App', None)
 
     """ Engine Systems """
@@ -349,21 +321,21 @@ class App(ABC, Engine.data.MetaObject,
         while self.running:
             # events
             App.event.prepare()
-            self.events(self)
-            EventThread.wait()
+            self.events()
+            Engine.threading.EventThread.wait()
 
             # update
-            self.pre_update(self)
-            PreUpdateThread.wait()
+            self.pre_update()
+            Engine.threading.PreUpdateThread.wait()
 
-            self.update(self)
-            UpdateThread.wait()
+            self.update()
+            Engine.threading.UpdateThread.wait()
 
             # render
-            self.pre_render(self)
-            PreRenderThread.wait()
+            self.pre_render()
+            Engine.threading.PreRenderThread.wait()
 
-            self.render(self)
+            self.render()
             # clok tick
             App.clock.tick()
 
@@ -379,23 +351,43 @@ class App(ABC, Engine.data.MetaObject,
             f"at {'release' if Engine.data.MainData.IS_RELEASE else 'debug'} mode"
         )
 
-        while App.running:
-            logger.info("mainloop iteration\n")
+        def exiting():
+            # exiting
+            try:
+                if App.instance:
+                    App.instance.on_exit()
 
-            with Engine.failures.Catch(identifier=f"{App.mainloop}_Catch__ENGINE__") as c:
-                cls()
-                App.instance.run()
+                App.instance = None
+            except Exception as e:
+                raise AppMainloopException("Instance is not created") from e
 
-            if KeyboardInterrupt in c.failures:
-                logger.info("KeyboardInterrupt - exit engine")
-                return
+        class MainloopHandler(IFailureHandler):
+            def on_failure(self, failure: Failure) -> None:
+                if isinstance(failure.err, KeyboardInterrupt):
+                    logger.warning("KeyboardInterrupt - exit engine")
+                    App.running = False
+                    return
 
-            if App.instance:
-                App.instance.on_exit()
-            if App.instance.failures:
+                logger.exception(failure)
+
                 # show err window
-                App.running = err_screen.show_window() if Engine.data.MainData.IS_RELEASE \
-                    else err_screen.show_window()
-                App.instance.failures.clear()
+                if App.instance and App.running:
+                    App.running = err_screen.show_window(App.instance.data.failures) if Engine.data.MainData.IS_RELEASE \
+                        else err_screen.show_window(App.instance.data.failures)
+                    App.instance.failures.clear()
+                else:
+                    logger.error("Cant use App.instance, exiting from app")
+                    App.running = False
+                    err_screen.show_window([failure], restartale=False)
 
-        App.instance = None
+        handler = MainloopHandler()
+
+        with Engine.failures.Catch(identifier=f"{App.mainloop} Catch__ENGINE__", handler=handler) as cth:
+            while App.running:
+                logger.info("mainloop iteration\n")
+
+                instance = cth.try_func(cls)
+
+                cth.try_func(instance.run)
+
+                exiting()

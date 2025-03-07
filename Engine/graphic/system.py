@@ -126,7 +126,7 @@ class System:
             flags = self.window.data | Engine.pg.FULLSCREEN
 
             if self.window.data.is_desktop:
-                self.window.data.modify({'flags': flags})
+                self.window.data.modify(flags=flags)
                 self.resset()
             else:
                 Engine.pg.display.toggle_fullscreen()
@@ -137,12 +137,11 @@ class System:
                 flags = self.window.data.flags | ~Engine.pg.FULLSCREEN
             else:
                 flags = self.window.data.flags
+
         # setting changes
         self.window.data = self.window.data.modify(
-            {
-                'size': size,
-                'monitor': index,
-            }
+            size=size,
+            monitor=index,
         )
 
         logger.info(
@@ -205,7 +204,8 @@ class System:
 
     def __release__(self) -> None:
         if self.gl_data:
-            with Engine.failures.Catch(identifier="Graphic system GL release", is_critical=False, is_handling=False) as cth:
+            with Engine.failures.Catch(identifier="Graphic system GL release", is_critical=False,
+                                       is_handling=False) as cth:
                 cth.try_func(self.interface.__release__)
                 cth.try_func(self.context.release)
         if self.window is not None:

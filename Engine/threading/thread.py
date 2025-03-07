@@ -34,20 +34,29 @@ class ThreadRoster(Engine.data.arrays.SimpleRoster):
 
 class Thread(_PyThread):
     _roster: ThreadRoster[str, Self] = ThreadRoster()
-    global_lock = Lock()
 
-    important = Condition()
+    @staticmethod
+    def create_lock() -> Lock:
+        return Lock()
+
+    global_lock = create_lock()
+
+    @staticmethod
+    def create_condition() -> Condition:
+        return Condition()
+
+    important = create_condition()
     important_id: Optional[str] = None
 
-    is_critical_failures: bool = False
-    do_wrapping_failures: bool = False
+    is_critical_failures: bool = True
 
     def __init__(
             self,
             name: Optional[str] = None,
             *,
             action: Optional[Callable] = None,
-            daemon: bool = True
+            daemon: bool = True,
+            is_critical_failures: bool = None
     ) -> Self:
         identifier = Engine.data.Identifier(name=name)
 
@@ -59,6 +68,9 @@ class Thread(_PyThread):
 
         self._action_result = Engine.ResultType.NOT
         self.action = action or self.action
+
+        self.is_critical_failures = is_critical_failures if is_critical_failures is not None else \
+            Thread.is_critical_failures
 
         with Thread.global_lock:
             self._roster.pending[identifier] = self
@@ -81,15 +93,8 @@ class Thread(_PyThread):
                         f"There is no waiting thread with id {self.id} in Thread.roster.pending"
                     ) from e
 
-            with Engine.failures.Catch(is_critical=self.is_critical_failures, handler=self, is_handling=not Thread.do_wrapping_failures) as cth:
+            with Engine.failures.Catch(is_critical=self.is_critical_failures, handler=self):
                 self._action_result = self.action()
-
-            if Thread.do_wrapping_failures:
-                for failure in cth.failures.values():
-                    try:
-                        failure.wrap(ThreadActionWarning(f"Some error in thread with id {self.id}"))
-                    except:
-                        cth.handler.on_failure(failure)
 
         self.release()
 

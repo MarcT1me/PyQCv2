@@ -1,12 +1,14 @@
 ﻿""" Engine CONSTANTS
 """
 from enum import Enum, Flag, auto
-from typing import TypeVar, Callable, Any
+from typing import TypeVar, Type, Callable, Any, Self
 
 """ types """
 T = TypeVar('T', bound=object)
-FUNC = TypeVar('FUNC', bound=Callable[..., Any])
-CLS = TypeVar('CLS', bound=type)
+FUNC = TypeVar('FUNC', bound=Callable[[...], Any])
+CLS = TypeVar('CLS', bound=Type)
+ARGS = TypeVar("ARGS", bound=Any)
+KWARGS = TypeVar("KWARGS", bound=Any)
 
 
 class DataType(Flag):

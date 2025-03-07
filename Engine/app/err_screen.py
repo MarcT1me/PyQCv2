@@ -1,16 +1,18 @@
 import traceback
 
+import Engine
 from Engine import pg as pygame
 from Engine.data import FileSystem
 from Engine.scripts.button import Button
 
 
-def show_window(*,
-                caption: str = 'Error Message', custom_surf: pygame.Surface | str = None, flags: int = pygame.NOFRAME
+def show_window(failures, *,
+                restartale: bool = True,
+                caption: str = 'Error Message',
+                custom_surf: pygame.Surface | str = None,
+                flags: int = pygame.NOFRAME
                 ) -> bool:
     """ processing error """
-    from Engine.app import App
-    pygame.quit()
     pygame.init()
 
     custom_surf, custom_surf_arg = pygame.Surface((270, 110)), custom_surf
@@ -64,9 +66,10 @@ def show_window(*,
     btn1 = Button('1',
                   size=(302, 40), pos=(10, screen_size[1] - 50),
                   text='Restart', font='Unispace', text_size=45, text_bold=False,
-                  bgcolor_on_press=(150, 150, 150),
+                  bgcolor_not_press=(10, 200, 100) if restartale else (120, 120, 120),
+                  bgcolor_on_press=(100, 200, 100) if restartale else (150, 150, 150),
                   text_pos=(151, 20), text_center=True,
-                  on_press=restart_btn
+                  on_press=restart_btn if restartale else lambda: None
                   )
     Button('2',
            size=(302, 40), pos=(btn1.size[0] + 30, btn1.pos[1]),
@@ -77,10 +80,10 @@ def show_window(*,
            )
     font_color = (50, 50, 50)
     err_text_font = pygame.font.SysFont('Unispace', 30).render(
-        f'text: `{[err.err for err in App.instance.failures]}`', True, font_color
+        f'text: `{[err.err for err in failures]}`', True, font_color
     )
     err_type_font = pygame.font.SysFont('Unispace', 30).render(
-        f'type: {[str(type(err.err))[8:-2] for err in App.instance.failures]}', True, font_color
+        f'type: {[str(type(err.err))[8:-2] for err in failures]}', True, font_color
     )
     help_font = pygame.font.SysFont('Unispace', 30).render(
         "press on 'BUTTON' or 'R' to restart and 'BUTTON', 'Esc' or 'QUIT'", True, (20, 20, 20)
@@ -123,7 +126,7 @@ if __name__ == '__main__':
         try:
             raise UnicodeDecodeError('UTF-8', b'\\', 0, 0, 'err')
         except Exception as exc:
-            print(show_window(custom_surf='base'))
+            print(show_window([Engine.failures.Failure(err=exc)], restartale=True, custom_surf='base'))
     except Exception as exc:
         traceback.print_exception(exc)
         input()

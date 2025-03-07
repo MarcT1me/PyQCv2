@@ -18,8 +18,8 @@ class MetaObject:
         for method_name in ("event", "events", "pre_update", "update", "pre_render", "render"):
             if hasattr(cls, method_name):
                 method = getattr(cls, method_name)
-                if not hasattr(method, "__is_deferred__"):
-                    setattr(cls, method_name, Engine.decorators.deferrable(method))
+                if isinstance(method, Engine.Callable) and not hasattr(method, "__is_storage__"):
+                    setattr(cls, method_name, Engine.decorators.classed_function(method))
 
     def __init__(self, data: 'Engine.data.MetaData'):
         self.__dict__["_data"] = data

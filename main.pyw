@@ -2,7 +2,6 @@ from typing import Optional, TextIO
 import toml
 
 import Engine
-from Engine.app import App, EventThread
 from loguru import logger
 
 from Engine.objects.iupdatable import IUpdatable
@@ -34,7 +33,7 @@ class TomlConfigLoader(Engine.assets.AssetLoader):
         return config
 
 
-class TestApp(App):
+class TestApp(Engine.App):
     def __pre_init__(self) -> None:
         # adding config asset type
         self.init_asset_manager(
@@ -63,7 +62,7 @@ class TestApp(App):
                 ).data
             )
 
-        with Engine.failures.Catch(identifier="test scene updating", is_critical=False, is_handling=False):
+        with Engine.failures.Catch(identifier="test scene updating", is_critical=False):
             # class for testing nodes
             class TestSceneNode(Engine.objects.SceneNode, IUpdatable):
                 def update(self):
@@ -161,26 +160,27 @@ class TestApp(App):
             True, "white"
         )
 
+        self.sound_chanel: Engine.audio.Channel = Engine.App.audio.active_devices.output.new_channel()
+
     def __post_init__(self) -> None:
         super().__post_init__()  # post-init engine
 
         # play music
-        App.audio.active_devices.output.just.play(self.data_table.init_clip)
+        self.sound_chanel.play(self.data_table.init_clip)
 
     @Engine.decorators.deferrable_threadsafe
     @Engine.decorators.single_event
-    @Engine.decorators.multithread(thread_class=EventThread)
+    @Engine.decorators.multithread(thread_class=Engine.threading.EventThread, is_critical_failures=False)
     def events(self, *, event) -> None:
         # handle events
         if event.type == Engine.pg.KEYDOWN:
             if event.key == Engine.pg.K_ESCAPE:
-                App.running = False
+                Engine.App.running = False
             elif event.key == Engine.pg.K_g:
                 raise Exception("Test exception")
             elif event.key == Engine.pg.K_t:
                 Engine.threading.Thread(action=lambda: print("Hello from thread")).start()
-
-        self.event.handle_default(self.event, event=event)  # default event handling
+        self.event.handle_default(event=event)  # default event handling
 
     def pre_update(self) -> None:
         # pre-update app
@@ -233,6 +233,8 @@ class TestApp(App):
 
     def on_exit(self) -> None:
         # release game and engine data
+        self.sound_chanel.stop()
+
         super().on_exit()
         TestApp.on_exit_print()
 

@@ -57,6 +57,9 @@ class Channel:
         return self
 
     def stop(self) -> Self:
+        if not Engine.pg.mixer.get_init():
+            logger.warning("SDL Not initialized")
+            return
 
         self.channel.stop()
         self.current_clip = None

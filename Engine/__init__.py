@@ -8,11 +8,11 @@ import Engine.math
 """ Basic """
 # data
 from Engine.constants import *
+import Engine.decorators
 import Engine.data
 # utils
 import Engine.failures
 import Engine.threading
-import Engine.decorators  # need threading and used in data
 
 # wrapper classes
 import Engine.timing

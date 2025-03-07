@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Self
 
+import Engine
 from Engine.data.identifier import Identifier
 
 
@@ -8,7 +9,7 @@ from Engine.data.identifier import Identifier
 class MetaData:
     id: Identifier = field(default_factory=Identifier)
 
-    def modify(self, changes: dict) -> Self:
+    def modify(self, **changes: Engine.KWARGS) -> Self:
         """ extern ths win_data and return new """
         [setattr(self, key, value) for key, value in changes.items()]
         return self

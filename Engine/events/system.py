@@ -14,7 +14,7 @@ class System:
         self.prepare()
 
         for event in self.event_list:
-            self.handle_default(self, event=event)
+            self.handle_default(event=event)
 
         logger.success("Engine event System - init\n")
 
@@ -22,12 +22,12 @@ class System:
         self.event_list = Engine.pg.event.get()
         self.key_list = Engine.pg.key.get_pressed()
 
-    @Engine.decorators.with_store(already_handled=False)
+    @Engine.decorators.storage(already_handled=False)
     @Engine.decorators.window_event(already_single=True)
     def handle_default(self, *, event: Engine.pg.event.Event, window: int | None):
         """ Engine default event handling """
-        if self.handle_default.already_handled:
-            self.handle_default.already_handled = False
+        if System.handle_default.already_handled:
+            System.handle_default.already_handled = False
             return
 
         if event.type == Engine.pg.QUIT:
@@ -36,10 +36,13 @@ class System:
             if window:
                 ...
             else:
-                Engine.App.instance.events.defer(
-                    Engine.App.graphic.window.data.modify, True, {"size": Engine.math.vec2(event.x, event.y)})
-                Engine.App.instance.events.defer(
-                    Engine.App.graphic.resset, True)
+                Engine.App.inherited.events.defer(
+                    Engine.App.graphic.window.data.modify, True,
+                    size=Engine.math.vec2(event.x, event.y)
+                )
+                Engine.App.inherited.events.defer(
+                    Engine.App.graphic.resset, True
+                )
         elif event.type == Engine.pg.WINDOWMOVED:
             if window:
                 ...
@@ -47,8 +50,10 @@ class System:
             if window:
                 ...
             else:
-                Engine.App.instance.events.defer(
-                    Engine.App.graphic.window.data.modify, True, {"monitor": event.display_index})
+                Engine.App.inherited.events.defer(
+                    Engine.App.graphic.window.data.modify, True,
+                    monitor=event.display_index
+                )
                 logger.info(f"Engine Window - change monitor: {event.display_index}\n")
 
         # coming soon
@@ -63,7 +68,7 @@ class System:
 
         elif event.type == Engine.pg.JOYDEVICEADDED:
             joy = Engine.pg.joystick.Joystick(event.device_index)
-            Engine.App.instance.joysticks[joy.get_instance_id()] = joy
+            Engine.App.instance.data.joysticks[joy.get_instance_id()] = joy
             logger.info(f"PyGame Joystick - added: {event.device_index}\n")
         elif event.type == Engine.pg.JOYDEVICEREMOVED:
             del Engine.App.joysticks[event.instance_id]
