@@ -12,6 +12,7 @@ class WinData(Engine.data.MetaData):
     vsync: int = field(default_factory=lambda: Engine.data.WinDefault.vsync)
     full: bool = field(default_factory=lambda: Engine.data.WinDefault.full)
     is_desktop: bool = field(default_factory=lambda: Engine.data.WinDefault.is_desktop)
+    is_desktop_size: bool = field(default_factory=lambda: Engine.data.WinDefault.is_desktop_size)
     flags: int = field(default_factory=lambda: Engine.data.WinDefault.flags)
 
     def to_kwargs(self):

@@ -19,7 +19,7 @@ class System:
         self.window: Engine.graphic.Window = None  # Window
 
         # gl
-        self.gl_data: Optional[Engine.graphic.GL.GlData] = Engine.App.instance.__gl_data__(win_data)
+        self.gl_data: Optional[Engine.graphic.GL.GlData] = Engine.App.__gl_data__(win_data)
         self.context: Optional[Engine.mgl.Context] = None  # MGL context
         # game ui surface
         self.interface: Optional[Engine.graphic.HardInterface] = None  # Interface renderer
@@ -74,29 +74,31 @@ class System:
         )
         self.window.data.flags = self.window.data.flags | Engine.pg.SHOWN
         self.window.__post_init__()
+
         self.toggle_full()
+        self.init_interface()
 
-        """ Load default Shaders """
-        self.shader: Engine.graphic.GL.Shader = Engine.App.assets.load(
-            Engine.assets.AssetFileData(
-                id=Engine.data.Identifier("interface"),  # interface shader
-                type=Engine.DataType.Shader,
-                dependencies=[
-                    Engine.assets.AssetFileData(
-                        type=(Engine.DataType.Text | Engine.DataType.Shader, Engine.ShaderType.Vertex),
-                        path=f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.ENGINE_SHADER_dir}\\"
-                             f"interface.vert"
-                    ),
-                    Engine.assets.AssetFileData(
-                        type=(Engine.DataType.Text | Engine.DataType.Shader, Engine.ShaderType.Fragment),
-                        path=f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.ENGINE_SHADER_dir}\\"
-                             f"interface.frag"
-                    ),
-                ]
+    def init_interface(self):
+        if "interface" not in Engine.App.assets.storage.Shader:
+            Engine.App.assets.load(
+                Engine.assets.AssetFileData(
+                    id=Engine.data.Identifier("interface"),  # interface shader
+                    type=Engine.DataType.Shader,
+                    dependencies=[
+                        Engine.assets.AssetFileData(
+                            type=(Engine.DataType.Text | Engine.DataType.Shader, Engine.ShaderType.Vertex),
+                            path=f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.ENGINE_SHADER_dir}\\"
+                                 f"interface.vert"
+                        ),
+                        Engine.assets.AssetFileData(
+                            type=(Engine.DataType.Text | Engine.DataType.Shader, Engine.ShaderType.Fragment),
+                            path=f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.ENGINE_SHADER_dir}\\"
+                                 f"interface.frag"
+                        ),
+                    ]
+                )
             )
-        )
-
-        self.interface = self.gl_data.interface_type()
+            self.interface = self.gl_data.interface_type()
 
     def resset(self) -> None:
         self.window.set_mode(self.window.data)
@@ -104,8 +106,8 @@ class System:
         if self.gl_data:
             self.gl_data = Engine.App.__gl_data__(self.window.data)  # set data from App methods
 
-            self.interface.__destroy__()
-            self.interface = self.gl_data.interface_type()
+            if self.interface: self.interface.__destroy__()
+            self.init_interface()
 
             self._set_gl_configs()
 
@@ -118,25 +120,26 @@ class System:
         """ toggle fullscreen """
         index, monitor = self.get_current_monitor()
         monitor_size = Engine.math.vec2(monitor.width, monitor.height)
+        flags = self.window.data.flags
 
         if self.window.data.full:
             # find window into any monitor
             # calculate flags and sizes
-            size = monitor_size
-            flags = self.window.data | Engine.pg.FULLSCREEN
 
             if self.window.data.is_desktop:
+                size = monitor_size if self.window.data.is_desktop_size else self.window.data.size
+                flags = flags | Engine.pg.FULLSCREEN
                 self.window.data.modify(flags=flags)
-                self.resset()
             else:
-                Engine.pg.display.toggle_fullscreen()
+                size = monitor_size
+                if not self.is_full():
+                    Engine.pg.display.toggle_fullscreen()
         else:
             index = None
             size = Engine.data.WinDefault.size if self.window.data.size == monitor_size else self.window.data.size
+
             if self.window.data.flags & Engine.pg.FULLSCREEN:
                 flags = self.window.data.flags | ~Engine.pg.FULLSCREEN
-            else:
-                flags = self.window.data.flags
 
         # setting changes
         self.window.data = self.window.data.modify(
@@ -151,6 +154,8 @@ class System:
             f"monitor:\t{index}\n"
             f"flags:\t{flags}\n"
         )
+
+        self.resset()
 
     def get_current_monitor(self) -> tuple[int, Monitor]:
         # iter on all monitors and find current window display

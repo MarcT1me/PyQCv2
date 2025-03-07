@@ -26,6 +26,8 @@ class TomlConfigLoader(Engine.assets.AssetLoader):
                       'size': Engine.math.vec2(Engine.data.WinDefault.size),
                       'vsync': Engine.data.WinDefault.vsync,
                       'full': Engine.data.WinDefault.full,
+                      "is_desktop": Engine.data.WinDefault.is_desktop,
+                      "is_desktop_size": Engine.data.WinDefault.is_desktop_size,
                       'monitor': Engine.data.WinDefault.monitor}
         )
         config.setdefault(category_name='Core', defaults={})
@@ -131,11 +133,12 @@ class TestApp(Engine.App):
         main_config: Engine.assets.ConfigData = self.data_table.main_config
         # set Window Data from config
         return Engine.graphic.WinData(
-            title="Main Window",
+            title=Engine.data.WinDefault.title,
             size=main_config.content["Win"]["size"],
             vsync=main_config.content["Win"]["vsync"],
             full=main_config.content["Win"]["full"],
             is_desktop=main_config.content["Win"]["is_desktop"],
+            is_desktop_size=main_config.content["Win"]["is_desktop_size"],
             flags=Engine.data.WinDefault.flags | Engine.pg.OPENGL
         )
 

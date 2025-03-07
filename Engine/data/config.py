@@ -27,6 +27,7 @@ class WinDefault:
     vsync: bool = False
     full: bool = False
     is_desktop: bool = False
+    is_desktop_size: bool = False
     flags: int = Engine.pg.DOUBLEBUF
     fps: int = 0
 
