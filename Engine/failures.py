@@ -1,5 +1,6 @@
 """ Error handling during engine operation
 """
+from typing_extensions import deprecated
 from abc import abstractmethod
 from dataclasses import dataclass, field
 from typing import Self, Optional, final
@@ -16,6 +17,7 @@ class Failure(Exception, Engine.data.TimedMetaData):
     critical: bool = field(default=True)
     err: Exception | None = None
 
+    @deprecated("This method makes it more difficult to read logs")
     def wrap(self, exc: Exception):
         """ Wraps failure into given exception """
         raise exc from self.err
@@ -64,20 +66,20 @@ class Catch:
             return func(*args, **kwargs)
         except Exception as exc:
             exc._is_try_func = True
-            self.__got_error(type(exc), exc, False)
+            self._got_error(type(exc), exc, False)
             return Engine.ResultType.Error
 
     def __enter__(self) -> Self:
         return self
 
-    def handle_err(self, err: Failure):
+    def _handle_err(self, err: Failure):
         if self.is_handling:
             if self.handler:
                 self.handler.on_failure(err)
             else:
                 Engine.App.instance.on_failure(err)
 
-    def __got_error(self, exc_type: type, exc_val: Exception | Failure, critical: bool):
+    def _got_error(self, exc_type: type, exc_val: Exception | Failure, critical: bool):
         # Проверяем, является ли исключение экземпляром класса Exception или его подкласса
         logger.warning(
             f"Catch {self.id} got a {'critical' if critical else 'not critical'} error {exc_type}:\n{exc_val}\n"
@@ -85,14 +87,14 @@ class Catch:
         if issubclass(exc_type, Failure):
             exc_val.catch_id = self.id
             err = exc_val
-            self.handle_err(err)
+            self._handle_err(err)
         else:
             err: Failure = Failure(catch_id=self.id, critical=critical, err=exc_val)
-            self.handle_err(err)
+            self._handle_err(err)
         self.failures[err.id] = err
 
     def __exit__(self, exc_type: type, exc_val: Failure | Exception, _) -> True:
         if exc_type is not None:
-            self.__got_error(exc_type, exc_val, self.critical)
+            self._got_error(exc_type, exc_val, self.critical)
         Catch.roster.pop(self.id)
         return True

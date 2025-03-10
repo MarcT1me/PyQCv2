@@ -19,7 +19,7 @@ class LoadedAsset:
         return self.branch[self.id]
 
     @property
-    def data(self) -> Any:
+    def content(self) -> Any:
         return self.asset_data.content
 
     def __repr__(self):

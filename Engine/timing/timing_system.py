@@ -14,7 +14,7 @@ class SystemRoster(Engine.data.arrays.SimpleRoster):
 
 
 @final
-class System:
+class TimingSystem:
     """Engine time manager with deferred events and timers
 
     Attributes:
@@ -35,7 +35,7 @@ class System:
         self.fps = fps
 
         # Initialize roster with dedicated branches
-        self.roster: SystemRoster = SystemRoster(default=0)
+        self._roster: SystemRoster = SystemRoster(default=0)
         self.__event_counter = 0
 
         logger.success(
@@ -68,10 +68,10 @@ class System:
     def timer(self, name: str, cooldown: float) -> bool:
         """Check if timer is ready to trigger"""
         current_time = uix_time()
-        last_time = self.roster.timers.get(name, 0)
+        last_time = self._roster.timers.get(name, 0)
 
         if current_time - last_time >= cooldown:
-            self.roster.timers[name] = current_time
+            self._roster.timers[name] = current_time
             return True
         return False
 
@@ -88,12 +88,12 @@ class System:
             "end": uix_time() + delay
         })
 
-        self.roster.deferred_events[event_key] = event
+        self._roster.deferred_events[event_key] = event
 
     def cancel_deferred(self, event: Engine.pg.event.Event) -> None:
         """Cancel scheduled deferred event"""
-        if event.name in self.roster.deferred_events:
-            del self.roster.deferred_events[event.name]
+        if event.name in self._roster.deferred_events:
+            del self._roster.deferred_events[event.name]
         event.used = True
 
     def _process_deferred(self) -> None:
@@ -101,7 +101,7 @@ class System:
         current_time = uix_time()
         to_remove = []
 
-        for event_key, event in self.roster.deferred_events.items():
+        for event_key, event in self._roster.deferred_events.items():
             if event.end <= current_time:
                 event.used = True
                 event.end = current_time
@@ -109,4 +109,4 @@ class System:
                 to_remove.append(event_key)
 
         for key in to_remove:
-            del self.roster.deferred_events[key]
+            del self._roster.deferred_events[key]

@@ -4,11 +4,10 @@ from dataclasses import dataclass
 import sounddevice as sd
 
 import Engine
-from Engine.events.event import Event
 from Engine.audio.device import Device
 
 
-class UpdateDefaultDevices(Event):
+class UpdateDefaultDevicesEvent(Engine.events.Event):
     def __init__(self, is_input: int):
         super().__init__()
         self.is_input = is_input
@@ -22,7 +21,7 @@ class ActiveDevice:
 
 @final
 class System:
-    update_default: UpdateDefaultDevices = UpdateDefaultDevices(3).update()
+    UpdateDefaultDevicesEvent: UpdateDefaultDevicesEvent = UpdateDefaultDevicesEvent(3)
 
     def __init__(self):
         self._devices: dict[str, Device] = {}

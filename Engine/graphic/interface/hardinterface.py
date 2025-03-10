@@ -1,9 +1,11 @@
+from typing_extensions import deprecated
 from array import array
 from loguru import logger
 
 import Engine
 
 
+@deprecated("marked to remove, low-impact interface class")
 class HardInterface:
     swizzle = "RGBA"
     filter = (Engine.mgl.NEAREST, Engine.mgl.NEAREST)
@@ -15,8 +17,11 @@ class HardInterface:
         )
 
         self.shader = Engine.App.assets.storage.Shader.definite("interface").content
+        # self.shader = Engine.App.assets.get("Engine::interface_shader").content
 
-        self.texture: Engine.mgl.Texture = Engine.App.graphic.context.texture(self.surface.get_size(), 4)
+        self.texture: Engine.mgl.Texture = Engine.App.graphic.context.texture(
+            Engine.App.graphic.gl_data.interface_resolution, 4
+        )
         self.texture.filter, self.texture.swizzle = (Engine.mgl.NEAREST, Engine.mgl.NEAREST), self.swizzle
         self.texture.build_mipmaps()
         self.texture.anisotropy = self.anisotropy

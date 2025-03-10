@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Optional, final
+from typing import Any, Optional, final, List
 from pathlib import Path
 
 import Engine
@@ -20,7 +20,7 @@ class AssetLoader(ABC):
 
     @abstractmethod
     def create(
-            self, asset_file: 'Engine.assets.AssetFileData', dependencies: 'Optional[list[Engine.assets.LoadedAsset]]',
+            self, asset_file: 'Engine.assets.AssetFileData', dependencies: 'Optional[List[Engine.assets.LoadedAsset]]',
             content: Any
     ) -> 'Engine.assets.AssetData':
         """ The logic of processing previously uploaded data """

@@ -1,1 +1,1 @@
-from Engine.timing.system import System, uix_time
+from Engine.timing.timing_system import TimingSystem, uix_time

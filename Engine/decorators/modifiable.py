@@ -1,16 +1,19 @@
+# decorators.py
+from typing_extensions import cast
+
 import Engine
 
 
-def modifiable(
-        cls: Engine.CLS = None,
+# @deprecated("@modifiable temporarily broken")
+def modifiable[T](
         *,
         is_class_method: bool = False,
         is_static_method: bool = False
-) -> Engine.CLS:
+) -> Engine.Callable[[Engine.Type[T]], Engine.Type[Engine.Modifiable[T]] | Engine.Type[T]]:
     """
     Class decorator that adds method 'modify' to change attributes in bulk
 
-    Keyword Args:
+    Args:
         is_class_method: says that the modify method should be made class-bound
         is_static_method: says that the modify method should be made static
 
@@ -18,36 +21,28 @@ def modifiable(
         new class
     """
 
-    def decorator(c: Engine.CLS) -> Engine.FUNC:
-        def modify(obj: Engine.T, **changes: Engine.KWARGS) -> Engine.T:
-            """
-            Update multiple class attributes at once
+    def decorator(cls: Engine.CLS) -> Engine.Modifiable[T]:
 
-            Args:
-                obj: cls or self argument
-                changes: kwargs dictionary of new values - {item: new_value}
+        if is_class_method:
+            modify_wrapped = classmethod(Engine.Modifiable.modify)
+        elif is_static_method:
+            modify_wrapped = staticmethod(Engine.Modifiable.modify)
+        else:
+            modify_wrapped = Engine.Modifiable.modify
 
-            Returns:
-                current object after modifying
+        setattr(cls, 'modify', modify_wrapped)
+        return cast(Engine.Type[Engine.Modifiable[T]], cls)
 
-            Raises:
-                AttributeError: if one of kwarg argument to change not in object
-            """
-            for item, value in changes.items():
-                if hasattr(obj, item):
-                    setattr(obj, item, value)
-                else:
-                    AttributeError("Cant set an undescribed attribute")
-            return obj
+    return decorator
 
-        # Add as proper class method
-        setattr(
-            c, 'update',
-            classmethod(modify) if is_class_method else \
-                staticmethod(modify) if is_static_method else \
-                    modify
-        )
 
-        return cls
+if __name__ == "__main__":
+    @modifiable()
+    class Some:
+        some: int = 1
 
-    return decorator(cls) if cls else decorator
+
+    s = Some()
+    print(s.some)  # 1
+    s.modify(some=2)
+    print(s.some)  # 2

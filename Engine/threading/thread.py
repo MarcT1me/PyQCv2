@@ -1,5 +1,5 @@
 """ Engine threads controlling """
-from typing import Self, Callable, Optional, final
+from typing import Self, Optional, final
 from threading import Thread as _PyThread
 from threading import Lock, Condition, current_thread
 
@@ -54,7 +54,7 @@ class Thread(_PyThread):
             self,
             name: Optional[str] = None,
             *,
-            action: Optional[Callable] = None,
+            action: Optional[Engine.FUNC] = None,
             daemon: bool = True,
             is_critical_failures: bool = None
     ) -> Self:
@@ -125,7 +125,7 @@ class Thread(_PyThread):
     @classmethod
     def wait_pending(cls):
         while cls._roster.pending:
-            Engine.timing.System.wait(10)
+            Engine.timing.TimingSystem.wait(10)
 
     @classmethod
     def wait_worked(cls, timeout: Optional[float] = None, from_thread_id: Optional[str] = None):

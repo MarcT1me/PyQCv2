@@ -10,7 +10,7 @@ class System:
         self.event_list: list[Engine.pg.event.EventType] = []
         self.key_list: Engine.pg.key.ScancodeWrapper = []
 
-        Engine.audio.System.update_default.post()
+        Engine.audio.System.UpdateDefaultDevicesEvent.post()
         self.prepare()
 
         for event in self.event_list:
@@ -37,11 +37,11 @@ class System:
                 ...
             else:
                 Engine.App.inherited.events.defer(
-                    Engine.App.graphic.window.data.modify, True,
+                    Engine.App.graphic.window.data.modify,
                     size=Engine.math.vec2(event.x, event.y)
                 )
                 Engine.App.inherited.events.defer(
-                    Engine.App.graphic.resset, True
+                    Engine.App.graphic.resset
                 )
         elif event.type == Engine.pg.WINDOWMOVED:
             if window:
@@ -51,7 +51,7 @@ class System:
                 ...
             else:
                 Engine.App.inherited.events.defer(
-                    Engine.App.graphic.window.data.modify, True,
+                    Engine.App.graphic.window.data.modify,
                     monitor=event.display_index
                 )
                 logger.info(f"Engine Window - change monitor: {event.display_index}\n")
@@ -77,7 +77,7 @@ class System:
             Engine.App.audio.add_device(event.which, bool(event.iscapture))
         elif event.type == Engine.pg.AUDIODEVICEREMOVED:
             Engine.App.audio.remove_device(event.which, bool(event.iscapture))
-        elif event.type == Engine.audio.System.update_default.event.type:
+        elif event.type == Engine.audio.System.UpdateDefaultDevicesEvent.type():
             if event.is_input | 1:
                 Engine.App.audio.set_default_device(False)
             if event.is_input | 2:

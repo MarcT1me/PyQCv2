@@ -10,6 +10,8 @@ pyglm
 sounddevice
 # other
 loguru
+deprecation
+typing-extensions
 
 # App
 toml

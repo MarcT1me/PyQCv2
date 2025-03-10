@@ -1,3 +1,4 @@
+from typing_extensions import deprecated
 from loguru import logger
 
 import Engine
@@ -29,6 +30,7 @@ class Device:
         )
 
     @property
+    @deprecated("for tests only.")
     def just(self):
         return self.new_channel()
 

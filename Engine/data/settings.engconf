@@ -1,19 +1,21 @@
 """ Engine settings
 Basic Python syntax
 """
-from Engine.data.config import MainData, FileSystem
-from Engine.threading import *
-from os.path import join
 
 """ Set Main Settings """
+from Engine.data.config import MainData
+
 MainData.IS_RELEASE = False
+MainData.IS_USE_GL = MainData.IS_USE_GL
 # string
 MainData.APPLICATION_name = 'Test App'
-MainData.APPLICATION_version = '0.11.1'
+MainData.APPLICATION_version = '0.12.0'
 
 """ Set File Settings """
+from Engine.data.config import FileSystem
+from os.path import join
+
 # Directory names
-FileSystem.ENGINE_DATA_DIR = FileSystem.ENGINE_DATA_DIR
 FileSystem.PRESETS_dir = FileSystem.PRESETS_dir
 FileSystem.ENGINE_SHADER_dir = FileSystem.ENGINE_SHADER_dir
 FileSystem.DATA_dir = FileSystem.DATA_dir
@@ -26,10 +28,13 @@ FileSystem.config_name = FileSystem.config_name
 FileSystem.config_local_dir = FileSystem.config_local_dir
 
 # ico settings
-FileSystem.APPLICATION_ICO_dir = join(FileSystem.ENGINE_DATA_DIR, FileSystem.PRESETS_dir)
+FileSystem.APPLICATION_ICO_dir = join(FileSystem.ENGINE_DATA_path, FileSystem.PRESETS_dir)
 FileSystem.APPLICATION_ICO_name = "Logo.png"
+# FileSystem.APPLICATION_ICO_asset_path = FileSystem.APPLICATION_ICO_asset_path
 
 """ Set Thread Settings """
+from Engine.threading import *
+
 Thread.is_critical_failures = Thread.is_critical_failures
 
 EventThread.is_critical_failures = EventThread.is_critical_failures

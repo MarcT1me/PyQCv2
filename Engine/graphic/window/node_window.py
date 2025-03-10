@@ -1,4 +1,5 @@
-﻿from pygame.surface import Surface
+﻿from typing_extensions import deprecated
+from pygame.surface import Surface
 from pygame.rect import Rect
 from pygame.constants import FULLSCREEN, RESIZABLE, NOFRAME
 import pygame._sdl2.video as sdl2_video
@@ -10,6 +11,7 @@ from Engine.graphic.window.node_win_data import NodeWinData
 from Engine.math import vec2
 
 
+@deprecated("in a long development")
 class NodeWindow:
     roster = dict()
 
@@ -44,7 +46,7 @@ class NodeWindow:
 
     def update(self):
         if self.win_data.monitor is not None:
-            monitor = Engine.App.graphic.__monitors__[self.win_data.monitor]
+            monitor = Engine.App.graphic.window.__monitors__[self.win_data.monitor]
             self.pos = vec2(monitor.x, -monitor.y)
         if self.win_data.pos is not None:
             self.pos += self.win_data.pos

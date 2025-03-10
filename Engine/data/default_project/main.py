@@ -2,7 +2,7 @@ from typing import Optional, TextIO
 import toml
 
 import Engine
-from Engine.app import App, EventThread
+from Engine.app import App
 from loguru import logger
 
 
@@ -66,7 +66,7 @@ class TestApp(App):
 
     def __init__(self) -> None:
         super().__init__(
-            self.main_config.data["Win"]["fps"]
+            self.main_config.content["Win"]["fps"]
         )  # init engine
 
         # create font surface and font
@@ -86,11 +86,11 @@ class TestApp(App):
         super().__post_init__()  # post-init engine
 
         # play music in loop (100 times)
-        App.audio.active_devices.output.just.play(self.clip.data, loops=100)
+        App.audio.active_devices.output.just.play(self.clip.content, loops=100)
 
     @Engine.decorators.deferrable_threadsafe
     @Engine.decorators.single_event
-    @Engine.decorators.multithread(thread_class=EventThread)
+    @Engine.decorators.multithread(thread_class=Engine.threading.EventThread)
     def events(self, *, event, thread) -> None:
         # handle events
         if event.type == Engine.pg.KEYDOWN:

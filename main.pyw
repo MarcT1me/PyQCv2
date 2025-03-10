@@ -23,11 +23,10 @@ class TomlConfigLoader(Engine.assets.AssetLoader):
         config.setdefault(
             category_name="Win",
             defaults={'fps': Engine.data.WinDefault.fps,
-                      'size': Engine.math.vec2(Engine.data.WinDefault.size),
+                      'size': Engine.math.ivec2(Engine.data.WinDefault.size),
                       'vsync': Engine.data.WinDefault.vsync,
                       'full': Engine.data.WinDefault.full,
-                      "is_desktop": Engine.data.WinDefault.is_desktop,
-                      "is_desktop_size": Engine.data.WinDefault.is_desktop_size,
+                      'frameless': Engine.data.WinDefault.frameless,
                       'monitor': Engine.data.WinDefault.monitor}
         )
         config.setdefault(category_name='Core', defaults={})
@@ -48,7 +47,7 @@ class TestApp(Engine.App):
         main_config: Engine.assets.ConfigData = self.assets.load(
             Engine.assets.AssetFileData(
                 type=Engine.assets.AssetType(Engine.DataType.Toml | Engine.DataType.Config),
-                path=f"{Engine.data.FileSystem.data_path()}\{Engine.data.FileSystem.config_name}.toml"
+                path=f"{Engine.data.FileSystem.data_path()}\\{Engine.data.FileSystem.config_name}.toml"
             )
         ).asset_data
 
@@ -61,7 +60,7 @@ class TestApp(Engine.App):
                         path=f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.AUDIO_dir}"
                              "\\Sf Fiksitinc.mp3"
                     )
-                ).data
+                )
             )
 
         with Engine.failures.Catch(identifier="test scene updating", is_critical=False):
@@ -137,8 +136,8 @@ class TestApp(Engine.App):
             size=main_config.content["Win"]["size"],
             vsync=main_config.content["Win"]["vsync"],
             full=main_config.content["Win"]["full"],
-            is_desktop=main_config.content["Win"]["is_desktop"],
-            is_desktop_size=main_config.content["Win"]["is_desktop_size"],
+            frameless=main_config.content["Win"]["frameless"],
+            monitor=main_config.content["Win"]["monitor"],
             flags=Engine.data.WinDefault.flags | Engine.pg.OPENGL
         )
 
@@ -169,20 +168,33 @@ class TestApp(Engine.App):
         super().__post_init__()  # post-init engine
 
         # play music
-        self.sound_chanel.play(self.data_table.init_clip)
+        self.sound_chanel.play(self.data_table.init_clip.content)
+        Engine.pg.event.clear(Engine.pg.WINDOWRESIZED)
 
     @Engine.decorators.deferrable_threadsafe
     @Engine.decorators.single_event
-    @Engine.decorators.multithread(thread_class=Engine.threading.EventThread, is_critical_failures=False)
+    @Engine.decorators.multithread(thread_class=Engine.threading.EventThread)
     def events(self, *, event) -> None:
+        if event.type == Engine.pg.MOUSEMOTION:
+            return
+        else:
+            print(event)
         # handle events
         if event.type == Engine.pg.KEYDOWN:
             if event.key == Engine.pg.K_ESCAPE:
                 Engine.App.running = False
             elif event.key == Engine.pg.K_g:
-                raise Exception("Test exception")
+                raise Engine.failures.Failure(err=Exception("Test exception"), critical=False)
             elif event.key == Engine.pg.K_t:
                 Engine.threading.Thread(action=lambda: print("Hello from thread")).start()
+            elif event.key == Engine.pg.K_F11:
+                self.graphic.window.data.full = not self.graphic.window.data.full
+                Engine.App.inherited.events.defer(
+                    lambda: (
+                        self.graphic.window.toggle_full(),
+                        self.graphic.resset()
+                    )
+                )
         self.event.handle_default(event=event)  # default event handling
 
     def pre_update(self) -> None:
@@ -220,6 +232,12 @@ class TestApp(Engine.App):
             interface.surface.blit(
                 self.qc_img,
                 (350, 60)
+            )
+
+            Engine.pg.draw.circle(
+                interface.surface, "red",
+                Engine.pg.mouse.get_pos(),
+                5
             )
 
     def on_failure(self, failure: Engine.failures.Failure) -> None:

@@ -1,8 +1,10 @@
 from functools import wraps
+from typing_extensions import deprecated, final
 
 import Engine
 
 
+@deprecated("Use only in the Engine, not recommended outside the Engine")
 class _ClassedFunction:
     _func: Engine.FUNC
     __is_classed__: bool = True
@@ -11,6 +13,7 @@ class _ClassedFunction:
         self._func = func
         wraps(func)(self)
 
+    @final
     def __get__(self, instance, owner):
         if instance is None:
             return self
@@ -20,5 +23,6 @@ class _ClassedFunction:
         return self._func(*args, **kwargs)
 
 
+@deprecated("Use only in the Engine, not recommended outside the Engine")
 def classed_function(func: Engine.FUNC) -> Engine.Callable[[Engine.FUNC], _ClassedFunction]:
     return _ClassedFunction(func)

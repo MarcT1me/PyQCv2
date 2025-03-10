@@ -21,17 +21,17 @@ class Shader(GlObject):
         super().__init__(data)
         try:
             """ selecting a type and creating a program """
-            if self.shader_type == Engine.ShaderType.Compute:
+            if self.data.shader_type == Engine.ShaderType.Compute:
                 self.program: moderngl.Program = Engine.App.graphic.context.compute_shader(
-                    self.content["Compute"].data
+                    self.data.content["Compute"].content
                 )
             else:
                 program_kwargs = {}
-                if self.shader_type & Engine.ShaderType.Vertex and self.shader_type & Engine.ShaderType.Fragment:
-                    program_kwargs['vertex_shader'] = self.content["Vertex"].data
-                    program_kwargs['fragment_shader'] = self.content["Fragment"].data
-                if self.shader_type & Engine.ShaderType.Geometry:
-                    program_kwargs['geometry_shader'] = self.content["Geometry"].data
+                if self.data.shader_type & Engine.ShaderType.Vertex and self.data.shader_type & Engine.ShaderType.Fragment:
+                    program_kwargs['vertex_shader'] = self.data.content["Vertex"].content
+                    program_kwargs['fragment_shader'] = self.data.content["Fragment"].content
+                if self.data.shader_type & Engine.ShaderType.Geometry:
+                    program_kwargs['geometry_shader'] = self.data.content["Geometry"].content
                 # simple program creating
                 self.program: moderngl.Program = Engine.App.graphic.context.program(**program_kwargs)
         except Exception as e:
@@ -49,5 +49,5 @@ class Shader(GlObject):
     def __release__(self):
         self.program.release()
         if self.id is not None:
-            if self.is_in_roster:
+            if self.data.is_in_roster:
                 Engine.App.graphic.shader_roster.remove(self.id)

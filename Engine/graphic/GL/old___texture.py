@@ -33,16 +33,16 @@ class Texture:
         # textures array
         self.textures: dict[str: moderngl.Texture] = {
             'test1': self.__get_texture__(
-                path=rf'{config.__ENGINE_DATA__}/{config.TEXTURE_path}/test_texture.jpg'
+                path=rf'{config.ENGINE_DATA_path}/{config.TEXTURE_path}/test_texture.jpg'
             ),
             'empty': self.__get_texture__(
-                path=rf'{config.__ENGINE_DATA__}/{config.TEXTURE_path}/no_textures.jpg'
+                path=rf'{config.ENGINE_DATA_path}/{config.TEXTURE_path}/no_textures.jpg'
             ),
             'box1': self.__get_texture__(
-                path=rf'{config.__ENGINE_DATA__}/{config.TEXTURE_path}/box1.jpg'
+                path=rf'{config.ENGINE_DATA_path}/{config.TEXTURE_path}/box1.jpg'
             ),
             'wall1': self.__get_texture__(
-                path=rf'{config.__ENGINE_DATA__}/{config.TEXTURE_path}/wall1.jpg'
+                path=rf'{config.ENGINE_DATA_path}/{config.TEXTURE_path}/wall1.jpg'
             ),
             # 'skybox': self.__get_texture_cube__(dir_path='textures/skybox1/', ext='png'),
             'depth_texture': self.__get_depth_texture__(),
@@ -66,7 +66,7 @@ class Texture:
         logger.debug(rf'    search texture: {path}/*.{ext}')
         t_list = glob.glob(rf'{path}/*.{ext}')
         return t_list[0] if ext is not None \
-            else rf'{config.__ENGINE_DATA__}/{config.TEXTURE_path}/no_textures.jpg'
+            else rf'{config.ENGINE_DATA_path}/{config.TEXTURE_path}/no_textures.jpg'
 
     def __get_texture__(self, path) -> moderngl.Texture:
         """ load texture """

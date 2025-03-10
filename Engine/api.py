@@ -45,7 +45,7 @@ def __copy(directory: str, path: str, files: tuple[str]):
     if not os.path.exists(f'{FileSystem.APPLICATION_path}\\{path}'):
         os.makedirs(f'{FileSystem.APPLICATION_path}\\{path}')
     for file in files:
-        with open(f"{FileSystem.__ENGINE_DATA__}\\{directory}\\{file}", "rb") as f1:
+        with open(f"{FileSystem.ENGINE_DATA_path}\\{directory}\\{file}", "rb") as f1:
             with open(f"{FileSystem.APPLICATION_path}\\{path}\\{file}", "wb") as f2:
                 f2.write(f1.read())
 
@@ -63,9 +63,9 @@ def create_project():
 
         logger.debug("Adding link on Engine")
         print(f"mklink /D \"{FileSystem.APPLICATION_path}\\venv\\Lib\\site-packages\\Engine\" "
-              f"\"{FileSystem.__ENGINE_DATA__[:-5]}\"")
+              f"\"{FileSystem.ENGINE_DATA_path[:-5]}\"")
         subprocess.run(f"mklink /D \"{FileSystem.APPLICATION_path}\\venv\\Lib\\site-packages\\Engine\" "
-                       f"\"{FileSystem.__ENGINE_DATA__[:-5]}\"", shell=True, check=True)
+                       f"\"{FileSystem.ENGINE_DATA_path[:-5]}\"", shell=True, check=True)
         logger.success("link created")
 
         logger.debug("downloading requirements")
@@ -85,7 +85,7 @@ def create_project():
         logger.exception(e.args[0])
 
 
-def build(path: str = FileSystem.APPLICATION_path, name: str = 'main.py'):
+def build(path: str = FileSystem.APPLICATION_path, name: str = 'main.py', ico_name: str = None):
     FileSystem.load_engine_config("settings")
     if not MainData.IS_RELEASE:
         logger.debug("start changing configs")
@@ -100,7 +100,10 @@ def build(path: str = FileSystem.APPLICATION_path, name: str = 'main.py'):
 
     logger.debug("create cmd")
     cmd = f'pyinstaller --name \"{MainData.APPLICATION_name}\" ' + \
-          f'--icon=\"{path}/{FileSystem.APPLICATION_ICO_dir}/{FileSystem.APPLICATION_ICO_name}\" ' + \
+          (
+              f'--icon=\"{path}/{ico_name}\" '
+              if ico_name else ""
+          ) + \
           f'--add-data \"C:/Program Files/Python311/Lib/site-packages/glcontext;glcontext\" ' + \
           f'--add-data \"C:/Program Files/Python311/Lib/site-packages/toml;toml\" ' + \
           f'--add-data \"{path}/Engine/data;../Engine/data\" ' + \

@@ -4,22 +4,41 @@ from typing import Self
 import Engine
 
 
+class EventError(Exception):
+    pass
+
+
+class EventMaximumNumErrors(EventError):
+    pass
+
+
+class EventAlreadyExistErrors(EventError):
+    pass
+
+
 class Event(ABC):
     __child: dict[str, type] = {}
     __event_counter = Engine.pg.USEREVENT + 1
 
     def __init_subclass__(cls, **kwargs):
         if Event.__event_counter >= Engine.pg.NUMEVENTS:
-            raise RuntimeError("Exceeded maximum number of event types")
+            raise EventMaximumNumErrors("Exceeded maximum number of event types")
 
-        if cls.__name__ not in Event.__child:
-            cls._event_type = Event.__event_counter
-            Event.__event_counter += 1
-            Event.__child[cls.__name__] = cls
+        if cls.__name__ in Event.__child:
+            raise EventAlreadyExistErrors(f"Event {cls.__name__} already exist")
+
+        cls._event_type = Event.__event_counter
+        Event.__event_counter += 1
+        Event.__child[cls.__name__] = cls
         super().__init_subclass__(**kwargs)
 
-    def __init__(self):
+    @classmethod
+    def type(cls):
+        return cls._event_type
+
+    def __init__(self, **properties: Engine.KWARGS):
         self._event: Engine.pg.event.Event = Engine.pg.event.Event(self.__class__._event_type)
+        self.__dict__.update(properties)
 
     def update(self) -> Self:
         self._event.__dict__.update(self._serialize_data())

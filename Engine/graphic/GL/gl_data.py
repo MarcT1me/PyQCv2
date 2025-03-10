@@ -1,21 +1,24 @@
 from dataclasses import dataclass, field, InitVar
-from typing import Self
 
 import Engine
 from Engine.graphic.interface import HardInterface
 
 
 @dataclass(kw_only=True)
-class GlData(Engine.data.MetaData):
-    win_data: 'InitVar[Engine.graphic.WinData]' = None
+class GlAttributesData:
     # core
     major_version: int = field(default=3)
     minor_version: int = field(default=3)
     profile_mask: int = field(default=Engine.pg.GL_CONTEXT_PROFILE_CORE)
 
+
+@dataclass(kw_only=True)
+class GlData(Engine.data.MetaData):
+    win_data: 'InitVar[Engine.graphic.WinData]' = None
+
     # window space
-    view: Engine.math.vec4 = field(init=False)
-    resolution: Engine.math.vec2 = field(init=False)
+    view: Engine.math.ivec4 = field(default=None)
+    resolution: Engine.math.ivec2 = field(default=None)
     # render distance
     near: float = field(default=0.01)
     far: float = field(default=300.0)
@@ -27,14 +30,9 @@ class GlData(Engine.data.MetaData):
 
     # interface type
     interface_type: type = field(default=HardInterface)
-    interface_resolution: Engine.math.vec2 = None
+    interface_resolution: Engine.math.ivec2 = None
 
     def __post_init__(self, win_data: 'Engine.graphic.WinData'):
-        self.view = Engine.math.vec4(0, 0, *win_data.size)
-        self.resolution = Engine.math.vec2(win_data.size)
+        self.resolution = Engine.math.ivec2(win_data.size)
+        self.view = Engine.math.vec4(0, 0, *self.resolution)
         self.interface_resolution = self.interface_resolution if self.interface_resolution else self.resolution
-
-    def modify(self, changes: dict) -> Self:
-        """ extern ths win_data and return new """
-        [setattr(self, var, value) for var, value in changes.items()]
-        return self

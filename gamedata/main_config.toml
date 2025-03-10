@@ -2,8 +2,9 @@
 size = [1280, 720]
 vsync = false
 full = true
-is_desktop = true
-is_desktop_size = true
+frameless = true
+monitor = false
 fps = 0
 
 [Core]
+test = "test"

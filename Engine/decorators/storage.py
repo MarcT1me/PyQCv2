@@ -1,7 +1,10 @@
+from typing_extensions import deprecated
+
 import Engine
 from Engine.decorators.classed_function import _ClassedFunction
 
 
+@deprecated("Use only in the Engine, not recommended outside the Engine")
 class _StorageFunction(_ClassedFunction):
     __is_storage__: bool = True
 

@@ -36,7 +36,7 @@ def show_window(failures, *,
     """ Working with pygame """
     clock = pygame.time.Clock()
     # process background
-    background = pygame.image.load(rf'{FileSystem.__ENGINE_DATA__}\presets/messages/err_background.png')
+    background = pygame.image.load(rf'{FileSystem.ENGINE_DATA_path}\presets/messages/err_background.png')
     background = pygame.transform.scale_by(background, .75)
     # screen
     screen_size = background.get_size()
@@ -45,7 +45,7 @@ def show_window(failures, *,
     white_surf.fill('white')
     pygame.display.set_icon(
         pygame.image.load(
-            rf'{FileSystem.__ENGINE_DATA__}\presets\Service.png'
+            rf'{FileSystem.ENGINE_DATA_path}\presets\Service.png'
         )
     )
     # caption

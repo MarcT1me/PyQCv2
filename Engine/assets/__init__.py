@@ -11,3 +11,5 @@ from Engine.assets.material import MaterialData
 from Engine.assets.mesh import MeshData
 from Engine.assets.shader import ShaderAssetData
 from Engine.assets.texture import TextureData
+
+from Engine.assets.engine_asset_table import EngineDataTable

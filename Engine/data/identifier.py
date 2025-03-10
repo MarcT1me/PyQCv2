@@ -11,6 +11,12 @@ class Identifier(Hashable):
     name: Optional[str] = None
     uuid: UUID = field(init=False, default_factory=uuid4)
 
+    def __eq__(self, other):
+        if isinstance(other, Identifier):
+            return super().__eq__(other)
+        else:
+            return self.__str__() == other
+
     @classmethod
     def from_uncertain(cls, value: IdentifierType) -> Self:
         """ create Identifier from uncertain value

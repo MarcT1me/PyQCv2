@@ -1,14 +1,48 @@
 ﻿""" Engine CONSTANTS
 """
 from enum import Enum, Flag, auto
-from typing import TypeVar, Type, Callable, Any, Self
+from typing_extensions import (
+    TypeVar as _TypeVar,
+    Any as _Any,
+    Type, Callable,
+    Protocol,
+    deprecated
+)
 
 """ types """
-T = TypeVar('T', bound=object)
-FUNC = TypeVar('FUNC', bound=Callable[[...], Any])
-CLS = TypeVar('CLS', bound=Type)
-ARGS = TypeVar("ARGS", bound=Any)
-KWARGS = TypeVar("KWARGS", bound=Any)
+T = _TypeVar('T', bound=object)
+# simple types
+FUNC = _TypeVar("FUNC", bound=Callable[..., _Any])
+CLS = _TypeVar("CLS", bound=Type)
+# args and kwargs
+ARGS = _TypeVar("ARGS", bound=_Any)
+KWARGS = _TypeVar("KWARGS", bound=_Any)
+
+
+@deprecated("Used for typing, not for use.")
+class Modifiable[T](Protocol):
+    def modify(self: T, **changes: KWARGS) -> T:
+        """
+        Update multiple class attributes at once
+
+        Args:
+            changes: kwargs dictionary of new values - {item: new_value}
+
+        Returns:
+            current object after modifying
+
+        Raises:
+            AttributeError: if one of kwarg argument to change not in object
+        """
+        for item, value in changes.items():
+            if hasattr(self, item):
+                setattr(self, item, value)
+            else:
+                AttributeError("Cant set an undescribed attribute")
+        return self
+
+
+""" Enums and Flags """
 
 
 class DataType(Flag):

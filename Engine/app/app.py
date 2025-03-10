@@ -92,7 +92,7 @@ class App(ABC, Engine.data.MetaObject,
     # pre-init
     assets: Engine.assets.AssetManager = None
     # init
-    clock: Engine.timing.System = None
+    clock: Engine.timing.TimingSystem = None
     audio: Engine.audio.System = None
     event: Engine.events.System = None
     graphic: Engine.graphic.System = None
@@ -104,7 +104,6 @@ class App(ABC, Engine.data.MetaObject,
         """ creating App inherited class and loading Engine configs
         After all initializations """
         super().__init_subclass__()
-        Engine.pg.init()
         App.inherited = cls  # memorize inherited class
         # Engine configs
         Engine.data.FileSystem.load_engine_config('settings')  # general
@@ -116,6 +115,7 @@ class App(ABC, Engine.data.MetaObject,
     """ __pre_init__ logic """
 
     def __new__(cls, *args, **kwargs):
+        Engine.pg.init()
         App.instance = super().__new__(cls)
         return App.instance
 
@@ -145,6 +145,10 @@ class App(ABC, Engine.data.MetaObject,
             # Audio Asset
             Engine.assets.audio_clip.AudioAssetLoader(
                 Engine.assets.AssetType(Engine.DataType.AudioClip)
+            ),
+            # Texture Asset
+            Engine.assets.texture.TextureAssetLoader(
+                Engine.assets.AssetType(Engine.DataType.PyGame | Engine.DataType.Texture)
             ),
             # Shaders Assets
             Engine.assets.shader.GLSLShaderLoader(
@@ -181,9 +185,9 @@ class App(ABC, Engine.data.MetaObject,
         super().__init__(self.__pre_init__())
         logger.success('ENGINE - PRE-INIT\n')
         # init systems
-        App.clock = Engine.timing.System(self.fps)
+        App.clock = Engine.timing.TimingSystem(self.data.fps)
         App.audio = Engine.audio.System()
-        App.graphic = Engine.graphic.System()
+        App.graphic = Engine.graphic.System(self.data.gl_attribute_data)
         App.event = Engine.events.System()
 
         logger.success('ENGINE - INIT\n')
@@ -195,7 +199,7 @@ class App(ABC, Engine.data.MetaObject,
         Before inherited __init__
         Calling in instance App.mainloop"""
         App.graphic.__post_init__()
-        logger.success("APP - INIT\n")
+        logger.success("ENGINE - POST-INIT\n")
 
     # events
     if TYPE_CHECKING:
@@ -357,9 +361,22 @@ class App(ABC, Engine.data.MetaObject,
                 if App.instance:
                     App.instance.on_exit()
 
-                App.instance = None
             except Exception as e:
                 raise AppMainloopException("Instance is not created") from e
+
+        def handle_critical_errors():
+            # show err window
+            if App.instance:
+                App.running = err_screen.show_window(App.instance.data.failures) if Engine.data.MainData.IS_RELEASE \
+                    else err_screen.show_window(App.instance.data.failures)
+                App.instance.failures.clear()
+            else:
+                logger.error("Cant use App.instance, exiting from app")
+                App.running = False
+                err_screen.show_window(
+                    [AppMainloopException("Cant use default error handling")],
+                    restartale=False
+                )
 
         class MainloopHandler(IFailureHandler):
             def on_failure(self, failure: Failure) -> None:
@@ -370,15 +387,7 @@ class App(ABC, Engine.data.MetaObject,
 
                 logger.exception(failure)
 
-                # show err window
-                if App.instance and App.running:
-                    App.running = err_screen.show_window(App.instance.data.failures) if Engine.data.MainData.IS_RELEASE \
-                        else err_screen.show_window(App.instance.data.failures)
-                    App.instance.failures.clear()
-                else:
-                    logger.error("Cant use App.instance, exiting from app")
-                    App.running = False
-                    err_screen.show_window([failure], restartale=False)
+                handle_critical_errors()
 
         handler = MainloopHandler()
 
@@ -391,3 +400,8 @@ class App(ABC, Engine.data.MetaObject,
                 cth.try_func(instance.run)
 
                 exiting()
+
+                if instance.failures:
+                    handle_critical_errors()
+
+                App.instance = None

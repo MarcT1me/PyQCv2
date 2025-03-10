@@ -33,7 +33,7 @@ def multithread(
             thread.start()
             return thread
 
-        wrapper.__is_multithread__ = True
+        wrapper.__is_multithread_decorated__ = True
 
         return cast(Engine.FUNC, wrapper)
 

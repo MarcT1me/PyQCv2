@@ -142,7 +142,7 @@ class Channel:
 
     def wait_playing(self) -> None:
         while self.is_playing():
-            Engine.timing.System.wait(100)
+            Engine.timing.TimingSystem.wait(100)
 
     def set_fadeout(self, milliseconds: int) -> Self:
         self.fadeout = milliseconds

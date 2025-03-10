@@ -1,6 +1,6 @@
 ﻿""" Various additional structures for data storage
 """
-from typing import Self, Any, final
+from typing_extensions import Self, Any, final, deprecated
 from argparse import ArgumentError
 
 import Engine
@@ -8,28 +8,29 @@ import Engine
 
 @final
 class DataTable:
-    def __init__(self, **data):
-        self._data = data
+    def __init__(self, **data: Engine.KWARGS):
+        self._data: dict[str, Any] = data
 
-    def get(self, item: 'str | Engine.data.Identifier'):
+    def get(self, item: 'str | Engine.data.Identifier') -> Any:
         return self._data.get(str(item), None)
 
-    def __getattr__(self, item):
+    def __getattr__(self, item: str) -> 'Engine.assets.AssetData':
         return self.get(item)
 
 
 class AttributesKeeperError(Exception): pass
 
 
+@deprecated("outdated")
 class AttributesKeeper(dict):
     """ Hybrid attribute-dictionary container with default values
     """
 
-    def __init__(self, default: Any = None, *args, **kwargs):
+    def __init__(self, default: Any = None, *args: Engine.ARGS, **kwargs: Engine.KWARGS):
         super().__init__(*args, **kwargs)
-        self._default = default
+        self._default: Any = default
 
-    def __getattr__(self, name) -> Self | Any:
+    def __getattr__(self, name: str) -> Self:
         try:
             if name in self:
                 return self[name]
@@ -48,7 +49,7 @@ class AttributesKeeper(dict):
         except Exception as e:
             raise AttributesKeeperError(f"Cant set attribute {key}") from e
 
-    def __getitem__(self, key) -> Any:
+    def __getitem__(self, key) -> Self:
         return super().get(key, self._default)
 
     def __contains__(self, key) -> bool:
@@ -73,7 +74,7 @@ class SimpleRoster(AttributesKeeper):
 
     def __init__(self, name: str = "root", *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.id = Engine.data.Identifier(name=name)
+        self.id = Engine.data.Identifier.from_uncertain(name)
         self._branch_ids: set[str] = {}
 
     @property
@@ -116,6 +117,9 @@ class Roster(SimpleRoster):
     """ A container for storing objects in a tree structure,
     inherited from SimpleRoster and change new_branch method (create new Roster)
     """
+
+    def __new__(cls, *args, **kwargs):
+        return AttributesKeeper.__new__(cls)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

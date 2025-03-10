@@ -6,16 +6,25 @@ from Engine.data.identifier import Identifier
 
 
 @dataclass(kw_only=True)
+@Engine.decorators.modifiable()
 class MetaData:
     id: Identifier = field(default_factory=Identifier)
 
     def modify(self, **changes: Engine.KWARGS) -> Self:
-        """ extern ths win_data and return new """
-        [setattr(self, key, value) for key, value in changes.items()]
-        return self
+        """
+        Update multiple class attributes at once
 
-    def copy_to_object(self, obj):
+        Args:
+            changes: kwargs dictionary of new values - {item: new_value}
+
+        Returns:
+            current object after modifying
+
+        Raises:
+            AttributeError: if one of kwarg argument to change not in object
+        """
+
+    def __copy_to_object__(self, obj):
         d = dict((key, attr) for key, attr in self.__dict__ if not key.startswith("__"))
-        d.pop("copy_to_object")
-        d.pop("link_to_object")
+        d.pop("modify")
         obj.__dict__.update()

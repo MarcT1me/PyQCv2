@@ -1,5 +1,6 @@
-from typing import Dict, Set, Any, final
+from typing_extensions import Dict, Set, Any, final, deprecated
 from pprint import pformat
+
 from loguru import logger
 
 import Engine
@@ -15,11 +16,25 @@ class AssetRoster(Engine.data.arrays.Roster):
         super().__init__(name, *args, **kwargs)
         self.loader = loader
 
-    def definite(self, name) -> 'Engine.assets.AssetData':
+    def definite(self, name: Engine.data.Identifier | str) -> 'Engine.assets.AssetData':
         for asset in self.values():
-            if asset.id.name == name:
+            if asset.id == name:
                 return asset
         raise AssetError(f"Cant find definite asset with name {name}")
+
+    @deprecated("The feature is under development and is working in experimental mode.")
+    def get(self, item: str) -> 'AssetRoster[str, Engine.assets.AssetData] | Engine.assets.AssetData':
+        if self.has_asset(item):
+            return self.definite(item)  # return item if exist
+        else:
+            return getattr(self, item).get(item.split('/')[1])  # recursion in end AssetRoster
+
+    def has_asset(self, name):
+        for asset_name in self:
+            if asset_name == name:
+                return True
+        else:
+            return False
 
 
 class CyclicDependencyError(AssetError):
@@ -98,6 +113,27 @@ class AssetManager:
 
         logger.success("AssetManager - init")
 
+    @staticmethod
+    def _check_field_path(field: str, path: str, l: int):
+        if path.count("/") > l:
+            raise AssetError(f"Cant use path len > {l} path: {path} for field: {field}")
+
+    @staticmethod
+    @deprecated("The feature is under development and is working in experimental mode.")
+    def get(path: str) -> 'Engine.assets.AssetData':
+        field, path = path.split("::")
+        if field == "Engine":
+            AssetManager._check_field_path(field, path, 1)
+            source_object = Engine.assets.EngineDataTable()
+        elif field == "Core":
+            AssetManager._check_field_path(field, path, 1)
+            source_object = Engine.App.instance.data.data_table
+        else:
+            AssetManager._check_field_path(field, path, 2)
+            source_object = Engine.App.assets.storage
+
+        return source_object.get(path)
+
     def _register_asset_type(self, asset_loaders: 'list[Engine.assets.AssetLoader]'):
         asset_types: Dict[str, Engine.assets.AssetLoader] = {}
 
@@ -125,6 +161,7 @@ class AssetManager:
         print()
 
     def get_branch(self, branch_name: str) -> AssetRoster:
+        print(self.storage.__dict__)
         # We are looking for a branch by type name in the root Roster
         branch = self.storage.branch(branch_name)
         if branch is not None:
