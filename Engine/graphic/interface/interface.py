@@ -6,7 +6,7 @@ from Engine.objects.icontextmanager import IContextManager
 from Engine.objects.ireleasable import IDestroyed, IReleasable
 
 
-class Interface(ABC, IContextManager, IDestroyed, IReleasable):
+class Interface(ABC, IContextManager, IReleasable, IDestroyed):
     surface: Engine.pg.Surface
 
     def blit(self, *args, **kwargs):

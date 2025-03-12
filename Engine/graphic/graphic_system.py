@@ -1,39 +1,30 @@
 """ Engine Graphic core
 """
 from typing import Optional, final
-from pprint import pformat
 
 from loguru import logger
 
 import Engine
 from Engine.graphic.interface.interface import Interface
-from Engine.graphic.GL.shader.shader_roster import ShadersRoster
+
+from Engine.objects.iinitanle import IPostInitable
+from Engine.objects.ireleasable import IReleasable
 
 
 @final
-class System:
-    def __init__(self, gl_attribute_data: 'Optional[Engine.graphic.GL.GlAttributesData]' = None):
+class GraphicSystem(IPostInitable, IReleasable):
+    def __init__(self):
         # window
-        win_data: Engine.graphic.WinData = Engine.App.instance.__win_data__()
         self.window: Engine.graphic.Window = None  # Window
-
-        # gl
-        self.gl_data: Optional[Engine.graphic.GL.GlData] = None
-        self.context: Optional[Engine.mgl.Context] = None  # MGL context
-        # game ui surface
         self.interface: Optional[Interface] = None  # Interface renderer
 
-        # set start attributes
-        if Engine.data.MainData.IS_USE_GL:
-            Engine.pg.display.gl_set_attribute(Engine.pg.GL_CONTEXT_MAJOR_VERSION, gl_attribute_data.minor_version)
-            Engine.pg.display.gl_set_attribute(Engine.pg.GL_CONTEXT_MINOR_VERSION, gl_attribute_data.minor_version)
-            Engine.pg.display.gl_set_attribute(Engine.pg.GL_CONTEXT_PROFILE_MASK, gl_attribute_data.profile_mask)
-            logger.info(f'set gl attributes, {gl_attribute_data.minor_version, gl_attribute_data.minor_version}\n')
+        win_data: Engine.graphic.WinData = Engine.App.instance.__win_data__()
 
-            """ rosters and sub-systems """
-            self.shader_roster = ShadersRoster()
+        self.__gl_system__: Optional[Engine.graphic.GL.GlSystem] = None
 
         # init sub-systems
+        if Engine.data.MainData.IS_USE_GL:
+            self.__gl_system__ = Engine.graphic.GL.GlSystem(win_data)
         self._init_window(win_data)
 
         logger.success("Engine graphic System - init\n")
@@ -44,36 +35,18 @@ class System:
         self.window.__post_init__()
 
         if Engine.data.MainData.IS_USE_GL:
-            self._init_gl()
-            self._init_interface()
+            self.__gl_system__.init_context()
+            self.prepare = lambda: self.__gl_system__.clear()
         else:
-            self.interface = Engine.graphic.SdlInterface()
+            self.prepare = lambda: self.window.__pg_win__.fill("black")
+            self._init_interface = lambda: setattr(self, "interface", Engine.graphic.SdlInterface())
+
+        self._init_interface()
 
     def _init_window(self, win_data: 'Engine.graphic.WinData') -> None:
         """ set main variables"""
         win_data.flags = win_data.flags | Engine.pg.HIDDEN
         self.window = Engine.graphic.Window(win_data)
-
-    def _init_gl(self) -> None:
-        """ set opengl attribute """
-        self.gl_data = Engine.App.instance.__gl_data__(self.window.data)
-
-        self.context = Engine.mgl.create_context()
-
-        self._set_gl_configs()
-
-        logger.info(
-            "Engine graphic System - init (GL)\n"
-            f"data:\n"
-            f"{pformat(self.gl_data)}\n"
-            f"context info:\n"
-            f"{pformat(self.context.info)}\n"
-        )
-
-    def _set_gl_configs(self) -> None:
-        self.context.enable(flags=self.gl_data.flags)
-        self.context.blend_func = self.gl_data.blend_func
-        self.set_viewport(self.gl_data.view)
 
     def _init_interface(self):
         if not Engine.App.assets.storage.has_asset("interface"):
@@ -98,25 +71,30 @@ class System:
                 )
             )
         if self.interface: self.interface.destroy()
-        self.interface = self.gl_data.interface_type()
+        self.interface = self.__gl_system__.gl_data.interface_type()
         logger.success(f"Interface initialized: {self.interface}")
 
     def resset(self) -> None:
         self.window.set_mode()
 
         if Engine.data.MainData.IS_USE_GL:
-            self.gl_data = Engine.App.__gl_data__(self.window.data)  # set data from App methods
+            self.__gl_system__.update_gl_data(self.window.data)
 
             self._init_interface()
 
-            self.set_viewport(self.gl_data.view)
+            self.__gl_system__.update_viewport()
         else:
-            self.interface = Engine.graphic.SdlInterface()
+            self._init_interface()
 
         logger.success("Engine graphic System - resset\n")
 
-    def set_viewport(self, viewport: Engine.math.vec4) -> None:
-        self.context.viewport = viewport
+    def prepare(self):
+        """ Prepare graphic system to rendering """
+        ...
+
+    @staticmethod
+    def flip() -> None:
+        Engine.pg.display.flip()
 
     @staticmethod
     def get_monitor_sizes() -> tuple[Engine.math.vec2]:
@@ -136,15 +114,11 @@ class System:
     def set_cursor_style(system: int) -> None:
         Engine.pg.mouse.set_cursor(system)
 
-    @staticmethod
-    def flip() -> None:
-        Engine.pg.display.flip()
-
-    def __release__(self) -> None:
-        if self.gl_data:
+    def release(self) -> None:
+        if self.__gl_system__:
             with Engine.failures.Catch(identifier="Graphic system GL release", is_critical=False,
                                        is_handling=False) as cth:
                 cth.try_func(self.interface.release)
-                cth.try_func(self.context.release)
+                cth.try_func(self.__gl_system__.release)
         if self.window is not None:
             del self.window

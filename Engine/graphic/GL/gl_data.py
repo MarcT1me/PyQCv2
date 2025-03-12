@@ -5,16 +5,13 @@ from Engine.graphic.interface import HardInterface
 
 
 @dataclass(kw_only=True)
-class GlAttributesData:
+class GlData(Engine.data.MetaData):
+    win_data: 'InitVar[Engine.graphic.WinData]' = None
+
     # core
     major_version: int = field(default=3)
     minor_version: int = field(default=3)
     profile_mask: int = field(default=Engine.pg.GL_CONTEXT_PROFILE_CORE)
-
-
-@dataclass(kw_only=True)
-class GlData(Engine.data.MetaData):
-    win_data: 'InitVar[Engine.graphic.WinData]' = None
 
     # window space
     view: Engine.math.ivec4 = field(default=None)

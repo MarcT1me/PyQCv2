@@ -8,4 +8,3 @@ from Engine.graphic.GL.gl_object.gl_object_data import GlObjectData
 class ShaderData(GlObjectData):
     shader_type: Engine.ShaderType
     content: dict[Engine.assets.LoadedAsset]
-    is_in_roster: bool = False

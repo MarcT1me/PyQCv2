@@ -14,14 +14,13 @@ class Shader(GlObject):
     # ShaderData
     content: dict[Engine.assets.LoadedAsset]
     shader_type: Engine.ShaderType
-    is_in_roster: bool
 
     def __init__(self, data: 'Engine.graphic.GL.ShaderData'):
         super().__init__(data)
         try:
             """ selecting a type and creating a program """
             if self.data.shader_type == Engine.ShaderType.Compute:
-                self.program: Engine.mgl.Program = Engine.App.graphic.context.compute_shader(
+                self.program: Engine.mgl.Program = Engine.App.graphic.__gl_system__.context.compute_shader(
                     self.data.content["Compute"].content
                 )
             else:
@@ -32,7 +31,7 @@ class Shader(GlObject):
                 if self.data.shader_type & Engine.ShaderType.Geometry:
                     program_kwargs['geometry_shader'] = self.data.content["Geometry"].content
                 # simple program creating
-                self.program: Engine.mgl.Program = Engine.App.graphic.context.program(**program_kwargs)
+                self.program: Engine.mgl.Program = Engine.App.graphic.__gl_system__.context.program(**program_kwargs)
         except Exception as e:
             raise ShaderError(f"failed to init shader {self.id}") from e
 
@@ -47,6 +46,3 @@ class Shader(GlObject):
 
     def __release__(self):
         self.program.release()
-        if self.id is not None:
-            if self.data.is_in_roster:
-                Engine.App.graphic.shader_roster.remove(self.id)

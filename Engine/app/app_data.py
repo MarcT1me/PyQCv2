@@ -18,9 +18,3 @@ class AppData(Engine.data.MetaData):
 
     """ Events """
     joysticks: Dict[int, Engine.pg.joystick.JoystickType] = field(init=False, default_factory=dict)
-
-    gl_attribute_data: Optional[Engine.graphic.GL.GlAttributesData] = field(default=None)
-
-    def __post_init__(self):
-        if Engine.data.MainData.IS_USE_GL:
-            self.gl_attribute_data = Engine.graphic.GL.GlAttributesData()

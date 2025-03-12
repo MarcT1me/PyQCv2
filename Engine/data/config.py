@@ -43,9 +43,9 @@ class FileSystem:
     APPDATA_LOCAL_path: str = rf'{os.path.expanduser("~")}\AppData\Local'
 
     # Directory names
-    PRESETS_dir: str = "presets"
-    ENGINE_SHADER_dir: str = f'{ENGINE_DATA_path}\\{PRESETS_dir}\\shaders'
     DATA_dir: str = "gamedata"
+
+    PRESETS_dir: str = "presets"
     SHADER_dir: str = "shaders"
     TEXTURE_dir: str = "textures"
     AUDIO_dir: str = "audio"

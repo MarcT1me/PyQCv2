@@ -3,7 +3,7 @@ Basic Python syntax
 """
 """ Set Screen Settings """
 from Engine.data.config import MainData, WinDefault
-from pygame import RESIZABLE
+from Engine.pg import RESIZABLE
 
 WinDefault.title = MainData.APPLICATION_name + " Window"
 WinDefault.size = WinDefault.size

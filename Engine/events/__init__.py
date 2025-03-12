@@ -1,2 +1,2 @@
 from Engine.events.event import Event
-from Engine.events.system import System
+from Engine.events.event_system import EventSystem

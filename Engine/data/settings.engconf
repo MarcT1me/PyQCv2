@@ -6,19 +6,19 @@ Basic Python syntax
 from Engine.data.config import MainData
 
 MainData.IS_RELEASE = False
-MainData.IS_USE_GL = MainData.IS_USE_GL
+MainData.IS_USE_GL = True
 # string
 MainData.APPLICATION_name = 'Test App'
-MainData.APPLICATION_version = '0.12.1'
+MainData.APPLICATION_version = '0.13.0'
 
 """ Set File Settings """
 from Engine.data.config import FileSystem
 from os.path import join
 
 # Directory names
-FileSystem.PRESETS_dir = FileSystem.PRESETS_dir
-FileSystem.ENGINE_SHADER_dir = FileSystem.ENGINE_SHADER_dir
 FileSystem.DATA_dir = FileSystem.DATA_dir
+
+FileSystem.PRESETS_dir = FileSystem.PRESETS_dir
 FileSystem.SHADER_dir = join(FileSystem.PRESETS_dir, FileSystem.SHADER_dir)
 FileSystem.TEXTURE_dir = join(FileSystem.PRESETS_dir, FileSystem.TEXTURE_dir)
 FileSystem.AUDIO_dir = join(FileSystem.PRESETS_dir, FileSystem.AUDIO_dir)

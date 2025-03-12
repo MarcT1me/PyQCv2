@@ -20,7 +20,7 @@ class ActiveDevice:
 
 
 @final
-class System:
+class AudioSystem:
     UpdateDefaultDevicesEvent: UpdateDefaultDevicesEvent = UpdateDefaultDevicesEvent(3)
 
     def __init__(self):

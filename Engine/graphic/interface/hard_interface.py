@@ -15,27 +15,27 @@ class HardInterface(Interface):
 
     def __init__(self) -> None:
         self.surface = Engine.pg.Surface(
-            Engine.App.graphic.gl_data.interface_resolution, flags=Engine.pg.SRCALPHA
+            Engine.App.graphic.__gl_system__.gl_data.interface_resolution, flags=Engine.pg.SRCALPHA
         )
 
         self.shader: Engine.graphic.GL.Shader = Engine.App.assets.storage.Shader.definite("interface").content
         # self.shader = Engine.App.assets.get("Engine::interface_shader").content
 
-        self.texture: Engine.mgl.Texture = Engine.App.graphic.context.texture(
-            Engine.App.graphic.gl_data.interface_resolution, 4
+        self.texture: Engine.mgl.Texture = Engine.App.graphic.__gl_system__.context.texture(
+            Engine.App.graphic.__gl_system__.gl_data.interface_resolution, 4
         )
         self.texture.filter, self.texture.swizzle = (Engine.mgl.NEAREST, Engine.mgl.NEAREST), self.swizzle
         self.texture.build_mipmaps()
         self.texture.anisotropy = self.anisotropy
 
-        self.__vbo = Engine.App.graphic.context.buffer(data=array('f', [
+        self.__vbo = Engine.App.graphic.__gl_system__.context.buffer(data=array('f', [
             # position (x, y), uv cords (x, y)
             -1.0, -1.0, 0.0, 1.0,  # bottom left
             1.0, -1.0, 1.0, 1.0,  # bottom right
             -1.0, 1.0, 0.0, 0.0,  # top left
             1.0, 1.0, 1.0, 0.0,  # top right
         ]))
-        self.__vao = Engine.App.graphic.context.vertex_array(
+        self.__vao = Engine.App.graphic.__gl_system__.context.vertex_array(
             self.shader.program, [(self.__vbo, '2f 2f', 'vertices', 'texCoord')], skip_errors=True
         )
 

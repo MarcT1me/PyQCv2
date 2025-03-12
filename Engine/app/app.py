@@ -98,9 +98,9 @@ class App(ABC, Engine.data.MetaObject,
     assets: Engine.assets.AssetManager = None
     # init
     clock: Engine.timing.TimingSystem = None
-    audio: Engine.audio.System = None
-    event: Engine.events.System = None
-    graphic: Engine.graphic.System = None
+    audio: Engine.audio.AudioSystem = None
+    event: Engine.events.EventSystem = None
+    graphic: Engine.graphic.GraphicSystem = None
 
     """ Inherited App definition logic """
 
@@ -180,7 +180,7 @@ class App(ABC, Engine.data.MetaObject,
         """ Pre-initialisation -> Initialization Graphic Libreary Data.
         After __win_data__
         Take WinData from the __win_data__"""
-        return Engine.graphic.GL.GlData(win_data=win_data) if win_data.flags & Engine.pg.OPENGL else None
+        return Engine.graphic.GL.GlData(win_data=win_data) if Engine.data.MainData.IS_USE_GL else None
 
     @abstractmethod
     def __init__(self) -> None:
@@ -191,9 +191,9 @@ class App(ABC, Engine.data.MetaObject,
         logger.success('ENGINE - PRE-INIT\n')
         # init systems
         App.clock = Engine.timing.TimingSystem(self.data.fps)
-        App.audio = Engine.audio.System()
-        App.graphic = Engine.graphic.System(self.data.gl_attribute_data)
-        App.event = Engine.events.System()
+        App.audio = Engine.audio.AudioSystem()
+        App.graphic = Engine.graphic.GraphicSystem()
+        App.event = Engine.events.EventSystem()
 
         logger.success('ENGINE - INIT\n')
 
@@ -264,8 +264,6 @@ class App(ABC, Engine.data.MetaObject,
     # render
     if TYPE_CHECKING:
         @Engine.decorators.deferrable
-        @Engine.decorators.sdl_render
-        @Engine.decorators.gl_render
         @abstractmethod
         def render(self) -> None:
             """ render all app surfaces, and use engine render methods """
@@ -305,7 +303,7 @@ class App(ABC, Engine.data.MetaObject,
                 self.failures.remove(err)
 
         try:
-            App.graphic.__release__()
+            App.graphic.release()
         except AttributeError as exc:
             logger.error(f"can`t release graphic System, {exc.args[0]}")
         Engine.pg.quit()
@@ -344,7 +342,9 @@ class App(ABC, Engine.data.MetaObject,
             self.pre_render()
             Engine.threading.PreRenderThread.wait()
 
+            self.graphic.prepare()
             self.render()
+            self.graphic.flip()
             # clok tick
             App.clock.tick()
 

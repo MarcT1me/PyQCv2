@@ -7,7 +7,7 @@ import Engine
 class Device:
     def __init__(
             self,
-            sys: 'Engine.audio.System', which: int, is_input,
+            sys: 'Engine.audio.GraphicSystem', which: int, is_input,
             name: str, frequency=44100, channels=2, buffer=4096
     ):
         self._system = sys

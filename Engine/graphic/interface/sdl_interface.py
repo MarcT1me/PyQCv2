@@ -9,14 +9,14 @@ from Engine.graphic.interface.interface import Interface
 class SdlInterface(Interface):
     def __init__(self) -> None:
         self.surface = Engine.pg.Surface(
-            Engine.App.graphic.window.data.size
+            Engine.App.graphic.window.data.size, flags=Engine.pg.SRCALPHA
         )
 
     def __str__(self):
         return f"SdlInterface<>(size: {Engine.math.vec2(self.surface.get_size())})"
 
     def __enter__(self) -> Self:
-        self.surface.fill((0, 0, 0))
+        self.surface.fill((0, 0, 0, 0))
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> False:

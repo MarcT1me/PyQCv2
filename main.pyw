@@ -4,7 +4,6 @@ import toml
 from loguru import logger
 
 import Engine
-from Engine.objects.iupdatable import IUpdatable
 
 
 class TomlConfigLoader(Engine.assets.AssetLoader):
@@ -63,63 +62,6 @@ class TestApp(Engine.App):
                 )
             )
 
-        with Engine.failures.Catch(identifier="test scene updating", is_critical=False):
-            # class for testing nodes
-            class TestSceneNode(Engine.objects.SceneNode, IUpdatable):
-                def update(self):
-                    print(f"update {self.id}")
-                    for child in self.iter_children():
-                        if child.is_updatable(): child.update()
-
-            """scene2"""
-            scene2 = Engine.objects.Scene(
-                Engine.objects.SceneNodeData(
-                    id=Engine.data.Identifier("test scene 2"),
-                )
-            )
-
-            # scene2 child1
-            scene2_child_1 = TestSceneNode(
-                Engine.objects.SceneNodeData(
-                    id=Engine.data.Identifier("test scene2 child_1")
-                )
-            )
-            scene2.add_child(scene2_child_1)
-
-            """scene"""
-            scene = Engine.objects.Scene(
-                Engine.objects.SceneNodeData(
-                    id=Engine.data.Identifier("test scene"),
-                )
-            )
-
-            # scene2
-            scene.add_child(scene2)
-
-            # child1
-            child_1 = TestSceneNode(
-                Engine.objects.SceneNodeData(
-                    id=Engine.data.Identifier("test scene child_1")
-                )
-            )
-            child_1_1 = TestSceneNode(
-                Engine.objects.SceneNodeData(
-                    id=Engine.data.Identifier("test scene child_1_1")
-                )
-            )
-            ret = scene.add_child(child_1)
-            ret.add_child(child_1_1)
-
-            # child2
-            child_2 = TestSceneNode(
-                Engine.objects.SceneNodeData(
-                    id=Engine.data.Identifier("test scene child_2")
-                )
-            )
-            scene.add_child(child_2)
-
-            scene.update()
-
         return Engine.app.AppData(
             fps=main_config.content["Win"]["fps"],
             data_table=Engine.data.arrays.DataTable(
@@ -138,7 +80,7 @@ class TestApp(Engine.App):
             full=main_config.content["Win"]["full"],
             frameless=main_config.content["Win"]["frameless"],
             monitor=main_config.content["Win"]["monitor"],
-            flags=Engine.data.WinDefault.flags | Engine.pg.OPENGL
+            flags=Engine.data.WinDefault.flags
         )
 
     def __init__(self) -> None:
@@ -210,14 +152,16 @@ class TestApp(Engine.App):
         if self.clock.timer("fps_timer", 1 / 3):
             self.rnd_fps_font = self.fps_font.render(
                 f"fps: {int(round(self.clock.get_fps(), 0))}, "
-                f"interface_type: {self.graphic.gl_data.interface_type.__name__ if self.graphic.gl_data else None}",
+                f"interface_type: {
+                self.graphic.__gl_system__.gl_data.interface_type.__name__
+                if self.graphic.__gl_system__ else None
+                }",
                 True, "white"
             )
 
-    @Engine.decorators.gl_render
     def render(self) -> None:
         # main render linear algorithm
-        ...
+
         # render interface linear algorithm
         with self.graphic.interface as interface:
             interface.blit(

@@ -5,12 +5,12 @@ import Engine
 
 
 @final
-class System:
+class EventSystem:
     def __init__(self):
         self.event_list: list[Engine.pg.event.EventType] = []
         self.key_list: Engine.pg.key.ScancodeWrapper = []
 
-        Engine.audio.System.UpdateDefaultDevicesEvent.post()
+        Engine.audio.AudioSystem.UpdateDefaultDevicesEvent.post()
         self.prepare()
 
         for event in self.event_list:
@@ -26,8 +26,8 @@ class System:
     @Engine.decorators.window_event(already_single=True)
     def handle_default(self, *, event: Engine.pg.event.Event, window: int | None):
         """ Engine default event handling """
-        if System.handle_default.already_handled:
-            System.handle_default.already_handled = False
+        if EventSystem.handle_default.already_handled:
+            EventSystem.handle_default.already_handled = False
             return
 
         if event.type == Engine.pg.QUIT:
@@ -77,7 +77,7 @@ class System:
             Engine.App.audio.add_device(event.which, bool(event.iscapture))
         elif event.type == Engine.pg.AUDIODEVICEREMOVED:
             Engine.App.audio.remove_device(event.which, bool(event.iscapture))
-        elif event.type == Engine.audio.System.UpdateDefaultDevicesEvent.type():
+        elif event.type == Engine.audio.AudioSystem.UpdateDefaultDevicesEvent.type():
             if event.is_input | 1:
                 Engine.App.audio.set_default_device(False)
             if event.is_input | 2:
