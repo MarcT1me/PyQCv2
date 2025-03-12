@@ -14,7 +14,7 @@ class ShadersRoster(Engine.data.arrays.SimpleRoster):
 
     def __release__(self) -> None:
         for shader in self.values():
-            shader.__release__()
+            shader.release()
 
     def clear(self) -> None:
         self.__release__()

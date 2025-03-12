@@ -1,12 +1,14 @@
 """ Error handling during engine operation
 """
-from typing_extensions import deprecated
+from typing_extensions import Self, Optional, final, deprecated
 from abc import abstractmethod
 from dataclasses import dataclass, field
-from typing import Self, Optional, final
+
 from loguru import logger
 
 import Engine
+
+from Engine.objects.icontextmanager import IContextManager
 
 
 @dataclass(kw_only=True)
@@ -39,7 +41,7 @@ class IFailureHandler:
 
 
 @final
-class Catch:
+class Catch(IContextManager):
     """ A context manager for eliminating errors in their storage and processing,
     contains a method for unhindered launching of dangerous functions.
     """

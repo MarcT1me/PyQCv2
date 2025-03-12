@@ -1,9 +1,13 @@
 """ Collection of utilities for working with the application class.
 """
-from loguru import logger
 # default
-from abc import abstractmethod, ABC
 from typing import TYPE_CHECKING, Type, final, Optional, cast
+from abc import abstractmethod, ABC
+...
+
+# installed
+from loguru import logger
+...
 
 # Engine import
 import Engine
@@ -11,6 +15,7 @@ from Engine.app import err_screen
 from Engine.app.app_data import AppData
 from Engine.failures import IFailureHandler, Failure
 
+# Engine interfaces
 from Engine.objects.iinitanle import IPreInitable, IPostInitable
 from Engine.objects.ieventful import IEventful
 from Engine.objects.iupdatable import IPreUpdatable, IUpdatable

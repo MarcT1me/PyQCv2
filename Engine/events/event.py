@@ -1,5 +1,5 @@
-from abc import ABC
 from typing import Self
+from abc import ABC
 
 import Engine
 

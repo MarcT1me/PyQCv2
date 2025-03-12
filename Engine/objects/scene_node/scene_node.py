@@ -1,5 +1,5 @@
-from abc import ABC
 from typing import Optional, Self, Iterator
+from abc import ABC
 
 import Engine
 

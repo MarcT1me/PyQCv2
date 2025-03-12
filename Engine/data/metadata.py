@@ -1,5 +1,5 @@
-from dataclasses import dataclass, field
 from typing import Self
+from dataclasses import dataclass, field
 
 import Engine
 from Engine.data.identifier import Identifier

@@ -1,11 +1,13 @@
 """ Engine Graphic core
 """
-from loguru import logger
 from typing import Optional, final
 from pprint import pformat
-# window utils
+
+from loguru import logger
 
 import Engine
+from Engine.graphic.interface.interface import Interface
+from Engine.graphic.GL.shader.shader_roster import ShadersRoster
 
 
 @final
@@ -19,7 +21,7 @@ class System:
         self.gl_data: Optional[Engine.graphic.GL.GlData] = None
         self.context: Optional[Engine.mgl.Context] = None  # MGL context
         # game ui surface
-        self.interface: Optional[Engine.graphic.HardInterface] = None  # Interface renderer
+        self.interface: Optional[Interface] = None  # Interface renderer
 
         # set start attributes
         if Engine.data.MainData.IS_USE_GL:
@@ -28,8 +30,8 @@ class System:
             Engine.pg.display.gl_set_attribute(Engine.pg.GL_CONTEXT_PROFILE_MASK, gl_attribute_data.profile_mask)
             logger.info(f'set gl attributes, {gl_attribute_data.minor_version, gl_attribute_data.minor_version}\n')
 
-        """ rosters and sub-systems """
-        self.shader_roster = Engine.graphic.GL.ShadersRoster()
+            """ rosters and sub-systems """
+            self.shader_roster = ShadersRoster()
 
         # init sub-systems
         self._init_window(win_data)
@@ -44,6 +46,8 @@ class System:
         if Engine.data.MainData.IS_USE_GL:
             self._init_gl()
             self._init_interface()
+        else:
+            self.interface = Engine.graphic.SdlInterface()
 
     def _init_window(self, win_data: 'Engine.graphic.WinData') -> None:
         """ set main variables"""
@@ -93,8 +97,9 @@ class System:
                     ]
                 )
             )
-        if self.interface: self.interface.__destroy__()
+        if self.interface: self.interface.destroy()
         self.interface = self.gl_data.interface_type()
+        logger.success(f"Interface initialized: {self.interface}")
 
     def resset(self) -> None:
         self.window.set_mode()
@@ -105,6 +110,8 @@ class System:
             self._init_interface()
 
             self.set_viewport(self.gl_data.view)
+        else:
+            self.interface = Engine.graphic.SdlInterface()
 
         logger.success("Engine graphic System - resset\n")
 
@@ -137,7 +144,7 @@ class System:
         if self.gl_data:
             with Engine.failures.Catch(identifier="Graphic system GL release", is_critical=False,
                                        is_handling=False) as cth:
-                cth.try_func(self.interface.__release__)
+                cth.try_func(self.interface.release)
                 cth.try_func(self.context.release)
         if self.window is not None:
             del self.window

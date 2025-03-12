@@ -1,9 +1,9 @@
 from typing import Optional, TextIO
 import toml
 
-import Engine
 from loguru import logger
 
+import Engine
 from Engine.objects.iupdatable import IUpdatable
 
 
@@ -210,7 +210,7 @@ class TestApp(Engine.App):
         if self.clock.timer("fps_timer", 1 / 3):
             self.rnd_fps_font = self.fps_font.render(
                 f"fps: {int(round(self.clock.get_fps(), 0))}, "
-                f"interface_type: {self.graphic.gl_data.interface_type.__name__}",
+                f"interface_type: {self.graphic.gl_data.interface_type.__name__ if self.graphic.gl_data else None}",
                 True, "white"
             )
 
@@ -220,16 +220,16 @@ class TestApp(Engine.App):
         ...
         # render interface linear algorithm
         with self.graphic.interface as interface:
-            interface.surface.blit(
+            interface.blit(
                 self.rnd_fps_font,
                 (0, 0)
             )
-            interface.surface.blit(
+            interface.blit(
                 self.rnd_version_font,
                 (0, interface.surface.get_size()[1] - self.rnd_version_font.get_size()[1])
             )
 
-            interface.surface.blit(
+            interface.blit(
                 self.qc_img,
                 (350, 60)
             )
@@ -247,7 +247,7 @@ class TestApp(Engine.App):
         logger.error(f"App catch any failure: {failure.err}")
 
     @staticmethod
-    @Engine.decorators.dev_only()
+    @Engine.decorators.dev_only
     def on_exit_print() -> None:
         # debug logging (only in debug mode)
         logger.debug("exiting from App")

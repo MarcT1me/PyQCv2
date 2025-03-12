@@ -1,9 +1,10 @@
 ﻿""" Main engine Window
 """
-from pygetwindow import Window as _Win
-from loguru import logger
 from pprint import pformat
+
+from pygetwindow import Window as _Win
 from screeninfo import get_monitors
+from loguru import logger
 
 import Engine
 from Engine.graphic.window.win_data import WinData
@@ -60,6 +61,20 @@ class Window:
         )
         self.__pg_win__ = Engine.pg.display.set_mode(**kwargs)
 
+    def __post_init__(self):
+        from pygetwindow import getWindowsWithTitle
+        self.data.flags = self.data.flags | Engine.pg.SHOWN
+        self.toggle_full()
+        self.set_caption(self.data.title)
+        self.set_icon(
+            Engine.pg.image.load(
+                f"{Engine.data.FileSystem.APPLICATION_ICO_dir}\\{Engine.data.FileSystem.APPLICATION_ICO_name}"
+            )
+            # Engine.App.assets.get(self.data.ico_path).content
+        )
+        self.set_mode()
+        self.utils = getWindowsWithTitle(self.data.title)[0]
+
     def toggle_full(self) -> None:
         """ toggle fullscreen """
         index, monitor_size = self.get_current_monitor()
@@ -99,35 +114,21 @@ class Window:
     def is_full() -> bool:
         return Engine.pg.display.is_fullscreen()
 
+    def get_current_monitor(self) -> tuple[int, tuple[int, int]]:
+        return self.data.monitor, Engine.pg.display.get_desktop_sizes()[self.data.monitor]
+
     @staticmethod
     def get_window_size() -> Engine.math.vec2:
         return Engine.math.vec2(Engine.pg.display.get_window_size())
 
-    def get_current_monitor(self) -> tuple[int, tuple[int, int]]:
-        return self.data.monitor, Engine.pg.display.get_desktop_sizes()[self.data.monitor]
-
-    def __post_init__(self):
-        from pygetwindow import getWindowsWithTitle
-        self.data.flags = self.data.flags | Engine.pg.SHOWN
-        self.toggle_full()
-        self.set_caption(self.data.title)
-        self.set_icon(
-            Engine.pg.image.load(
-                f"{Engine.data.FileSystem.APPLICATION_ICO_dir}\\{Engine.data.FileSystem.APPLICATION_ICO_name}"
-            )
-            # Engine.App.assets.get(self.data.ico_path).content
-        )
-        self.set_mode()
-        self.utils = getWindowsWithTitle(self.data.title)[0]
-
-    def __repr__(self):
-        return f'<Window: {config.WinDefault.title} ({Engine.pg.display.get_window_size()})>'
+    def get_surf_size(self):
+        return vec2(self.__pg_win__.get_size())
 
     def blit(self, *args, **kwargs):
         self.__pg_win__.blit(*args, **kwargs)
 
-    def get_surf_size(self):
-        return vec2(self.__pg_win__.get_size())
+    def __repr__(self):
+        return f'<Window: {config.WinDefault.title} ({Engine.pg.display.get_window_size()})>'
 
     @staticmethod
     def __quit__():

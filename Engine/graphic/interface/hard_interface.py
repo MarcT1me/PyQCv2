@@ -1,12 +1,14 @@
-from typing_extensions import deprecated
+from typing_extensions import Self, deprecated
 from array import array
+
 from loguru import logger
 
 import Engine
+from Engine.graphic.interface.interface import Interface
 
 
 @deprecated("marked to remove, low-impact interface class")
-class HardInterface:
+class HardInterface(Interface):
     swizzle = "RGBA"
     filter = (Engine.mgl.NEAREST, Engine.mgl.NEAREST)
     anisotropy = 32.0
@@ -16,7 +18,7 @@ class HardInterface:
             Engine.App.graphic.gl_data.interface_resolution, flags=Engine.pg.SRCALPHA
         )
 
-        self.shader = Engine.App.assets.storage.Shader.definite("interface").content
+        self.shader: Engine.graphic.GL.Shader = Engine.App.assets.storage.Shader.definite("interface").content
         # self.shader = Engine.App.assets.get("Engine::interface_shader").content
 
         self.texture: Engine.mgl.Texture = Engine.App.graphic.context.texture(
@@ -37,14 +39,17 @@ class HardInterface:
             self.shader.program, [(self.__vbo, '2f 2f', 'vertices', 'texCoord')], skip_errors=True
         )
 
-        logger.success(f"Interface initialized: HardInterface<>(size: {Engine.math.vec2(self.surface.get_size())})")
+    def __str__(self):
+        return (f"HardInterface<>(size: {Engine.math.vec2(self.surface.get_size())} "
+                f"format: {self.swizzle}"
+                f"anisotropy {self.anisotropy})")
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         Engine.App.graphic.interface.surface.fill((0, 0, 0, 0))
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        Engine.App.graphic.interface.__render__()
+    def __exit__(self, exc_type, exc_val, exc_tb) -> False:
+        self.__render__()
         return False
 
     @staticmethod
@@ -59,12 +64,12 @@ class HardInterface:
 
         self.__vao.render(mode=Engine.mgl.TRIANGLE_STRIP)
 
-    def __release__(self):
-        self.__destroy__()
-        self.shader.__release__()
+    def release(self):
+        self.destroy()
+        self.shader.release()
         self.__vbo.release()
         self.__vao.release()
         logger.info("Interface released")
 
-    def __destroy__(self) -> None:
+    def destroy(self) -> None:
         self.texture.release()

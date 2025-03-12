@@ -1,8 +1,9 @@
 """ Engine time manager
 """
 from typing import final
-from loguru import logger
 from time import time as uix_time
+
+from loguru import logger
 
 import Engine
 

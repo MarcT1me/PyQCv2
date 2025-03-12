@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 from typing import Optional, Iterable, List, final
+from dataclasses import dataclass
 from pathlib import Path
 
 import Engine

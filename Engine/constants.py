@@ -1,6 +1,5 @@
 ﻿""" Engine CONSTANTS
 """
-from enum import Enum, Flag, auto
 from typing_extensions import (
     TypeVar as _TypeVar,
     Any as _Any,
@@ -8,6 +7,7 @@ from typing_extensions import (
     Protocol,
     deprecated
 )
+from enum import Enum, Flag, auto
 
 """ types """
 T = _TypeVar('T', bound=object)

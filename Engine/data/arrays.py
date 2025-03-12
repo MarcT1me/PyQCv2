@@ -30,7 +30,7 @@ class AttributesKeeper(dict):
         super().__init__(*args, **kwargs)
         self._default: Any = default
 
-    def __getattr__(self, name: str) -> Self:
+    def __getattr__(self, name) -> Self:
         try:
             if name in self:
                 return self[name]
@@ -72,7 +72,7 @@ class SimpleRoster(AttributesKeeper):
             __obj.new_branch(__attr, value=__default_value if __default_value else __annotation_type())
         return __obj
 
-    def __init__(self, name: str = "root", *args, **kwargs):
+    def __init__(self, name: str = "root", *args: Engine.ARGS, **kwargs: Engine.KWARGS):
         super().__init__(*args, **kwargs)
         self.id = Engine.data.Identifier.from_uncertain(name)
         self._branch_ids: set[str] = {}
@@ -81,7 +81,7 @@ class SimpleRoster(AttributesKeeper):
     def branches(self) -> list[dict]:
         return [self.branch(identifier) for identifier in self._branch_ids]
 
-    def new_branch(self, name: str, value: Any = dict()) -> Self:
+    def new_branch(self, name: str, value: dict = dict()) -> Self:
         """ create dict as attribute in roster with name """
         if name in self:
             raise RosterError(f"Branch with name {name} already in roster")
@@ -94,7 +94,7 @@ class SimpleRoster(AttributesKeeper):
         finally:
             return self
 
-    def use(self, method_name: str, calling_filter: Engine.FUNC, *args, **kwargs) -> None:
+    def use(self, method_name: str, calling_filter: Engine.FUNC, *args: Engine.ARGS, **kwargs: Engine.KWARGS) -> None:
         """ use method with the method_name on all object_node in current roster """
 
         for i in tuple(self.values()):
@@ -118,14 +118,14 @@ class Roster(SimpleRoster):
     inherited from SimpleRoster and change new_branch method (create new Roster)
     """
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args: Engine.ARGS, **kwargs: Engine.KWARGS):
         return AttributesKeeper.__new__(cls)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Engine.ARGS, **kwargs: Engine.KWARGS):
         super().__init__(*args, **kwargs)
         self.branch_ids: set[Engine.data.Identifier] = {}
 
-    def new_branch(self, name: str, *args, **kwargs) -> Self:
+    def new_branch(self, name: str, *args: Engine.ARGS, **kwargs: Engine.KWARGS) -> Self:
         """ create embedded Roster as attribute in current roster with name """
         if name in self:
             raise RosterError(f"Branch with name {name} already in roster")

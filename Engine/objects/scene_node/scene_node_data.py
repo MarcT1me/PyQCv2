@@ -1,5 +1,5 @@
-from abc import ABC
 from typing import Optional
+from abc import ABC
 from dataclasses import dataclass, field
 
 import Engine

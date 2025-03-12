@@ -9,7 +9,7 @@ MainData.IS_RELEASE = False
 MainData.IS_USE_GL = MainData.IS_USE_GL
 # string
 MainData.APPLICATION_name = 'Test App'
-MainData.APPLICATION_version = '0.12.0'
+MainData.APPLICATION_version = '0.12.1'
 
 """ Set File Settings """
 from Engine.data.config import FileSystem

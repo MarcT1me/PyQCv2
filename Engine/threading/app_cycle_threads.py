@@ -1,4 +1,5 @@
 from typing import final, Self
+
 from loguru import logger
 
 import Engine

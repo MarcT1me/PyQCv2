@@ -1,7 +1,6 @@
 ﻿""" Managing and creating shaders
 """
 from typing import Any
-import moderngl
 
 import Engine
 from Engine.graphic.GL.gl_object.gl_object import GlObject
@@ -22,7 +21,7 @@ class Shader(GlObject):
         try:
             """ selecting a type and creating a program """
             if self.data.shader_type == Engine.ShaderType.Compute:
-                self.program: moderngl.Program = Engine.App.graphic.context.compute_shader(
+                self.program: Engine.mgl.Program = Engine.App.graphic.context.compute_shader(
                     self.data.content["Compute"].content
                 )
             else:
@@ -33,7 +32,7 @@ class Shader(GlObject):
                 if self.data.shader_type & Engine.ShaderType.Geometry:
                     program_kwargs['geometry_shader'] = self.data.content["Geometry"].content
                 # simple program creating
-                self.program: moderngl.Program = Engine.App.graphic.context.program(**program_kwargs)
+                self.program: Engine.mgl.Program = Engine.App.graphic.context.program(**program_kwargs)
         except Exception as e:
             raise ShaderError(f"failed to init shader {self.id}") from e
 
