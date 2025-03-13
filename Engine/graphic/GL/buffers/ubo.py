@@ -8,4 +8,4 @@ class UBO(Buffer):
 
     def bind_to_shader(self, shader_id: Engine.data.Identifier):
         super().bind_to_shader(shader_id)
-        self._buffer.bind_to_uniform_block(self.binding, self.offset, self.size)
+        self._buffer.bind_to_uniform_block(self.data.binding, self.data.offset, self.data.size)

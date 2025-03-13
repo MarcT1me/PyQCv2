@@ -30,6 +30,6 @@ class GlData(Engine.data.MetaData):
     interface_resolution: Engine.math.ivec2 = None
 
     def __post_init__(self, win_data: 'Engine.graphic.WinData'):
-        self.resolution = Engine.math.ivec2(win_data.size)
-        self.view = Engine.math.vec4(0, 0, *self.resolution)
+        self.view = Engine.math.vec4(0, 0, *win_data.size)
+        self.resolution = self.resolution if self.resolution else Engine.math.ivec2(win_data.size)
         self.interface_resolution = self.interface_resolution if self.interface_resolution else self.resolution

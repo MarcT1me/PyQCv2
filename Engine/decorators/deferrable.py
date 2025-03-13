@@ -23,7 +23,6 @@ class _DeferrableFunction(_ClassedFunction):
               func: Engine.FUNC, *args: Engine.ARGS,
               **kwargs: Engine.KWARGS) -> None:
         self._deferred_calls.put((func, args, kwargs))
-        print("defer", self._deferred_calls)
 
     def do_defer(self) -> None:
         while not self._deferred_calls.empty():

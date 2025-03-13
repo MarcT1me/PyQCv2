@@ -17,3 +17,10 @@ WinDefault.flags |= RESIZABLE
 from Engine.graphic.window.window import Window
 
 Window.init_without_size = Window.init_without_size
+
+""" interface config """
+from Engine.graphic.interface.hard_interface import HardInterface
+
+HardInterface.anisotropy = 32.0
+HardInterface.swizzle = "RGBA"
+HardInterface.filter = HardInterface.filter

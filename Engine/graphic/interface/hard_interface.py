@@ -22,7 +22,7 @@ class HardInterface(Interface):
         # self.shader = Engine.App.assets.get("Engine::interface_shader").content
 
         self.texture: Engine.mgl.Texture = Engine.App.graphic.__gl_system__.context.texture(
-            Engine.App.graphic.__gl_system__.gl_data.interface_resolution, 4
+            Engine.App.graphic.__gl_system__.gl_data.interface_resolution, len(self.swizzle)
         )
         self.texture.filter, self.texture.swizzle = (Engine.mgl.NEAREST, Engine.mgl.NEAREST), self.swizzle
         self.texture.build_mipmaps()
@@ -41,7 +41,7 @@ class HardInterface(Interface):
 
     def __str__(self):
         return (f"HardInterface<>(size: {Engine.math.vec2(self.surface.get_size())} "
-                f"format: {self.swizzle}"
+                f"format: {self.swizzle} "
                 f"anisotropy {self.anisotropy})")
 
     def __enter__(self) -> Self:

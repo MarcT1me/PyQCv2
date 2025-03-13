@@ -4,7 +4,6 @@ from typing_extensions import cast
 import Engine
 
 
-# @deprecated("@modifiable temporarily broken")
 def modifiable[T](
         *,
         is_class_method: bool = False,

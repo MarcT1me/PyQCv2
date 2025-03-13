@@ -49,7 +49,7 @@ class GraphicSystem(IPostInitable, IReleasable):
         self.window = Engine.graphic.Window(win_data)
 
     def _init_interface(self):
-        if not Engine.App.assets.storage.has_asset("interface"):
+        if not Engine.App.assets.storage.Shader.has_asset("interface"):
             Engine.App.assets.load(
                 Engine.assets.AssetFileData(
                     id=Engine.data.Identifier("interface"),  # interface shader
@@ -74,7 +74,7 @@ class GraphicSystem(IPostInitable, IReleasable):
         self.interface = self.__gl_system__.gl_data.interface_type()
         logger.success(f"Interface initialized: {self.interface}")
 
-    def resset(self) -> None:
+    def reset(self) -> None:
         self.window.set_mode()
 
         if Engine.data.MainData.IS_USE_GL:

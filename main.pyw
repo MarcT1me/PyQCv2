@@ -83,6 +83,13 @@ class TestApp(Engine.App):
             flags=Engine.data.WinDefault.flags
         )
 
+    @staticmethod
+    def __gl_data__(win_data: Engine.graphic.WinData) -> Engine.graphic.GL.GlData:
+        return Engine.graphic.GL.GlData(
+            win_data=win_data,
+            resolution=Engine.math.ivec2(win_data.size / 3)
+        )
+
     def __init__(self) -> None:
         super().__init__()  # init engine
 
@@ -134,7 +141,7 @@ class TestApp(Engine.App):
                 Engine.App.inherited.events.defer(
                     lambda: (
                         self.graphic.window.toggle_full(),
-                        self.graphic.resset()
+                        self.graphic.reset()
                     )
                 )
         self.event.handle_default(event=event)  # default event handling
@@ -165,6 +172,11 @@ class TestApp(Engine.App):
         # render interface linear algorithm
         with self.graphic.interface as interface:
             interface.blit(
+                self.qc_img,
+                (350, 60)
+            )
+
+            interface.blit(
                 self.rnd_fps_font,
                 (0, 0)
             )
@@ -173,14 +185,9 @@ class TestApp(Engine.App):
                 (0, interface.surface.get_size()[1] - self.rnd_version_font.get_size()[1])
             )
 
-            interface.blit(
-                self.qc_img,
-                (350, 60)
-            )
-
             Engine.pg.draw.circle(
                 interface.surface, "red",
-                Engine.pg.mouse.get_pos(),
+                Engine.math.vec2(Engine.pg.mouse.get_pos()) / 3,
                 5
             )
 

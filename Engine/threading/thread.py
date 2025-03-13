@@ -56,7 +56,7 @@ class Thread(_PyThread):
             *,
             action: Optional[Engine.FUNC] = None,
             daemon: bool = True,
-            is_critical_failures: bool = None
+            is_critical_failures: Optional[bool] = None
     ) -> Self:
         identifier = Engine.data.Identifier(name=name)
 

@@ -32,7 +32,7 @@ class EventSystem:
 
         if event.type == Engine.pg.QUIT:
             Engine.App.running = False
-        elif event.type == Engine.pg.WINDOWRESIZED:
+        elif event.type == Engine.pg.WINDOWSIZECHANGED:
             if window:
                 ...
             else:
@@ -41,7 +41,7 @@ class EventSystem:
                     size=Engine.math.vec2(event.x, event.y)
                 )
                 Engine.App.inherited.events.defer(
-                    Engine.App.graphic.resset
+                    Engine.App.graphic.reset
                 )
         elif event.type == Engine.pg.WINDOWMOVED:
             if window:

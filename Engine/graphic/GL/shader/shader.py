@@ -44,5 +44,5 @@ class Shader(GlObject):
     def __getitem__(self, u_name: Engine.data.Identifier):
         return self.program.get(u_name, None)
 
-    def __release__(self):
+    def release(self):
         self.program.release()

@@ -1,8 +1,8 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import Engine
 
 
 @dataclass(kw_only=True)
 class GlObjectData(Engine.data.MetaData):
-    binding: int = None
+    binding: int = field(default=None)

@@ -1,4 +1,4 @@
-from typing_extensions import Dict, Set, Any, final, deprecated
+from typing_extensions import Optional, Dict, Set, Any, List, final, deprecated
 from pprint import pformat
 
 from loguru import logger
@@ -12,7 +12,7 @@ class AssetError(Exception):
 
 @final
 class AssetRoster(Engine.data.arrays.Roster):
-    def __init__(self, name: str, loader: 'Engine.assets.Loader | None', *args, **kwargs):
+    def __init__(self, name: str, loader: 'Optional[Engine.assets.AssetLoader]', *args, **kwargs):
         super().__init__(name, *args, **kwargs)
         self.loader = loader
 
@@ -51,12 +51,12 @@ class DependencyResolver:
         self.loading_func = loading_func
         self._loading_stack: Set[str] = set()
 
-    def resolve(self, asset_file: 'Engine.assets.AssetFileData') -> 'Set[Engine.assets.LoadedAsset]':
+    def resolve(self, asset_file: 'Engine.assets.AssetFileData') -> 'List[Engine.assets.LoadedAsset]':
         """
         Retrieves the list of downloaded dependencies for the specified cassette
         with loop handling and caching
         """
-        dependencies = []
+        dependencies: List[Engine.assets.LoadedAsset] = []
 
         if asset_file.dependencies is None:
             return dependencies
@@ -161,7 +161,6 @@ class AssetManager:
         print()
 
     def get_branch(self, branch_name: str) -> AssetRoster:
-        print(self.storage.__dict__)
         # We are looking for a branch by type name in the root Roster
         branch = self.storage.branch(branch_name)
         if branch is not None:
