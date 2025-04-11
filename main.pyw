@@ -59,7 +59,7 @@ class TestApp(Engine.App):
                         path=f"{Engine.data.FileSystem.APPLICATION_path}\\{Engine.data.FileSystem.AUDIO_dir}"
                              "\\Sf Fiksitinc.mp3"
                     )
-                )
+                ).content
             )
 
         return Engine.app.AppData(
@@ -117,7 +117,7 @@ class TestApp(Engine.App):
         super().__post_init__()  # post-init engine
 
         # play music
-        self.sound_chanel.play(self.data_table.init_clip.content)
+        self.sound_chanel.play(self.data_table.init_clip)
         Engine.pg.event.clear(Engine.pg.WINDOWRESIZED)
 
     @Engine.decorators.deferrable_threadsafe
@@ -154,18 +154,6 @@ class TestApp(Engine.App):
         # update app data
         ...
 
-    def pre_render(self) -> None:
-        # pre-render. Changing surfaces and other data for rendering
-        if self.clock.timer("fps_timer", 1 / 3):
-            self.rnd_fps_font = self.fps_font.render(
-                f"fps: {int(round(self.clock.get_fps(), 0))}, "
-                f"interface_type: {
-                self.graphic.__gl_system__.gl_data.interface_type.__name__
-                if self.graphic.__gl_system__ else None
-                }",
-                True, "white"
-            )
-
     def render(self) -> None:
         # main render linear algorithm
 
@@ -177,18 +165,30 @@ class TestApp(Engine.App):
             )
 
             interface.blit(
-                self.rnd_fps_font,
-                (0, 0)
-            )
-            interface.blit(
                 self.rnd_version_font,
                 (0, interface.surface.get_size()[1] - self.rnd_version_font.get_size()[1])
+            )
+            interface.blit(
+                self.rnd_fps_font,
+                (0, 0)
             )
 
             Engine.pg.draw.circle(
                 interface.surface, "red",
                 Engine.math.vec2(Engine.pg.mouse.get_pos()) / 3,
                 5
+            )
+
+    def pre_render(self) -> None:
+        # pre-render. Changing surfaces and other data for rendering
+        if self.clock.timer("fps_timer", 1 / 3):
+            self.rnd_fps_font = self.fps_font.render(
+                f"fps: {int(round(self.clock.get_fps(), 0))}, "
+                f"interface_type: {
+                self.graphic.__gl_system__.gl_data.interface_type.__name__
+                if self.graphic.__gl_system__ else None
+                }",
+                True, "white"
             )
 
     def on_failure(self, failure: Engine.failures.Failure) -> None:
