@@ -2,6 +2,8 @@
 
 ###### powered by QuantumCore
 
+###### minimum python version - 3.12
+
 <img alt="icon" height="128" src="presets/Logo.png" width="128"/>
 
 ### Description
