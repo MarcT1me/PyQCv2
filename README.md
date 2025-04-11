@@ -25,6 +25,15 @@ The assets for the `TestApp` class are loaded in the same way before initializat
 The config file is completely dependent on `TestApp`, this is confirmed by the need for inheritance of the loader and `TestAppData`
 
 
+### How to launch
+1) download the project from [GitHub](https://github.com/MarcT1me/PyQCv2.git )
+2) install dependencies
+  ```bash
+  pip install -r requirements.txt
+  ```
+3) run main.pyw
+
+
 ### Command on compilation
 * pyinstaller:
   * windows
